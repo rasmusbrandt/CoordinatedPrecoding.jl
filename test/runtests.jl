@@ -1,5 +1,7 @@
-using CoordinatedPrecoding
-using Base.Test
+tests = [ "channel" ]
 
-# write your own tests here
-@test 1 == 1
+for t in tests
+    fp = "$(t).jl"
+    println("running $(fp) ...")
+    evalfile(fp)
+end
