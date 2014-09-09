@@ -2,7 +2,7 @@ using Base.LinAlg.BLAS
 
 immutable Komulainen2013_WMMSEState
     A::Array{Matrix{Complex128},1}
-    W::Array{Float64,2}
+    W::Matrix{Float64}
     V::Array{Matrix{Complex128},1}
 
     Phi::Array{Hermitian{Complex128},1}
