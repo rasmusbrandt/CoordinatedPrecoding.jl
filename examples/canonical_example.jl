@@ -25,7 +25,7 @@ end
 function plot_single_realization(results, simulation_params, precoding_settings)
 
     # Per-stream rate
-    fig = plt.figure(figsize=(4*simulation_params["K"],6))
+    fig = plt.figure(figsize=(12,4*simulation_params["K"]))
     subplot_ind = 1
 
     for k = 1:simulation_params["K"]
@@ -50,7 +50,7 @@ function plot_single_realization(results, simulation_params, precoding_settings)
     fig[:savefig]("canonical_example_perstream.png", dpi=125)
 
     # Per-user sum rate
-    fig = plt.figure(figsize=(4*simulation_params["K"],6))
+    fig = plt.figure(figsize=(12,4*simulation_params["K"]))
     subplot_ind = 1
 
     for k = 1:simulation_params["K"]
@@ -69,7 +69,7 @@ function plot_single_realization(results, simulation_params, precoding_settings)
     fig[:savefig]("canonical_example_peruser.png", dpi=125)
 
     # System sum rate
-    fig = plt.figure(figsize=(4*simulation_params["K"],6))
+    fig = plt.figure(figsize=(12,6))
     ax = fig[:add_subplot](1, 1, 1)
 
     ax[:plot](squeeze(sum(results["Shi2011_WMMSE"]["user_rates"], [1,2]), [1,2]), "b-", label="Shi2011_WMMSE")
