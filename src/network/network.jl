@@ -81,18 +81,14 @@ abstract MS <: Node
 
 type CanonicalMS <: MS
     no_antennas::Int
-    served_by_BS::CanonicalBS
 
     no_streams::Int
 
     receiver_noise_power::Float64
 end
 
-type PhysicalMS{BS_t <: BS,
-    PropagationEnvironmentState_t <: PropagationEnvironmentState} <: MS
-
+type PhysicalMS{PropagationEnvironmentState_t <: PropagationEnvironmentState} <: MS
     no_antennas::Int
-    served_by_BS::BS_t
     position::Position
     velocity::Velocity
 

@@ -10,9 +10,9 @@ get_antenna_gain(antenna_params::SixSector3gppAntennaParams, angle::Float64) = 1
 
 ##########################################################################
 # Network definition
-type Triangular3SiteNetwork{System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
-    MSs::Vector{PhysicalMS}
-    BSs::Vector{PhysicalBS}
+type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
+    MSs::Vector{MS_t}
+    BSs::Vector{BS_t}
 
     system::System_t
     no_MSs_per_cell::Int
@@ -51,15 +51,28 @@ function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
             Position(+inter_site_distance/2, -inter_site_distance/(2*sqrt(3))),
             transmit_power, BS_antenna_gain_params[3])
     ]
-    MSs = PhysicalMS[ PhysicalMS(no_MS_antennas, BSs[div(k-1,no_MSs_per_cell) + 1], Position(0, 0), Velocity(0, 0), no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0.)) for k = 1:3*no_MSs_per_cell ] 
+    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0.)) for k = 1:3*no_MSs_per_cell ] 
 
     Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environment, inter_site_distance, guard_distance)
 end
 
 ##########################################################################
+# Standard cell assignment functions
+function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+    Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
+    assignment = Array(Int, I*Kc)
+
+    for i = 1:I
+        assignment[(i-1)*Kc+1:i*Kc] = i
+    end
+
+    CellAssignment(assignment)
+end
+
+##########################################################################
 # Simulation functions
-function drop_users_randomly!(network::Triangular3SiteNetwork)
+function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::Triangular3SiteNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
     for k = 1:get_no_MSs(network)
         # Generate user position within standard triangle [0,30] degrees, to
         # the right of the base. Apply guard distance to x coordinate.
@@ -90,19 +103,14 @@ function drop_users_randomly!(network::Triangular3SiteNetwork)
         position = [cos(theta) -sin(theta);sin(theta) cos(theta)]*pos
         network.MSs[k].position = (Position(position[1], position[2]) 
                                    + network.BSs[i].position)
-    end
-end
 
-# Shadow fading for SimpleLargescaleFadingEnvironment
-function draw_shadow_fading!{System_t <: System}(network::Triangular3SiteNetwork{System_t, SimpleLargescaleFadingEnvironment})
-    for k = 1:get_no_MSs(network)
+        # Shadow fading
         network.MSs[k].propagation_environment_state =
             SimpleLargescaleFadingEnvironmentState(network.propagation_environment.shadow_sigma_dB*randn())
     end
 end
 
-# Channel generation for singlecarrier SimpleLargescaleFadingEnvironment
-function draw_channel(network::Triangular3SiteNetwork{SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
+function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::Triangular3SiteNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
     K = get_no_MSs(network); I = get_no_BSs(network)
     Ns = Int[ network.MSs[k].no_antennas for k = 1:K ]
     Ms = Int[ network.BSs[i].no_antennas for i = 1:I ]

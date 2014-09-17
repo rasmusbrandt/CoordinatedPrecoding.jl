@@ -2,8 +2,6 @@ immutable CellAssignment
     assignment::Vector{Int}
 end
 
-get_cell_assignment(network::Network) = CellAssignment(Int[ findin(network.BSs, [network.MSs[k].served_by_BS])[1] for k = 1:get_no_MSs(network) ])
-
 serving_BS_id(MS_id::Int, cell_assignment::CellAssignment) = cell_assignment.assignment[MS_id]
 served_MS_ids(BS_id::Int, cell_assignment::CellAssignment) = IntSet(findin(cell_assignment.assignment, BS_id))
 

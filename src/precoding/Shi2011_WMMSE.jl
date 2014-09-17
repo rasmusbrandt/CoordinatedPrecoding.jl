@@ -10,12 +10,11 @@ immutable Shi2011_WMMSEState
 end
 
 function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
-    settings=Dict())
+    cell_assignment::CellAssignment, settings=Dict())
 
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
-    cell_assignment = get_cell_assignment(network)
 
     defaultize_settings!(settings)
 
