@@ -10,9 +10,9 @@ get_antenna_gain(antenna_params::SixSector3gppAntennaParams, angle::Float64) = 1
 
 ##########################################################################
 # Network definition
-type Triangular3SiteNetwork{System_t <: System, PropagationEnvironment_t <: PropagationEnvironment, MS_t <: PhysicalMS, BS_t <: PhysicalBS} <: PhysicalNetwork
-    MSs::Vector{MS_t}
-    BSs::Vector{BS_t}
+type Triangular3SiteNetwork{System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
+    MSs::Vector{PhysicalMS}
+    BSs::Vector{PhysicalBS}
 
     system::System_t
     no_MSs_per_cell::Int
@@ -94,7 +94,7 @@ function drop_users_randomly!(network::Triangular3SiteNetwork)
 end
 
 # Shadow fading for SimpleLargescaleFadingEnvironment
-function draw_shadow_fading!{System_t <: System, MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::Triangular3SiteNetwork{System_t, SimpleLargescaleFadingEnvironment, MS_t, BS_t})
+function draw_shadow_fading!{System_t <: System}(network::Triangular3SiteNetwork{System_t, SimpleLargescaleFadingEnvironment})
     for k = 1:get_no_MSs(network)
         network.MSs[k].propagation_environment_state =
             SimpleLargescaleFadingEnvironmentState(network.propagation_environment.shadow_sigma_dB*randn())
@@ -102,7 +102,7 @@ function draw_shadow_fading!{System_t <: System, MS_t <: PhysicalMS, BS_t <: Phy
 end
 
 # Channel generation for singlecarrier SimpleLargescaleFadingEnvironment
-function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::Triangular3SiteNetwork{SinglecarrierSystem, SimpleLargescaleFadingEnvironment, MS_t, BS_t})
+function draw_channel(network::Triangular3SiteNetwork{SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
     K = get_no_MSs(network); I = get_no_BSs(network)
     Ns = Int[ network.MSs[k].no_antennas for k = 1:K ]
     Ms = Int[ network.BSs[i].no_antennas for i = 1:I ]
