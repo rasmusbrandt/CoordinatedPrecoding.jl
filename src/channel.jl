@@ -3,7 +3,7 @@
 abstract Channel
 
 immutable SinglecarrierChannel <: Channel
-    H::Array{Array{Complex128, 2}, 2}
+    H::Array{Matrix{Complex128},2}
     Ns::Vector{Int}
     Ms::Vector{Int}
     K::Int
@@ -11,7 +11,7 @@ immutable SinglecarrierChannel <: Channel
 end
 
 immutable MulticarrierChannel <: Channel
-    H::Array{Array{Complex128, 3}, 2}
+    H::Array{Array{Complex128,3},2}
     Ns::Vector{Int}
     Ms::Vector{Int}
     K::Int
@@ -28,7 +28,7 @@ function get_average_channel_gains_dB(channel::MulticarrierChannel)
     for k = 1:channel.K
         for i = 1:channel.I
             for l = 1:channel.Lc
-                average_channel_gains[k,i] += (1/channel.Lc)*vecnorm(channel.H[k,i,l])
+                average_channel_gains[k,i] += (1/channel.Lc)*vecnorm(channel.H[k,i,l])^2
             end
         end
     end

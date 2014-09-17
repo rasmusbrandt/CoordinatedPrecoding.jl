@@ -9,7 +9,7 @@ module CoordinatedPrecoding
 export
 # Channels
     Channel, SinglecarrierChannel, MulticarrierChannel,
-    get_channel_gains_dB,
+    get_channel_gains_dB, get_average_channel_gains_dB,
 # Networks
     Network,
     get_no_MSs, get_no_BSs, get_no_MSs_per_cell,
