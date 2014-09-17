@@ -11,10 +11,15 @@ function run_performance(simulation_params, precoding_settings, performance_para
 
     channel = draw_channel(network)
 
+    println("--- Testing performance of Shi2011_WMMSE")
     Shi2011_WMMSE(channel, network, precoding_settings)
     @time for i = 1:performance_params["Nperf"]; Shi2011_WMMSE(channel, network, precoding_settings); end
+
+    println("--- Testing performance of Gomadam2008_MaxSINR")
     Gomadam2008_MaxSINR(channel, network, precoding_settings)
     @time for i = 1:performance_params["Nperf"]; Gomadam2008_MaxSINR(channel, network, precoding_settings); end
+
+    println("--- Testing performance of Komulainen2013_WMMSE")
     Komulainen2013_WMMSE(channel, network, precoding_settings)
     @time for i = 1:performance_params["Nperf"]; Komulainen2013_WMMSE(channel, network, precoding_settings); end
 end
