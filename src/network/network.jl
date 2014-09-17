@@ -61,7 +61,6 @@ end
 abstract Node
 
 abstract BS <: Node
-abstract PhysicalBS <: BS
 
 type CanonicalBS <: BS
     no_antennas::Int
@@ -69,7 +68,7 @@ type CanonicalBS <: BS
     transmit_power::Float64
 end
 
-type SimplePhysicalBS{AntennaParams_t <: AntennaParams} <: PhysicalBS
+type PhysicalBS{AntennaParams_t <: AntennaParams} <: BS
     no_antennas::Int
     position::Position
 
@@ -79,7 +78,6 @@ type SimplePhysicalBS{AntennaParams_t <: AntennaParams} <: PhysicalBS
 end
 
 abstract MS <: Node
-abstract PhysicalMS <: MS
 
 type CanonicalMS <: MS
     no_antennas::Int
@@ -90,8 +88,8 @@ type CanonicalMS <: MS
     receiver_noise_power::Float64
 end
 
-type SimplePhysicalMS{BS_t <: BS,
-    PropagationEnvironmentState_t <: PropagationEnvironmentState} <: PhysicalMS
+type PhysicalMS{BS_t <: BS,
+    PropagationEnvironmentState_t <: PropagationEnvironmentState} <: MS
 
     no_antennas::Int
     served_by_BS::BS_t
