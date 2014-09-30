@@ -65,6 +65,9 @@ end
 
 ##########################################################################
 # Simulation functions
+draw_user_drop!(network::InterferenceChannel) = nothing
+draw_user_drop!(network::InterferingBroadcastChannel) = nothing
+
 function draw_channel{System_t <: SinglecarrierSystem}(network::InterferenceChannel{System_t})
 
     K = get_no_MSs(network); I = get_no_BSs(network)
