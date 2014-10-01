@@ -8,6 +8,8 @@ type InterferenceChannel{System_t <: System} <: CanonicalNetwork
     alpha::Float64
 end
 
+get_no_MSs_per_cell(network::InterferenceChannel) = 1
+
 type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
     MSs::Vector{CanonicalMS}
     BSs::Vector{CanonicalBS}
