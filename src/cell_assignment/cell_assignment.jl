@@ -19,3 +19,12 @@ function assign_cells_by_instantaneous_channels!{Channel_t <: Channel}(network::
     # Sets cell assignment (in the MS objects) based on instantaneous channel strength
     error("Implement me")
 end
+
+function require_equal_no_MSs_per_cell(cell_assignment::CellAssignment)
+    BS_ind_max = maximum(cell_assignment.assignment)
+
+    Kc_test = length(served_MS_ids(1, cell_assignment))
+    for BS_ind = 2:BS_ind_max
+        (length(served_MS_ids(BS_ind, cell_assignment)) == Kc_test) || error("BSs must all serve equal number of MSs.")
+    end
+end

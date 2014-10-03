@@ -27,6 +27,7 @@ export
     serving_BS_id, served_MS_ids,
     assign_cells_by_id, assign_cells_by_pathloss,
     assign_cells_by_instantaneous_channels,
+    require_equal_no_MSs_per_cell,
 # Precoding
     Gomadam2008_MaxSINR, Shi2011_WMMSE, Komulainen2013_WMMSE,
     zero_receivers, initial_precoders
