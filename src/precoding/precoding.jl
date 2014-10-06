@@ -89,6 +89,7 @@ end
 
 
 # Standard algorithms
+include("Eigenprecoding.jl")
 include("Gomadam2008_MaxSINR.jl")
 include("Komulainen2013_WMMSE.jl")
 include("Shi2011_WMMSE.jl")

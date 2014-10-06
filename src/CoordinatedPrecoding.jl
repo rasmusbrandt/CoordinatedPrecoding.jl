@@ -30,6 +30,7 @@ export
     require_equal_no_MSs_per_cell,
 # Precoding
     Gomadam2008_MaxSINR, Shi2011_WMMSE, Komulainen2013_WMMSE,
+    Eigenprecoding,
     zero_receivers, initial_precoders
 
 ##########################################################################
