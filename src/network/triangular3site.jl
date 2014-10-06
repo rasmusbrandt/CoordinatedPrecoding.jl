@@ -51,7 +51,7 @@ function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
             Position(+inter_site_distance/2, -inter_site_distance/(2*sqrt(3))),
             transmit_power, BS_antenna_gain_params[3])
     ]
-    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0.)) for k = 1:3*no_MSs_per_cell ] 
+    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:3*no_MSs_per_cell ] 
 
     Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environment, inter_site_distance, guard_distance)
@@ -106,7 +106,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
 
         # Shadow fading
         network.MSs[k].propagation_environment_state =
-            SimpleLargescaleFadingEnvironmentState(network.propagation_environment.shadow_sigma_dB*randn())
+            SimpleLargescaleFadingEnvironmentState(network.propagation_environment.shadow_sigma_dB*randn(), false) # LoS not used in this model
     end
 end
 

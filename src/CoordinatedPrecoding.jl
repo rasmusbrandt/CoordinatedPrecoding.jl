@@ -21,6 +21,7 @@ export
     InterferenceChannel, setup_interference_channel,
     InterferingBroadcastChannel, setup_interfering_broadcast_channel,
     Triangular3SiteNetwork, setup_triangular3site_network,
+    ITU_R_InH_Network, setup_itu_r_inh_network,
     draw_user_drop!, draw_channel,
 # Cell assignment
     CellAssignment,

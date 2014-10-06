@@ -38,7 +38,8 @@ immutable OmnidirectionalAntennaParams <: AntennaParams
     antenna_gain_dB::Float64
 end
 
-get_antenna_gain(antenna_params::OmnidirectionalAntennaParams, angle::Float64) = 10^(antenna_params.antenna_gain_dB/10)
+get_antenna_gain(antenna_params::OmnidirectionalAntennaParams) = 10^(antenna_params.antenna_gain_dB/10)
+get_antenna_gain(antenna_params::OmnidirectionalAntennaParams, angle::Float64) = get_antenna_gain(antenna_params)
 
 ##########################################################################
 # Propagation environments
@@ -54,6 +55,7 @@ end
 
 immutable SimpleLargescaleFadingEnvironmentState <: PropagationEnvironmentState
     shadow_realization_dB::Float64
+    LoS::Bool
 end
 
 ##########################################################################
@@ -162,6 +164,9 @@ get_angles(network::PhysicalNetwork) =
 
 # Interference channel, interfering broadcast channel
 include("canonical.jl")
+
+# ITU_R_InHNetwork
+include("itu_r_inh.jl")
 
 # Triangular3SiteNetwork
 include("triangular3site.jl")
