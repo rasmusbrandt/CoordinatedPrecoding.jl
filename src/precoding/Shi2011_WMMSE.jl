@@ -16,7 +16,7 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    defaultize_settings!(settings)
+    defaultize_settings!(Shi2011_WMMSEState, settings)
 
     state = Shi2011_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
@@ -37,7 +37,7 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     return user_rates
 end
 
-function defaultize_settings!(settings)
+function defaultize_settings!(::Type{Shi2011_WMMSEState}, settings)
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end

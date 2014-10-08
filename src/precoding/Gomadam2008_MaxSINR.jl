@@ -13,7 +13,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    defaultize_settings!(settings)
+    defaultize_settings!(Gomadam2008_MaxSINRState, settings)
 
     state = Gomadam2008_MaxSINRState(
         zero_receivers(channel, ds, cell_assignment),
@@ -34,7 +34,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     return user_rates
 end
 
-function defaultize_settings!(settings)
+function defaultize_settings!(::Type{Gomadam2008_MaxSINRState}, settings)
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
