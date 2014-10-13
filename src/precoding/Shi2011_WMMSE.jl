@@ -1,5 +1,3 @@
-using Base.LinAlg.BLAS
-
 immutable Shi2011_WMMSEState
     A::Array{Matrix{Complex128},1}
     W::Array{Hermitian{Complex128},1}

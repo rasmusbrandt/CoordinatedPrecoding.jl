@@ -1,5 +1,3 @@
-using Base.LinAlg.BLAS
-
 immutable Komulainen2013_WMMSEState
     A::Array{Matrix{Complex128},1}
     W::Matrix{Float64}

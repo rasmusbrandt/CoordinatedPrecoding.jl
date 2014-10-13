@@ -6,6 +6,8 @@
 
 module CoordinatedPrecoding
 
+using Base.LinAlg.BLAS
+
 export
 # Channels
     Channel, SinglecarrierChannel, MulticarrierChannel,
