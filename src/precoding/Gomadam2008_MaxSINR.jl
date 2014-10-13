@@ -13,7 +13,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    defaultize_settings!(Gomadam2008_MaxSINRState, settings)
+    settings = defaultize_settings(Gomadam2008_MaxSINRState, settings)
 
     state = Gomadam2008_MaxSINRState(
         zero_receivers(channel, ds, cell_assignment),
@@ -34,13 +34,17 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     return user_rates
 end
 
-function defaultize_settings!(::Type{Gomadam2008_MaxSINRState}, settings)
+function defaultize_settings(::Type{Gomadam2008_MaxSINRState}, settings)
+    settings = copy(settings)
+
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
     if !haskey(settings, "initial_precoders")
         settings["initial_precoders"] = "dft"
     end
+
+    return settings
 end
 
 function update_MSs!(state::Gomadam2008_MaxSINRState, channel::SinglecarrierChannel,

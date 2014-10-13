@@ -14,7 +14,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    defaultize_settings!(Komulainen2013_WMMSEState, settings)
+    settings = defaultize_settings(Komulainen2013_WMMSEState, settings)
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
@@ -35,7 +35,9 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     return user_rates
 end
 
-function defaultize_settings!(::Type{Komulainen2013_WMMSEState}, settings)
+function defaultize_settings(::Type{Komulainen2013_WMMSEState}, settings)
+    settings = copy(settings)
+
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
@@ -54,6 +56,8 @@ function defaultize_settings!(::Type{Komulainen2013_WMMSEState}, settings)
     if !haskey(settings, "bisection_tolerance")
         settings["bisection_tolerance"] = 1e-3
     end
+
+    return settings
 end
 
 function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel,

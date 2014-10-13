@@ -22,7 +22,7 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    defaultize_settings!(Razaviyayn2013_MaxMinWMMSEState, settings)
+    settings = defaultize_settings(Razaviyayn2013_MaxMinWMMSEState, settings)
 
     state = Razaviyayn2013_MaxMinWMMSEState(
         Array(Matrix{Complex128}, channel.K),
@@ -43,7 +43,9 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     return user_rates
 end
 
-function defaultize_settings!(::Type{Razaviyayn2013_MaxMinWMMSEState}, settings)
+function defaultize_settings(::Type{Razaviyayn2013_MaxMinWMMSEState}, settings)
+    settings = copy(settings)
+
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
@@ -53,6 +55,8 @@ function defaultize_settings!(::Type{Razaviyayn2013_MaxMinWMMSEState}, settings)
     if !haskey(settings, "verbose")
         settings["verbose"] = false
     end
+
+    return settings
 end
 
 function update_MSs!(state::Razaviyayn2013_MaxMinWMMSEState,
