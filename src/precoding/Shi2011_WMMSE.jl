@@ -1,5 +1,5 @@
 immutable Shi2011_WMMSEState
-    A::Array{Matrix{Complex128},1}
+    U::Array{Matrix{Complex128},1}
     W::Array{Hermitian{Complex128},1}
     V::Array{Matrix{Complex128},1}
 
@@ -77,8 +77,8 @@ function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
         # MMSE receiver and optimal MSE weight
         i = serving_BS_id(k, cell_assignment)
         Fk = channel.H[k,i]*state.V[k]
-        state.A[k] = state.Phi[k]\Fk
-        state.W[k] = Hermitian((eye(ds[k]) - state.A[k]'*Fk)\eye(ds[k]))
+        state.U[k] = state.Phi[k]\Fk
+        state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*Fk)\eye(ds[k]))
     end
 end
 
@@ -89,7 +89,7 @@ function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
         # Covariance
         state.Gamma[i] = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
         for k = 1:channel.K
-            state.Gamma[i] += Hermitian(channel.H[k,i]'*(state.A[k]*state.W[k]*state.A[k]')*channel.H[k,i])
+            state.Gamma[i] += Hermitian(channel.H[k,i]'*(state.U[k]*state.W[k]*state.U[k]')*channel.H[k,i])
         end
 
         # Find optimal Lagrange multiplier
@@ -98,7 +98,7 @@ function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
 
         # Precoders (reuse EVD)
         for k in served_MS_ids(i, cell_assignment)
-            state.V[k] = Gamma_eigen.vectors*Diagonal(1./(Gamma_eigen.values .+ mu_star))*Gamma_eigen.vectors'*channel.H[k,i]'*state.A[k]*state.W[k]
+            state.V[k] = Gamma_eigen.vectors*Diagonal(1./(Gamma_eigen.values .+ mu_star))*Gamma_eigen.vectors'*channel.H[k,i]'*state.U[k]*state.W[k]
         end
     end
 end
@@ -110,8 +110,8 @@ function optimal_mu(i::Int, state::Shi2011_WMMSEState,
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))
     for k in served_MS_ids(i, cell_assignment)
-        #bis_M += Hermitian(channel.H[k,i]'*(state.A[k]*(state.W[k]*state.W[k])*state.A[k]')*channel.H[k,i])
-        herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.A[k]*state.W[k], complex(1.), bis_M.S)
+        #bis_M += Hermitian(channel.H[k,i]'*(state.U[k]*(state.W[k]*state.W[k])*state.U[k]')*channel.H[k,i])
+        herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k]*state.W[k], complex(1.), bis_M.S)
     end
     Gamma_eigen = eigfact(state.Gamma[i])
     bis_JMJ_diag = real(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
