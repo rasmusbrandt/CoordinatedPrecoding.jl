@@ -172,7 +172,7 @@ function calculate_user_rates(state::Shi2011_WMMSEState)
         r = log2(abs(eigvals(state.W[k])))
 
         if ds[k] < max_d
-            user_rates[k,:] = cat(1, r, zeros(Float64, max_d = ds[k]))
+            user_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
         else
             user_rates[k,:] = r
         end

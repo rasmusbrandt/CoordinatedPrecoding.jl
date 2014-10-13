@@ -47,7 +47,7 @@ function calculate_user_rates(state::EigenprecodingState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
     cell_assignment::CellAssignment)
 
-    max_d = min(maximum(channel.Ns), maximum(channel.Ms))
+    max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
     user_rates_intercell = Array(Float64, channel.K, max_d)
     user_rates_intracell = Array(Float64, channel.K, max_d)
     user_rates_uncoord = Array(Float64, channel.K, max_d)
@@ -76,9 +76,9 @@ function calculate_user_rates(state::EigenprecodingState,
             r_uncoord = log2(abs(eigvals(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k])))
 
             if d < max_d
-                user_rates_intercell[k,:] = cat(1, r_intercell, zeros(Float64, max_d))
-                user_rates_intracell[k,:] = cat(1, r_intracell, zeros(Float64, max_d))
-                user_rates_uncoord[k,:] = cat(1, r_uncoord, zeros(Float64, max_d))
+                user_rates_intercell[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
+                user_rates_intracell[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
+                user_rates_uncoord[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
             else
                 user_rates_intercell[k,:] = r_intercell
                 user_rates_intracell[k,:] = r_intracell

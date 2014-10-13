@@ -18,7 +18,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
-        ones(Float64, channel.K, maximum(ds)),
+        ones(Float64, channel.K, maximum(ds)), # Unused MSE weights (i.e. weights that are never updated) are kept at unity.
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings),
         Array(Hermitian{Complex128}, channel.K),
         Array(Hermitian{Complex128}, channel.K))
