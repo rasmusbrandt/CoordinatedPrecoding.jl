@@ -40,7 +40,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
         end
     end
 
-    calculate_user_rates(state, channel, sigma2s, cell_assignment)
+    return calculate_user_rates(state, channel, sigma2s, cell_assignment)
 end
 
 function calculate_user_rates(state::EigenprecodingState,
@@ -87,5 +87,5 @@ function calculate_user_rates(state::EigenprecodingState,
         end
     end
 
-    (user_rates_uncoord, user_rates_intercell, user_rates_intracell)
+    return (user_rates_uncoord, user_rates_intercell, user_rates_intracell)
 end

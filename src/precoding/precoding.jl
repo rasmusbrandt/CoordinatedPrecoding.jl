@@ -84,7 +84,7 @@ function waterfilling(H::Matrix{Complex128}, P::Float64, sigma2::Float64)
     end
 
     # Build precoder
-    V = VV[:,1:length(Psub)]*diagm(sqrt(Psub))
+    return V = VV[:,1:length(Psub)]*diagm(sqrt(Psub))
 end
 
 
@@ -92,4 +92,5 @@ end
 include("Eigenprecoding.jl")
 include("Gomadam2008_MaxSINR.jl")
 include("Komulainen2013_WMMSE.jl")
+include("Razaviyayn2013_MaxMinWMMSE.jl")
 include("Shi2011_WMMSE.jl")

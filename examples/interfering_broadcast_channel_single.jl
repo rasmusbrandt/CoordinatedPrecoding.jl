@@ -17,11 +17,13 @@ function simulate_single(simulation_params, precoding_settings)
     user_rates1 = Shi2011_WMMSE(channel, network, cell_assignment, precoding_settings)
     user_rates2 = Gomadam2008_MaxSINR(channel, network, cell_assignment, precoding_settings)
     user_rates3 = Komulainen2013_WMMSE(channel, network, cell_assignment, precoding_settings)
+    user_rates4 = Razaviyayn2013_MaxMinWMMSE(channel, network, cell_assignment, precoding_settings)
     user_rates_uncoord, user_rates_intercell_tdma, user_rates_intracell_tdma = Eigenprecoding(channel, network, cell_assignment, precoding_settings)
 
     [ "Shi2011_WMMSE" => [ "user_rates" => user_rates1 ], 
       "Gomadam2008_MaxSINR" => [ "user_rates" => user_rates2 ],
       "Komulainen2013_WMMSE" => [ "user_rates" => user_rates3 ],
+      "Razaviyayn2013_MaxMinWMMSE" => [ "user_rates" => user_rates4 ],
       "Eigenprecoding" => [ "user_rates_uncoord" => user_rates_uncoord,
                             "user_rates_intercell_tdma" => user_rates_intercell_tdma,
                             "user_rates_intracell_tdma" => user_rates_intracell_tdma ],
@@ -42,6 +44,7 @@ function plot_single(results, simulation_params, precoding_settings)
             ax[:plot](iters, squeeze(results["Shi2011_WMMSE"]["user_rates"][k,n,:], [1,2]), "b-")
             ax[:plot](iters, squeeze(results["Gomadam2008_MaxSINR"]["user_rates"][k,n,:], [1,2]), "r-")
             ax[:plot](iters, squeeze(results["Komulainen2013_WMMSE"]["user_rates"][k,n,:], [1,2]), "b-.")
+            ax[:plot](iters, squeeze(results["Razaviyayn2013_MaxMinWMMSE"]["user_rates"][k,n,:], [1,2]), "g-")
             ax[:plot](iters, results["Eigenprecoding"]["user_rates_intercell_tdma"][k,n]*ones(iters), "m-")
             ax[:plot](iters, results["Eigenprecoding"]["user_rates_intracell_tdma"][k,n]*ones(iters), "m.-")
             ax[:plot](iters, results["Eigenprecoding"]["user_rates_uncoord"][k,n]*ones(iters), "k-")
@@ -69,6 +72,7 @@ function plot_single(results, simulation_params, precoding_settings)
         ax[:plot](iters, squeeze(sum(results["Shi2011_WMMSE"]["user_rates"][k,:,:], 2), [1,2]), "b-")
         ax[:plot](iters, squeeze(sum(results["Gomadam2008_MaxSINR"]["user_rates"][k,:,:], 2), [1,2]), "r-")
         ax[:plot](iters, squeeze(sum(results["Komulainen2013_WMMSE"]["user_rates"][k,:,:], 2), [1,2]), "b-.")
+        ax[:plot](iters, squeeze(sum(results["Razaviyayn2013_MaxMinWMMSE"]["user_rates"][k,:,:], 2), [1,2]), "g-")
         ax[:plot](iters, sum(results["Eigenprecoding"]["user_rates_intercell_tdma"][k,:])*ones(iters), "m-")
         ax[:plot](iters, sum(results["Eigenprecoding"]["user_rates_intracell_tdma"][k,:])*ones(iters), "m.-")
         ax[:plot](iters, sum(results["Eigenprecoding"]["user_rates_uncoord"][k,:])*ones(iters), "k-")
@@ -88,6 +92,7 @@ function plot_single(results, simulation_params, precoding_settings)
     ax[:plot](iters, squeeze(sum(results["Shi2011_WMMSE"]["user_rates"], [1,2]), [1,2]), "b-", label="Shi2011_WMMSE")
     ax[:plot](iters, squeeze(sum(results["Gomadam2008_MaxSINR"]["user_rates"], [1,2]), [1,2]), "r-", label="Gomadam2008_MaxSINR")
     ax[:plot](iters, squeeze(sum(results["Komulainen2013_WMMSE"]["user_rates"], [1,2]), [1,2]), "b-.", label="Komulainen2013_WMMSE")
+     ax[:plot](iters, squeeze(sum(results["Razaviyayn2013_MaxMinWMMSE"]["user_rates"], [1,2]), [1,2]), "g-", label="Razaviyayn2013_MaxMinWMMSE")
     ax[:plot](iters, sum(results["Eigenprecoding"]["user_rates_intercell_tdma"])*ones(iters), "m-", label="Intercell TDMA")
     ax[:plot](iters, sum(results["Eigenprecoding"]["user_rates_intracell_tdma"])*ones(iters), "m.-", label="Intracell TDMA")
     ax[:plot](iters, sum(results["Eigenprecoding"]["user_rates_uncoord"])*ones(iters), "k-", label="Uncoordinated")
@@ -95,7 +100,24 @@ function plot_single(results, simulation_params, precoding_settings)
     ax[:set_xlabel]("Time evolution"); ax[:set_ylabel]("Sum rate [bits/s/Hz]")
     ax[:legend](loc="best")
 
-    fig[:savefig]("interfering_broadcast_channel_single_system.png", dpi=125)
+    fig[:savefig]("interfering_broadcast_channel_single_sumrate.png", dpi=125)
+
+    # System min rate
+    fig = plt.figure(figsize=(12,6))
+    ax = fig[:add_subplot](1, 1, 1)
+
+    ax[:plot](iters, squeeze(minimum(sum(results["Shi2011_WMMSE"]["user_rates"], 2), 1), [1,2]), "b-", label="Shi2011_WMMSE")
+    ax[:plot](iters, squeeze(minimum(sum(results["Gomadam2008_MaxSINR"]["user_rates"], 2), 1), [1,2]), "r-", label="Gomadam2008_MaxSINR")
+    ax[:plot](iters, squeeze(minimum(sum(results["Komulainen2013_WMMSE"]["user_rates"], 2), 1), [1,2]), "b-.", label="Komulainen2013_WMMSE")
+    ax[:plot](iters, squeeze(minimum(sum(results["Razaviyayn2013_MaxMinWMMSE"]["user_rates"], 2), 1), [1,2]), "g-", label="Razaviyayn2013_MaxMinWMMSE")
+    ax[:plot](iters, minimum(results["Eigenprecoding"]["user_rates_intercell_tdma"])*ones(iters), "m-", label="Intercell TDMA")
+    ax[:plot](iters, minimum(results["Eigenprecoding"]["user_rates_intracell_tdma"])*ones(iters), "m.-", label="Intracell TDMA")
+    ax[:plot](iters, minimum(results["Eigenprecoding"]["user_rates_uncoord"])*ones(iters), "k-", label="Uncoordinated")
+
+    ax[:set_xlabel]("Time evolution"); ax[:set_ylabel]("Min rate [bits/s/Hz]")
+    ax[:legend](loc="best")
+
+    fig[:savefig]("interference_channel_single_minrate.png", dpi=125)
 end
 
 ##########################################################################

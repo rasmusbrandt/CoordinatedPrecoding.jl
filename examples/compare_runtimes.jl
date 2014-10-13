@@ -13,6 +13,9 @@ function run_performance(simulation_params, precoding_settings, performance_para
 
     channel = draw_channel(network)
 
+    # Compile @time macro
+    @time 1
+
     println("--- Testing performance of Shi2011_WMMSE")
     Shi2011_WMMSE(channel, network, cell_assignment, precoding_settings)
     @time for i = 1:performance_params["Nperf"]; Shi2011_WMMSE(channel, network, cell_assignment, precoding_settings); end
@@ -24,6 +27,10 @@ function run_performance(simulation_params, precoding_settings, performance_para
     println("--- Testing performance of Komulainen2013_WMMSE")
     Komulainen2013_WMMSE(channel, network, cell_assignment, precoding_settings)
     @time for i = 1:performance_params["Nperf"]; Komulainen2013_WMMSE(channel, network, cell_assignment, precoding_settings); end
+
+    println("--- Testing performance of Razaviyayn2013_MaxMinWMMSE")
+    Razaviyayn2013_MaxMinWMMSE(channel, network, cell_assignment, precoding_settings)
+    @time for i = 1:performance_params["Nperf"]; Razaviyayn2013_MaxMinWMMSE(channel, network, cell_assignment, precoding_settings); end
 end
 
 
