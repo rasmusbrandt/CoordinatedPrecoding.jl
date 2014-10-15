@@ -1,11 +1,19 @@
-# Some of the things here might be weird. To be improved, or removed!
+function clean_simulation_params_for_JLD(simulation_params)
+    # Remove all function pointers from precoding_methods
+    cleaned_precoding_methods = Array(ASCIIString, 0)
+    for method in simulation_params["precoding_methods"]
+        push!(cleaned_precoding_methods, string(method))
+    end
 
+    cleaned_simulation_params = copy(simulation_params)
+    cleaned_simulation_params["precoding_methods"] = cleaned_precoding_methods
 
-# For some reason, the base library does not seem to handle Hermitian matrices perfectly yet. Pull request?
+    return cleaned_simulation_params
+end
+
+# All of these things should ideally be in Base. Investigate and pull request?
 +(A::Hermitian{Complex{Float64}}, B::Hermitian{Complex{Float64}}) = Hermitian(A.S + B.S)
 
-
-# need to fix these!!!
 function +(A::Hermitian{Complex{Float64}}, B::Array{Float64,2})
     if ishermitian(B)
         return Hermitian(A.S + B)

@@ -7,7 +7,7 @@
 module CoordinatedPrecoding
 
 using Base.LinAlg.BLAS
-import Gurobi
+import Gurobi, PyPlot
 
 export
 
@@ -42,7 +42,14 @@ export
     Razaviyayn2013_MaxMinWMMSE,
     Shi2011_WMMSE,
     Eigenprecoding,
-    zero_receivers, initial_precoders
+    zero_receivers, initial_precoders,
+
+# Simulation
+    simulate_convergence, simulate_SNR, perform_performancetest,
+    plot_convergence, plot_SNR,
+
+# Utilities
+    clean_simulation_params_for_JLD
 
 ##########################################################################
 # Channels
@@ -53,6 +60,9 @@ include("network/network.jl")
 include("cell_assignment/cell_assignment.jl")
 # Precoding algorithms
 include("precoding/precoding.jl")
+# Simulation and visualization
+include("simulation/simulation.jl")
+include("simulation/visualization.jl")
 # Other useful stuff
 include("utils.jl")
 ##########################################################################
