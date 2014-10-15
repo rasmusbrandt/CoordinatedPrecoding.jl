@@ -291,8 +291,11 @@ function calculate_rates(state::Razaviyayn2013_MaxMinWMMSEState)
     rates = Array(Float64, K, max_d)
 
     for k = 1:K
-        # W is p.d., but numerically we might get tiny negative eigenvalues.
-        r = log2(abs(eigvals(state.W[k])))
+        # W is p.d., so we should only get real eigenvalues. Numerically we may
+        # get some imaginary noise however. Also, numerically the eigenvalues
+        # may be less that 1, so we need to handle that to not get negative
+        # rates.
+        r = log2(max(1, real(eigvals(state.W[k]))))
 
         if ds[k] < max_d
             rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))

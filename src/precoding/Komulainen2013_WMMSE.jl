@@ -193,7 +193,8 @@ function calculate_rates(state::Komulainen2013_WMMSEState)
 
     for k = 1:K
         for n = 1:max_d
-            rates[k,n] = log2(abs(state.W[k,n]))
+            # The weights are theoretically never below 1, but just in case!
+            rates[k,n] = log2(max(1, state.W[k,n]))
         end
     end
 
