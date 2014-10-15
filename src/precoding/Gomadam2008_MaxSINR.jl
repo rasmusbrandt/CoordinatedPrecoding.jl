@@ -13,28 +13,34 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    settings = defaultize_settings(Gomadam2008_MaxSINRState, settings)
+    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
 
     state = Gomadam2008_MaxSINRState(
         zero_receivers(channel, ds, cell_assignment),
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings), 
         Array(Hermitian{Complex128}, channel.K), 
         Array(Hermitian{Complex128}, channel.K))
-    user_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+    rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
         update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-        user_rates[:,:,iter] = calculate_user_rates(channel, state,
+        rates[:,:,iter] = calculate_rates(channel, state,
                                                   cell_assignment)
         update_BSs!(state, channel, Ps, sigma2s, ds, cell_assignment, settings)
     end
     update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-    user_rates[:,:,end] = calculate_user_rates(channel, state, cell_assignment)
+    rates[:,:,end] = calculate_rates(channel, state, cell_assignment)
 
-    return user_rates
+    if settings["output_protocol"] == 1
+        return [ "rates" => rates ]
+    elseif settings["output_protocol"] == 2
+        return [ "rates" => rates[:,:,end] ]
+    end
 end
 
-function defaultize_settings(::Type{Gomadam2008_MaxSINRState}, settings)
+function check_and_defaultize_settings(::Type{Gomadam2008_MaxSINRState},
+    settings)
+
     settings = copy(settings)
 
     if !haskey(settings, "stop_crit")
@@ -42,6 +48,14 @@ function defaultize_settings(::Type{Gomadam2008_MaxSINRState}, settings)
     end
     if !haskey(settings, "initial_precoders")
         settings["initial_precoders"] = "dft"
+    end
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+    end
+
+    # Consistency checks
+    if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
+        error("Unknown output protocol")
     end
 
     return settings
@@ -97,7 +111,7 @@ function update_BSs!(state::Gomadam2008_MaxSINRState, channel::SinglecarrierChan
     end
 end
 
-function calculate_user_rates(channel::SinglecarrierChannel,
+function calculate_rates(channel::SinglecarrierChannel,
     state::Gomadam2008_MaxSINRState, cell_assignment::CellAssignment)
 
     K = length(state.V)

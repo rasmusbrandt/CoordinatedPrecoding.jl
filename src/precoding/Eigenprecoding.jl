@@ -8,6 +8,8 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
 
+    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
+
     state = EigenprecodingState(Array(Matrix{Complex128}, channel.K))
 
     for i = 1:channel.I
@@ -40,17 +42,45 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
         end
     end
 
-    return calculate_user_rates(state, channel, sigma2s, cell_assignment)
+    return calculate_rates(state, channel, sigma2s, cell_assignment, settings)
 end
 
-function calculate_user_rates(state::EigenprecodingState,
+function check_and_defaultize_settings(::Type{EigenprecodingState},
+    settings)
+
+    settings = copy(settings)
+
+    if !haskey(settings, "stop_crit")
+        # This is a pseudo setting, only needed for output protocol 1
+        settings["stop_crit"] = 1
+    end
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+    end
+
+    # Consistency checks
+    if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
+        error("Unknown output protocol")
+    end
+
+    return settings
+end
+
+function calculate_rates(state::EigenprecodingState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    cell_assignment::CellAssignment)
+    cell_assignment::CellAssignment, settings)
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
-    user_rates_intercell = Array(Float64, channel.K, max_d)
-    user_rates_intracell = Array(Float64, channel.K, max_d)
-    user_rates_uncoord = Array(Float64, channel.K, max_d)
+
+    if settings["output_protocol"] == 1
+        intercell_tdma_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        intracell_tdma_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        uncoord_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+    elseif settings["output_protocol"] == 2
+        intercell_tdma_rates = Array(Float64, channel.K, max_d)
+        intracell_tdma_rates = Array(Float64, channel.K, max_d)
+        uncoord_rates = Array(Float64, channel.K, max_d)
+    end
 
     for i = 1:channel.I
         served = served_MS_ids(i, cell_assignment)
@@ -75,17 +105,33 @@ function calculate_user_rates(state::EigenprecodingState,
             r_intracell = (1/Kc)*log2(abs(eigvals(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k])))
             r_uncoord = log2(abs(eigvals(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k])))
 
-            if d < max_d
-                user_rates_intercell[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
-                user_rates_intracell[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
-                user_rates_uncoord[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
-            else
-                user_rates_intercell[k,:] = r_intercell
-                user_rates_intracell[k,:] = r_intracell
-                user_rates_uncoord[k,:] = r_uncoord
+            if settings["output_protocol"] == 1
+                for iter = 1:settings["stop_crit"]
+                    if d < max_d
+                    intercell_tdma_rates[k,:,iter] = cat(1, r_intercell, zeros(Float64, max_d - d))
+                    intracell_tdma_rates[k,:,iter] = cat(1, r_intracell, zeros(Float64, max_d - d))
+                    uncoord_rates[k,:,iter] = cat(1, r_uncoord, zeros(Float64, max_d - d))
+                else
+                    intercell_tdma_rates[k,:,iter] = r_intercell
+                    intracell_tdma_rates[k,:,iter] = r_intracell
+                    uncoord_rates[k,:,iter] = r_uncoord
+                end
+                end
+            elseif settings["output_protocol"] == 2
+                if d < max_d
+                    intercell_tdma_rates[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
+                    intracell_tdma_rates[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
+                    uncoord_rates[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
+                else
+                    intercell_tdma_rates[k,:] = r_intercell
+                    intracell_tdma_rates[k,:] = r_intracell
+                    uncoord_rates[k,:] = r_uncoord
+                end
             end
         end
     end
 
-    return (user_rates_uncoord, user_rates_intercell, user_rates_intracell)
+    return [ "intercell_tdma_rates" => intercell_tdma_rates,
+             "intracell_tdma_rates" => intracell_tdma_rates,
+             "uncoord_rates" => uncoord_rates ]
 end

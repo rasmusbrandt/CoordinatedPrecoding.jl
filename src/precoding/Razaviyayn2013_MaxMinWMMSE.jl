@@ -22,7 +22,8 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    settings = defaultize_settings(Razaviyayn2013_MaxMinWMMSEState, settings)
+    settings = check_and_defaultize_settings(Razaviyayn2013_MaxMinWMMSEState,
+                                             settings)
 
     state = Razaviyayn2013_MaxMinWMMSEState(
         Array(Matrix{Complex128}, channel.K),
@@ -30,20 +31,26 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings),
         Array(Hermitian{Complex128}, channel.K),
         Array(Hermitian{Complex128}, channel.K))
-    user_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+    rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
         update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-        user_rates[:,:,iter] = calculate_user_rates(state)
+        rates[:,:,iter] = calculate_rates(state)
         update_BSs!(state, channel, Ps, sigma2s, cell_assignment, settings)
     end
     update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-    user_rates[:,:,end] = calculate_user_rates(state)
+    rates[:,:,end] = calculate_rates(state)
 
-    return user_rates
+    if settings["output_protocol"] == 1
+        return [ "rates" => rates ]
+    elseif settings["output_protocol"] == 2
+        return [ "rates" => rates[:,:,end] ]
+    end
 end
 
-function defaultize_settings(::Type{Razaviyayn2013_MaxMinWMMSEState}, settings)
+function check_and_defaultize_settings(::Type{Razaviyayn2013_MaxMinWMMSEState},
+    settings)
+
     settings = copy(settings)
 
     if !haskey(settings, "stop_crit")
@@ -54,6 +61,17 @@ function defaultize_settings(::Type{Razaviyayn2013_MaxMinWMMSEState}, settings)
     end
     if !haskey(settings, "verbose")
         settings["verbose"] = false
+    end
+    if !haskey(settings, "Gurobi_PSDTol")
+        settings["Gurobi_PSDTol"] = 1e-5
+    end
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+    end
+
+    # Consistency checks
+    if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
+        error("Unknown output protocol")
     end
 
     return settings
@@ -110,6 +128,7 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
     if !settings["verbose"]
         Gurobi.setparam!(env, "OutputFlag", 0)
     end
+    Gurobi.setparam!(env, "PSDTol", settings["Gurobi_PSDTol"])
     model = Gurobi.Model(env, "Razaviyayn2013_MaxMinWMMSE", :maximize)
 
     # Objective
@@ -265,22 +284,22 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
     end
 end
 
-function calculate_user_rates(state::Razaviyayn2013_MaxMinWMMSEState)
+function calculate_rates(state::Razaviyayn2013_MaxMinWMMSEState)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
-    user_rates = Array(Float64, K, max_d)
+    rates = Array(Float64, K, max_d)
 
     for k = 1:K
         # W is p.d., but numerically we might get tiny negative eigenvalues.
         r = log2(abs(eigvals(state.W[k])))
 
         if ds[k] < max_d
-            user_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
+            rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
         else
-            user_rates[k,:] = r
+            rates[k,:] = r
         end
     end
 
-    return user_rates
+    return rates
 end
