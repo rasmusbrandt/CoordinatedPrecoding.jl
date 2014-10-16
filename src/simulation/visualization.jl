@@ -66,9 +66,10 @@ function plot_convergence(results, simulation_params, precoding_settings,
 
     ### USER RATE EVOLUTION ###
     K = size(results[collect(keys(results))[1]][collect(keys(results[collect(keys(results))[1]]))[1]], 3) # crazy ugly
-    fig = PyPlot.figure(figsize=(length(simulation_params["precoding_methods"])*K,12)) # Assuming all simulated methods are actually plotted
+    fig = PyPlot.figure(figsize=(6*K,3*length(simulation_params["precoding_methods"]))) # Assuming all simulated methods are actually plotted
     subplot_ind = 1
 
+    title_printed = false
     for method_name in simulation_params["precoding_methods"]
         for k = 1:K
             ax = fig[:add_subplot](length(simulation_params["precoding_methods"]), K, subplot_ind); subplot_ind += 1
@@ -87,7 +88,11 @@ function plot_convergence(results, simulation_params, precoding_settings,
             if k == 1
                 ax[:set_ylabel](method_name)
             end
+            if !title_printed
+                ax[:set_title]("User $k")
+            end
         end
+        title_printed = true
     end
 
     if displayable("application/pdf")
@@ -100,7 +105,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
     PyPlot.close(fig)
 
     ### STREAM RATE EVOLUTION ###
-    fig = PyPlot.figure(figsize=(length(simulation_params["precoding_methods"])*K,3*simulation_params["d"]))
+    fig = PyPlot.figure(figsize=(6*simulation_params["d"],3*K))
     subplot_ind = 1
 
     for k = 1:K
