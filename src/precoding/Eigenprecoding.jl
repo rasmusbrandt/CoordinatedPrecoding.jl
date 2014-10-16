@@ -107,26 +107,14 @@ function calculate_rates(state::EigenprecodingState,
 
             if settings["output_protocol"] == 1
                 for iter = 1:settings["stop_crit"]
-                    if d < max_d
                     intercell_tdma_rates[k,:,iter] = cat(1, r_intercell, zeros(Float64, max_d - d))
                     intracell_tdma_rates[k,:,iter] = cat(1, r_intracell, zeros(Float64, max_d - d))
                     uncoord_rates[k,:,iter] = cat(1, r_uncoord, zeros(Float64, max_d - d))
-                else
-                    intercell_tdma_rates[k,:,iter] = r_intercell
-                    intracell_tdma_rates[k,:,iter] = r_intracell
-                    uncoord_rates[k,:,iter] = r_uncoord
-                end
                 end
             elseif settings["output_protocol"] == 2
-                if d < max_d
-                    intercell_tdma_rates[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
-                    intracell_tdma_rates[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
-                    uncoord_rates[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
-                else
-                    intercell_tdma_rates[k,:] = r_intercell
-                    intracell_tdma_rates[k,:] = r_intracell
-                    uncoord_rates[k,:] = r_uncoord
-                end
+                intercell_tdma_rates[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
+                intracell_tdma_rates[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
+                uncoord_rates[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
             end
         end
     end
