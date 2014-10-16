@@ -14,8 +14,8 @@ function plot_convergence(results, simulation_params, precoding_settings,
                 result = results[method_name][result_name]
             else
                 (calculator, calculate_from) = result_param
-                result_name = string(string(calculator), calculate_from)
-                result = calculator(results[method_name][calculate_from], precoding_settings)
+                result_name = string(string(calculator), "_", calculate_from)
+                result = calculator(results[method_name][calculate_from])
             end
 
             # mean: average over drops and sims
@@ -78,7 +78,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
                     result = results[method_name][result_param]
                 else
                     (calculator, calculate_from) = result_param
-                    result = calculator(results[method_name][calculate_from], precoding_settings)
+                    result = calculator(results[method_name][calculate_from])
                 end
 
                 ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(sum(result[:,:,k,:,:], 4), 1:2), 1:4), plot_key, label=plot_legend)
@@ -113,7 +113,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
                         result = results[method_name][result_param]
                     else
                         (calculator, calculate_from) = result_param
-                        result = calculator(results[method_name][calculate_from], precoding_settings)
+                        result = calculator(results[method_name][calculate_from])
                     end
 
                     ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(result[:,:,k,n,:], 1:2), 1:4), plot_key, label=plot_legend)
@@ -158,8 +158,8 @@ function plot_SNR(results, simulation_params, precoding_settings, plot_params;
                 result = results[method_name][result_name]
             else
                 (calculator, calculate_from) = result_param
-                result_name = string(string(calculator), calculate_from)
-                result = calculator(results[method_name][calculate_from], precoding_settings)
+                result_name = string(string(calculator), "_", calculate_from)
+                result = calculator(results[method_name][calculate_from])
             end
 
             # mean: average over drops and sims
@@ -225,7 +225,7 @@ function plot_methods(xvals, results_mean, results_var, simulation_params,
                 result_name = result_param
             else
                 (calculator, calculate_from) = result_param
-                result_name = string(string(calculator), calculate_from)
+                result_name = string(string(calculator), "_", calculate_from)
             end
 
             ax[:plot](xvals, results_mean[method_name][result_name], plot_key, label=plot_legend)
