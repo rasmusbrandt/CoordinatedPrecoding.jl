@@ -100,7 +100,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
     PyPlot.close(fig)
 
     ### STREAM RATE EVOLUTION ###
-    fig = PyPlot.figure(figsize=(length(simulation_params["precoding_methods"])*K,6*simulation_params["d"]))
+    fig = PyPlot.figure(figsize=(length(simulation_params["precoding_methods"])*K,3*simulation_params["d"]))
     subplot_ind = 1
 
     for k = 1:K

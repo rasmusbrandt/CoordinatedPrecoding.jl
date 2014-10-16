@@ -34,6 +34,15 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
                 V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(channel.Ms[i], ds[k])
             end
         end
+    elseif settings["initial_precoders"] == "zeros"
+        for i = 1:channel.I
+            served = served_MS_ids(i, cell_assignment)
+            Kc = length(served)
+
+            for k in served
+                V[k] = zeros(channel.Ms[i], ds[k])
+            end
+        end
     elseif settings["initial_precoders"] == "eigendirection"
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
