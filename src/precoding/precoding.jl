@@ -29,7 +29,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
             Kc = length(served)
-            
+
             for k in served
                 V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(channel.Ms[i], ds[k])
             end
@@ -47,7 +47,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
             Kc = length(served)
-            
+
             for k in served
                 Vwf = waterfilling(channel.H[k,i], Ps[i]/Kc, sigma2s[k])
                 
