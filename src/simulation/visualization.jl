@@ -7,7 +7,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
     results_minrate_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
     results_minrate_var  = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
 
-    for method_name in simulation_params["precoding_methods"]
+    for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
         for (result_param, plot_key, plot_legend) in plot_params["precoding_methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
@@ -18,13 +18,27 @@ function plot_convergence(results, simulation_params, precoding_settings,
                 result = calculator(results[method_name][calculate_from])
             end
 
-            # mean: average over drops and sims
-            results_sumrate_mean[method_name][result_name] = squeeze(mean(sum(result, 3:4), 1:2), 1:4)
-            results_minrate_mean[method_name][result_name] = squeeze(mean(minimum(sum(result, 4), 3), 1:2), 1:4)
+            if ndims(result) == 5
+                # Ndrops-by-Nsim-by-K-by-d-by-stop_crit
 
-            # var: average over sims, estimate var over drops
-            results_sumrate_var[method_name][result_name] = squeeze(var(mean(sum(result, 3:4), 2), 1), 1:4)
-            results_minrate_var[method_name][result_name] = squeeze(var(mean(minimum(sum(result, 4), 3), 2), 1), 1:4)
+                # mean: average over drops and sims
+                results_sumrate_mean[method_name][result_name] = squeeze(mean(sum(result, 3:4), 1:2), 1:4)
+                results_minrate_mean[method_name][result_name] = squeeze(mean(minimum(sum(result, 4), 3), 1:2), 1:4)
+
+                # var: average over sims, estimate var over drops
+                results_sumrate_var[method_name][result_name] = squeeze(var(mean(sum(result, 3:4), 2), 1), 1:4)
+                results_minrate_var[method_name][result_name] = squeeze(var(mean(minimum(sum(result, 4), 3), 2), 1), 1:4)
+            elseif ndims(result) == 3
+                # Ndrops-by-Nsim-by-stop_crit
+
+                # mean: average over drops and sims
+                results_sumrate_mean[method_name][result_name] = squeeze(mean(result, 1:2), 1:2)
+                results_minrate_mean[method_name][result_name] = squeeze(mean(result, 1:2), 1:2)
+
+                # var: average over sims, estimate var over drops
+                results_sumrate_var[method_name][result_name] = squeeze(var(mean(result, 2), 1), 1:2)
+                results_minrate_var[method_name][result_name] = squeeze(var(mean(result, 2), 1), 1:2)
+            end
         end
     end
 
@@ -66,13 +80,13 @@ function plot_convergence(results, simulation_params, precoding_settings,
 
     ### USER RATE EVOLUTION ###
     K = simulation_params["I"]*simulation_params["Kc"]
-    fig = PyPlot.figure(figsize=(6*K,3*length(simulation_params["precoding_methods"]))) # Assuming all simulated methods are actually plotted
+    fig = PyPlot.figure(figsize=(6*K,3*length(intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"])))))
     subplot_ind = 1
 
     title_printed = false
-    for method_name in simulation_params["precoding_methods"]
+    for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
         for k = 1:K
-            ax = fig[:add_subplot](length(simulation_params["precoding_methods"]), K, subplot_ind); subplot_ind += 1
+            ax = fig[:add_subplot](length(intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))), K, subplot_ind); subplot_ind += 1
 
             for (result_param, plot_key, plot_legend) in plot_params["precoding_methods"][method_name]
                 if isa(result_param, ASCIIString)
@@ -82,7 +96,10 @@ function plot_convergence(results, simulation_params, precoding_settings,
                     result = calculator(results[method_name][calculate_from])
                 end
 
-                ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(sum(result[:,:,k,:,:], 4), 1:2), 1:4), plot_key, label=plot_legend)
+                if ndims(result) == 5
+                    # Ndrops-by-Nsim-by-K-by-d-by-stop_crit
+                    ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(sum(result[:,:,k,:,:], 4), 1:2), 1:4), plot_key, label=plot_legend)
+                end
             end
 
             if k == 1
@@ -112,7 +129,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
         for n = 1:simulation_params["d"]
             ax = fig[:add_subplot](K, simulation_params["d"], subplot_ind); subplot_ind += 1
 
-            for method_name in simulation_params["precoding_methods"]
+            for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
                 for (result_param, plot_key, plot_legend) in plot_params["precoding_methods"][method_name]
                     if isa(result_param, ASCIIString)
                         result = results[method_name][result_param]
@@ -121,7 +138,10 @@ function plot_convergence(results, simulation_params, precoding_settings,
                         result = calculator(results[method_name][calculate_from])
                     end
 
-                    ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(result[:,:,k,n,:], 1:2), 1:4), plot_key, label=plot_legend)
+                    if ndims(result) == 5
+                        # Ndrops-by-Nsim-by-K-by-d-by-stop_crit
+                        ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(result[:,:,k,n,:], 1:2), 1:4), plot_key, label=plot_legend)
+                    end
                 end
             end
 
@@ -156,7 +176,7 @@ function plot_SNR(results, simulation_params, precoding_settings, plot_params;
     results_minrate_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
     results_minrate_var  = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
 
-    for method_name in simulation_params["precoding_methods"]
+    for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
         for (result_param, plot_key, plot_legend) in plot_params["precoding_methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
@@ -224,7 +244,7 @@ function plot_methods(xvals, results_mean, results_var, simulation_params,
     fig = PyPlot.figure(figsize=plot_params["figsize"])
     ax = fig[:add_subplot](1, 1, 1)
 
-    for method_name in simulation_params["precoding_methods"]
+    for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
         for (result_param, plot_key, plot_legend) in plot_params["precoding_methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
