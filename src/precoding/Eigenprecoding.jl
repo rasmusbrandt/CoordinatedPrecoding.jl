@@ -50,15 +50,16 @@ function check_and_defaultize_settings(::Type{EigenprecodingState},
 
     settings = copy(settings)
 
-    if !haskey(settings, "stop_crit")
-        # This is a pseudo setting, only needed for output protocol 1
-        settings["stop_crit"] = 1
-    end
+    # Global settings and consistency checks
     if !haskey(settings, "output_protocol")
         settings["output_protocol"] = 1
     end
-
-    # Consistency checks
+    if !haskey(settings, "stop_crit")
+        settings["stop_crit"] = 20
+    end
+    if !haskey(settings, "initial_precoders")
+        settings["initial_precoders"] = "dft"
+    end
     if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
         error("Unknown output protocol")
     end

@@ -42,31 +42,32 @@ end
 function check_and_defaultize_settings(::Type{Shi2011_WMMSEState}, settings)
     settings = copy(settings)
 
+    # Global settings and consistency checks
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+    end
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
     if !haskey(settings, "initial_precoders")
         settings["initial_precoders"] = "dft"
     end
-    if !haskey(settings, "bisection_Gamma_cond")
-        settings["bisection_Gamma_cond"] = 1e10
-    end
-    if !haskey(settings, "bisection_singular_Gamma_mu_lower_bound")
-        settings["bisection_singular_Gamma_mu_lower_bound"] = 1e-14
-    end
-    if !haskey(settings, "bisection_max_iters")
-        settings["bisection_max_iters"] = 5e1
-    end
-    if !haskey(settings, "bisection_tolerance")
-        settings["bisection_tolerance"] = 1e-3
-    end
-    if !haskey(settings, "output_protocol")
-        settings["output_protocol"] = 1
-    end
-
-    # Consistency checks
     if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
         error("Unknown output protocol")
+    end
+
+    # Local settings
+    if !haskey(settings, "Shi2011_WMMSE:bisection_Gamma_cond")
+        settings["Shi2011_WMMSE:bisection_Gamma_cond"] = 1e10
+    end
+    if !haskey(settings, "Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound")
+        settings["Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound"] = 1e-14
+    end
+    if !haskey(settings, "Shi2011_WMMSE:bisection_max_iters")
+        settings["Shi2011_WMMSE:bisection_max_iters"] = 5e1
+    end
+    if !haskey(settings, "Shi2011_WMMSE:bisection_tolerance")
+        settings["Shi2011_WMMSE:bisection_tolerance"] = 1e-3
     end
 
     return settings
@@ -130,11 +131,11 @@ function optimal_mu(i::Int, state::Shi2011_WMMSEState,
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen.values .+ mu).*(Gamma_eigen.values .+ mu)))
 
     # mu lower bound
-    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < settings["bisection_Gamma_cond"]
+    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < settings["Shi2011_WMMSE:bisection_Gamma_cond"]
         # Gamma is invertible
         mu_lower = 0
     else
-        mu_lower = settings["bisection_singular_Gamma_mu_lower_bound"]
+        mu_lower = settings["Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound"]
     end
 
     if f(mu_lower) <= Ps[i]
@@ -148,10 +149,10 @@ function optimal_mu(i::Int, state::Shi2011_WMMSEState,
         end
 
         no_iters = 0
-        while no_iters < settings["bisection_max_iters"]
+        while no_iters < settings["Shi2011_WMMSE:bisection_max_iters"]
             conv_crit = (Ps[i] - f(mu_upper))/Ps[i]
 
-            if conv_crit < settings["bisection_tolerance"]
+            if conv_crit < settings["Shi2011_WMMSE:bisection_tolerance"]
                 break
             else
                 mu = (1/2)*(mu_lower + mu_upper)
@@ -168,7 +169,7 @@ function optimal_mu(i::Int, state::Shi2011_WMMSEState,
             no_iters += 1
         end
 
-        if no_iters == settings["bisection_max_iters"]
+        if no_iters == settings["Shi2011_WMMSE:bisection_max_iters"]
             println("Power bisection: reached max iterations.")
         end
 

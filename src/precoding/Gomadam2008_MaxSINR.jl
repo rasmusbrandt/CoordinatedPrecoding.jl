@@ -43,17 +43,16 @@ function check_and_defaultize_settings(::Type{Gomadam2008_MaxSINRState},
 
     settings = copy(settings)
 
+    # Global settings and consistency checks
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+    end
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
     if !haskey(settings, "initial_precoders")
         settings["initial_precoders"] = "dft"
     end
-    if !haskey(settings, "output_protocol")
-        settings["output_protocol"] = 1
-    end
-
-    # Consistency checks
     if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
         error("Unknown output protocol")
     end

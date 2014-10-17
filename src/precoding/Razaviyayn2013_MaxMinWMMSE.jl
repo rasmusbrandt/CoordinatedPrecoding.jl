@@ -53,25 +53,26 @@ function check_and_defaultize_settings(::Type{Razaviyayn2013_MaxMinWMMSEState},
 
     settings = copy(settings)
 
+    # Global settings and consistency checks
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+    end
     if !haskey(settings, "stop_crit")
         settings["stop_crit"] = 20
     end
     if !haskey(settings, "initial_precoders")
         settings["initial_precoders"] = "dft"
     end
-    if !haskey(settings, "verbose")
-        settings["verbose"] = false
-    end
-    if !haskey(settings, "Gurobi_PSDTol")
-        settings["Gurobi_PSDTol"] = 1e-5
-    end
-    if !haskey(settings, "output_protocol")
-        settings["output_protocol"] = 1
-    end
-
-    # Consistency checks
     if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
         error("Unknown output protocol")
+    end
+
+    # Local settings
+    if !haskey(settings, "Razaviyayn2013_MaxMinWMMSE:verbose")
+        settings["Razaviyayn2013_MaxMinWMMSE:verbose"] = false
+    end
+    if !haskey(settings, "Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol")
+        settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol"] = 1e-5
     end
 
     return settings
@@ -125,10 +126,10 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
 
     # Gurobi environment
     env = Gurobi.Env()
-    if !settings["verbose"]
+    if !settings["Razaviyayn2013_MaxMinWMMSE:verbose"]
         Gurobi.setparam!(env, "OutputFlag", 0)
     end
-    Gurobi.setparam!(env, "PSDTol", settings["Gurobi_PSDTol"])
+    Gurobi.setparam!(env, "PSDTol", settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol"])
     model = Gurobi.Model(env, "Razaviyayn2013_MaxMinWMMSE", :maximize)
 
     # Objective
