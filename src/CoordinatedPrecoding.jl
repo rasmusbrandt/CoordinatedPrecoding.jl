@@ -48,7 +48,7 @@ export
     plot_convergence, plot_SNR,
 
 # Utilities
-    clean_simulation_params_for_JLD
+    clean_simulation_params_for_jld
 
 ##########################################################################
 # Channels

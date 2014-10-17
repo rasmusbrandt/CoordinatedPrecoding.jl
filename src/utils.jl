@@ -1,4 +1,4 @@
-function clean_simulation_params_for_JLD(simulation_params)
+function clean_simulation_params_for_jld(simulation_params)
     # Remove all function pointers from precoding_methods
     cleaned_precoding_methods = Array(ASCIIString, 0)
     for method in simulation_params["precoding_methods"]

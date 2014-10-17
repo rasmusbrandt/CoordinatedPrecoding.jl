@@ -43,7 +43,7 @@ results = simulate_SNR(network, simulation_params, precoding_settings)
 
 println("-- Saving $(simulation_params["name"]) results")
 save("SNR_$(simulation_params["name"]).jld",
-     "simulation_params", clean_simulation_params_for_JLD(simulation_params),
+     "simulation_params", clean_simulation_params_for_jld(simulation_params),
      "precoding_settings", precoding_settings,
      "results", results)
 
@@ -76,6 +76,6 @@ results = simulate_SNR(network, simulation_params, precoding_settings)
 
 println("-- Saving $(simulation_params["name"]) results")
 save("SNR_$(simulation_params["name"]).jld",
-     "simulation_params", clean_simulation_params_for_JLD(simulation_params),
+     "simulation_params", clean_simulation_params_for_jld(simulation_params),
      "precoding_settings", precoding_settings,
      "results", results)
