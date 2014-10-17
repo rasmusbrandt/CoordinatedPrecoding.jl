@@ -236,7 +236,8 @@ function plot_methods(xvals, results_mean, results_var, simulation_params,
             ax[:plot](xvals, results_mean[method_name][result_name], plot_key, label=plot_legend)
 
             if plot_confidence_interval
-                ax[:fill_between](xvals, results_mean[method_name][result_name] + z_alpha_half*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]), results_mean[method_name][result_name] - z_alpha_half*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]), facecolor=plot_key, alpha=0.5)
+                facecolor = match(r"[a-z]", plot_key).match
+                ax[:fill_between](xvals, results_mean[method_name][result_name] + z_alpha_half*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]), results_mean[method_name][result_name] - z_alpha_half*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]), facecolor=facecolor, alpha=0.5)
             end
         end
     end
