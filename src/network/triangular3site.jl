@@ -26,7 +26,7 @@ get_no_BSs(network::Triangular3SiteNetwork) = 3
 get_no_MSs_per_cell(network::Triangular3SiteNetwork) = network.no_MSs_per_cell
 
 function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
-    no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
+    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
     system = SinglecarrierSystem(2., 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
     inter_site_distance::Float64 = 500.,
@@ -39,6 +39,11 @@ function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
     no_streams::Int = 1,
     MS_antenna_gain_dB::Float64 = 0.,
     receiver_noise_figure::Float64 = 9.)
+
+    # Consistency check
+    if no_BSs != 3
+        error("Triangular3SiteNetwork only allows for I = 3.")
+    end
 
     BSs = [
         PhysicalBS(no_BS_antennas,

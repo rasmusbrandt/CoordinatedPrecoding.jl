@@ -65,7 +65,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
     PyPlot.close(fig)
 
     ### USER RATE EVOLUTION ###
-    K = size(results[collect(keys(results))[1]][collect(keys(results[collect(keys(results))[1]]))[1]], 3) # crazy ugly
+    K = simulation_params["I"]*simulation_params["Kc"]
     fig = PyPlot.figure(figsize=(6*K,3*length(simulation_params["precoding_methods"]))) # Assuming all simulated methods are actually plotted
     subplot_ind = 1
 

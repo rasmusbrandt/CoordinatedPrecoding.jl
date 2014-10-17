@@ -23,7 +23,6 @@ export
     set_transmit_powers!, set_receiver_noise_powers!, set_no_streams!,
     require_equal_no_MS_antennas, require_equal_no_BS_antennas,
     require_equal_no_streams,
-    InterferenceChannel, setup_interference_channel,
     InterferingBroadcastChannel, setup_interfering_broadcast_channel,
     Triangular3SiteNetwork, setup_triangular3site_network,
     ITU_R_InH_Network, setup_itu_r_inh_network,

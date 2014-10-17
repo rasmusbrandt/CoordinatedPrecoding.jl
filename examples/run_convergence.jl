@@ -18,7 +18,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Canonical network
 simulation_params = [
     "name" => "$(start_time)-canonical",
-    "K" => 3, "N" => 2, "M" => 2,
+    "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
     "Ndrops" => 1, "Nsim" => 1,
@@ -35,8 +35,8 @@ precoding_settings = [
     "initial_precoders" => "dft",
 ]
 network =
-    setup_interference_channel(simulation_params["K"],
-        simulation_params["N"], simulation_params["M"],
+    setup_interfering_broadcast_channel(simulation_params["I"],
+        simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         transmit_power=10^(simulation_params["P_dBm"]/10),
         no_streams=simulation_params["d"])
 
@@ -52,7 +52,7 @@ save("convergence_$(simulation_params["name"]).jld",
 # Largescale network
 simulation_params = [
     "name" => "$(start_time)-largescale",
-    "Kc" => 2, "N" => 2, "M" => 4,
+    "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
     "P_dBm" => 18.2,
     "d" => 1,
     "Ndrops" => 1, "Nsim" => 1,
@@ -69,8 +69,8 @@ precoding_settings = [
     "initial_precoders" => "dft",
 ]
 network =
-    setup_triangular3site_network(simulation_params["Kc"],
-        simulation_params["N"], simulation_params["M"],
+    setup_triangular3site_network(simulation_params["I"],
+        simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         transmit_power=10^(simulation_params["P_dBm"]/10),
         no_streams=simulation_params["d"])
 

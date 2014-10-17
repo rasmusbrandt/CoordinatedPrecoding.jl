@@ -16,7 +16,7 @@ get_no_BSs(network::ITU_R_InH_Network) = 2
 get_no_MSs_per_cell(network::ITU_R_InH_Network) = network.no_MSs_per_cell
 
 function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
-    no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
+    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
     system = SinglecarrierSystem(3.4, 15e3),
     propagation_environments = [SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3), SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
     inter_site_distance::Float64 = 60.,
@@ -26,6 +26,11 @@ function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
     no_streams::Int = 1,
     MS_antenna_gain_dB::Float64 = 0.,
     receiver_noise_figure::Float64 = 7.)
+
+    # Consistency check
+    if no_BSs != 2
+        error("ITU_R_InH_Network only allows for I = 2.")
+    end
 
     BSs = [
         PhysicalBS(no_BS_antennas, Position(0.5*inter_site_distance, 10), transmit_power, BS_antenna_gain_params[1]),

@@ -162,8 +162,8 @@ get_distances(network::PhysicalNetwork) =
 get_angles(network::PhysicalNetwork) = 
     Float64[ (get_angle(network.MSs[k].position, network.BSs[i].position) - network.BSs[i].antenna_params.bore_sight_angle) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
 
-# Interference channel, interfering broadcast channel
-include("canonical.jl")
+# Interfering broadcast channel
+include("ibc.jl")
 
 # ITU_R_InHNetwork
 include("itu_r_inh.jl")

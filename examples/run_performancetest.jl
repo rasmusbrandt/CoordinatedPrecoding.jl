@@ -17,7 +17,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 ##########################################################################
 # Performance test
 simulation_params = {
-    "K" => 3, "N" => 2, "M" => 2,
+    "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
     "Ntest" => 10,
@@ -34,8 +34,8 @@ precoding_settings = {
     "initial_precoders" => "dft",
 }
 network =
-    setup_interference_channel(simulation_params["K"],
-        simulation_params["N"], simulation_params["M"],
+    setup_interfering_broadcast_channel(simulation_params["I"],
+        simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         transmit_power=10^(simulation_params["P_dBm"]/10),
         no_streams=simulation_params["d"])
 
