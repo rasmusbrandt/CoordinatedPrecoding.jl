@@ -281,7 +281,7 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
             end
         end
     else
-        warn("Numerical problems with Gurobi")
+        warn("Numerical problems with Gurobi in Razaviyayn2013_MaxMinWMMSE")
         println(Gurobi.get_optiminfo(model))
     end
 end
