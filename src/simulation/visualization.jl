@@ -25,6 +25,20 @@ function plot_methods(xvals, results_mean, results_var,
     return (fig, ax)
 end
 
+function set_axis_params!(axis, systemlevel_params)
+    haskey(systemlevel_params, "xlabel") ? axis[:set_xlabel](systemlevel_params["xlabel"]) : nothing
+    haskey(systemlevel_params, "ylabel") ? axis[:set_ylabel](systemlevel_params["ylabel"]) : nothing
+
+    if haskey(systemlevel_params, "legend_loc")
+        if haskey(systemlevel_params, "legend_prop")
+            axis[:legend](loc=systemlevel_params["legend_loc"],
+                        prop=systemlevel_params["legend_prop"])
+        else
+            axis[:legend](loc=systemlevel_params["legend_loc"])
+        end
+    end
+end
+
 function plot_convergence(results, simulation_params, precoding_settings, plot_params)
     ### SYSTEM-LEVEL POSTPROCESSING ###
     results_mean = [
@@ -64,9 +78,7 @@ function plot_convergence(results, simulation_params, precoding_settings, plot_p
                     results_mean[systemlevel_name], results_var[systemlevel_name],
                     simulation_params, plot_params)
 
-        haskey(systemlevel_params, "legend_loc") ? ax[:legend](loc=systemlevel_params["legend_loc"]) : nothing
-        haskey(systemlevel_params, "xlabel") ? ax[:set_xlabel](systemlevel_params["xlabel"]) : nothing
-        haskey(systemlevel_params, "ylabel") ? ax[:set_ylabel](systemlevel_params["ylabel"]) : nothing
+        set_axis_params!(ax, systemlevel_params)
 
         if displayable("application/pdf")
             display(fig)
@@ -201,9 +213,7 @@ function plot_SNR(results, simulation_params, precoding_settings, plot_params)
                     results_mean[systemlevel_name], results_var[systemlevel_name],
                     simulation_params, plot_params)
 
-        haskey(systemlevel_params, "legend_loc") ? ax[:legend](loc=systemlevel_params["legend_loc"]) : nothing
-        haskey(systemlevel_params, "xlabel") ? ax[:set_xlabel](systemlevel_params["xlabel"]) : nothing
-        haskey(systemlevel_params, "ylabel") ? ax[:set_ylabel](systemlevel_params["ylabel"]) : nothing
+        set_axis_params!(ax, systemlevel_params)
 
         if displayable("application/pdf")
             display(fig)
