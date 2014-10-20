@@ -108,7 +108,7 @@ function plot_convergence(results, simulation_params, precoding_settings,
             if !title_printed
                 ax[:set_title]("User $k")
             end
-            if subplot_ind-1 >= (K-1)*length(intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"])))
+            if subplot_ind-1 > (K-1)*length(intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"])))
                 ax[:set_xlabel]("Iteration")
             end
         end
