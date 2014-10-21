@@ -49,53 +49,14 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
             Kc = length(served)
 
             for k in served
-                Vwf = waterfilling(channel.H[k,i], Ps[i]/Kc, sigma2s[k])
-                
-                # Pad with zeros if necessary
-                dalloc = size(Vwf, 2)
-                if dalloc < ds[k]
-                    V[k] = cat(2, Vwf, zeros(channel.Ms[i], ds[k] - dalloc))
-                else
-                    V[k] = Vwf
-                end
+                _, _, Vtmp = svd(channel.H[k,i])
+                V[k] = sqrt(Ps[i]/Kc)*Vtmp[:, 1:ds[k]]/vecnorm(Vtmp[:, 1:ds[k]])
             end
         end
     end
 
     return V
 end
-
-function waterfilling(H::Matrix{Complex128}, P::Float64, sigma2::Float64)
-    N, M = size(H)
-    _, DD, VV = svd(H, thin=true)
-
-    # The channel strenghts come out sorted, sinc ethe SVD sorts the singular
-    # Values. I.e., noise_pow_over_ch_pow starts with the strongest subchannel
-    # and ends with the weakest. This is important for the order in which we
-    # deactivate subchannels.
-    noise_pow_over_ch_pow = sigma2./(DD.^2)
-
-    # Iteratively deactivate subchannels, based on water level
-    while true
-        # Find waterlevel
-        mu = (1/length(noise_pow_over_ch_pow))*(P + sum(noise_pow_over_ch_pow))
-
-        # Get new power allocations
-        Psub = mu - noise_pow_over_ch_pow
-
-        # Is the waterlevel high enough?
-        if Psub[end] > 0
-            break
-        else
-            # Need to deactive at least one more channel
-            pop!(noise_pow_over_ch_pow)
-        end
-    end
-
-    # Build precoder
-    return V = VV[:,1:length(Psub)]*diagm(sqrt(Psub))
-end
-
 
 # Standard algorithms
 include("Eigenprecoding.jl")
