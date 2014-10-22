@@ -10,11 +10,11 @@ end
 function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
+    settings = check_and_defaultize_settings(Shi2011_WMMSEState, settings)
+
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
-
-    settings = check_and_defaultize_settings(Shi2011_WMMSEState, settings)
 
     state = Shi2011_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
@@ -77,21 +77,22 @@ function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
     sigma2s::Vector{Float64}, ds::Vector{Int},
     cell_assignment::CellAssignment)
 
-    for k = 1:channel.K
-        # Received covariance
-        state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, cell_assignment)
-                #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+    for i = 1:channel.I
+        for k in served_MS_ids(i, cell_assignment)
+            # Received covariance
+            state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+            for j = 1:channel.I
+                for l in served_MS_ids(j, cell_assignment)
+                    #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+                    herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+                end
             end
-        end
 
-        # MMSE receiver and optimal MSE weight
-        i = serving_BS_id(k, cell_assignment)
-        Fk = channel.H[k,i]*state.V[k]
-        state.U[k] = state.Phi[k]\Fk
-        state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*Fk)\eye(ds[k]))
+            # MMSE receiver and optimal MSE weight
+            Fk = channel.H[k,i]*state.V[k]
+            state.U[k] = state.Phi[k]\Fk
+            state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*Fk)\eye(ds[k]))
+        end
     end
 end
 

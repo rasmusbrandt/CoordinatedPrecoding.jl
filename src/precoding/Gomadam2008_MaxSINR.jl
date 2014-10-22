@@ -9,11 +9,11 @@ end
 function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
+    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
+
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
-
-    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
 
     state = Gomadam2008_MaxSINRState(
         zero_receivers(channel, ds, cell_assignment),
@@ -63,23 +63,24 @@ end
 function update_MSs!(state::Gomadam2008_MaxSINRState, channel::SinglecarrierChannel,
     sigma2s::Vector{Float64}, ds::Vector{Int}, cell_assignment::CellAssignment)
 
-    for k = 1:channel.K
-        state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, cell_assignment)
-                #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+    for i = 1:channel.I
+        for k in served_MS_ids(i, cell_assignment)
+            state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+            for j = 1:channel.I
+                for l in served_MS_ids(j, cell_assignment)
+                    #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+                    herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+                end
             end
-        end
 
-        # Per-stream receivers
-        i = serving_BS_id(k, cell_assignment)
-        for d_ind = 1:ds[k]
-            Phi_i_plus_n = Hermitian(
-                herk!(state.Phi[k].uplo, 'N', complex(-1.), channel.H[k,i]*state.V[k][:,d_ind], complex(1.), copy(state.Phi[k].S)),
-                state.Phi[k].uplo)
-            ak = Phi_i_plus_n\channel.H[k,i]*state.V[k][:,d_ind]
-            state.U[k][:,d_ind] = ak/norm(ak,2)
+            # Per-stream receivers
+            for d_ind = 1:ds[k]
+                Phi_i_plus_n = Hermitian(
+                    herk!(state.Phi[k].uplo, 'N', complex(-1.), channel.H[k,i]*state.V[k][:,d_ind], complex(1.), copy(state.Phi[k].S)),
+                    state.Phi[k].uplo)
+                ak = Phi_i_plus_n\channel.H[k,i]*state.V[k][:,d_ind]
+                state.U[k][:,d_ind] = ak/norm(ak,2)
+            end
         end
     end
 end

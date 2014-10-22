@@ -5,10 +5,10 @@ end
 function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
+    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
+
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
-
-    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
 
     state = EigenprecodingState(Array(Matrix{Complex128}, channel.K))
 
@@ -45,8 +45,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
     return calculate_rates(state, channel, sigma2s, cell_assignment, settings)
 end
 
-function check_and_defaultize_settings(::Type{EigenprecodingState},
-    settings)
+function check_and_defaultize_settings(::Type{EigenprecodingState}, settings)
 
     settings = copy(settings)
 

@@ -10,12 +10,12 @@ end
 function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
+    settings = check_and_defaultize_settings(Komulainen2013_WMMSEState,
+                                             settings)
+
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
-
-    settings = check_and_defaultize_settings(Komulainen2013_WMMSEState,
-                                             settings)
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
@@ -80,22 +80,23 @@ function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierCha
     sigma2s::Vector{Float64}, ds::Vector{Int},
     cell_assignment::CellAssignment)
 
-    for k = 1:channel.K
-        # Received covariance
-        state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, cell_assignment)
-                #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+    for i = 1:channel.I
+        for k in served_MS_ids(i, cell_assignment)
+            # Received covariance
+            state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+            for j = 1:channel.I
+                for l in served_MS_ids(j, cell_assignment)
+                    #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+                    herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+                end
             end
-        end
 
-        # MMSE receiver and optimal MSE weight
-        i = serving_BS_id(k, cell_assignment)
-        Fk = channel.H[k,i]*state.V[k]
-        state.A[k] = state.Phi[k]\Fk
-        for n = 1:ds[k]
-            state.W[k,n] = abs(1/(1 - state.A[k][:,n]'*Fk[:,n])[1])
+            # MMSE receiver and optimal MSE weight
+            Fk = channel.H[k,i]*state.V[k]
+            state.A[k] = state.Phi[k]\Fk
+            for n = 1:ds[k]
+                state.W[k,n] = abs(1/(1 - state.A[k][:,n]'*Fk[:,n])[1])
+            end
         end
     end
 end
