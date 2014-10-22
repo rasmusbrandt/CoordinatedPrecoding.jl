@@ -13,9 +13,6 @@
 using HDF5, JLD, ArgParse
 s = ArgParseSettings()
 @add_arg_table s begin
-    "--plot_confidence_interval"
-        help = "plot estimated confidence intervals"
-        action = :store_true
     "file_name"
         help = "file name with results"
         required = true
@@ -28,19 +25,31 @@ data = load(parsed_args["file_name"])
 using CoordinatedPrecoding
 
 plot_params = [
-    "figsize" => (8,4),
     "precoding_methods" =>
         [
-          "Shi2011_WMMSE" => [ ("rates", "b-", "WMMSE bound"), ],
-          "Gomadam2008_MaxSINR" => [ ("rates", "r-", "MaxSINR bound"), ],
-          "Razaviyayn2013_MaxMinWMMSE" => [ ("rates", "b-.", "MaxMinWMMSE bound"), ],
-          "Komulainen2013_WMMSE" => [ ("rates", "m-", "Rounded bound"), ],
-          "Eigenprecoding" =>
-            [ ("intercell_tdma_rates", "c-", "TDMA bound"),
-              ("intracell_tdma_rates", "c-.", "Intracell TDMA bound"),
-              ("uncoord_rates", "k-", "Uncoordinated bound"),
-            ],
-        ]
+          "Shi2011_WMMSE" => [
+            ("rates", [ "key" => "b-", "legend" => "WMMSE" ]), ],
+
+          "Gomadam2008_MaxSINR" => [
+            ("rates", [ "key" => "r-", "legend" => "MaxSINR" ]), ],
+
+          "Razaviyayn2013_MaxMinWMMSE" => [
+            ("rates", [ "key" => "g-", "legend" => "MaxMin-WMMSE" ]), ],
+
+          "Komulainen2013_WMMSE" => [
+            ("rates", [ "key" => "m-", "legend" => "MaxMin-WMMSE" ]), ],
+
+          "Eigenprecoding" => {
+            ("intercell_tdma_rates", [ "key" => "c-", "legend" => "TDMA" ]),
+            ("intracell_tdma_rates", [ "key" => "c-.", "legend" => "Intracell TDMA" ]),
+            ("uncoord_rates", [ "key" => "k-", "legend" => "Uncoordinated" ]), },
+        ],
+    "systemlevel_objectives" => [
+        "sumrate" => (r -> sum(r, 4:5), [ "xlabel" => "Iterations", "ylabel" => "Sum rate [bits/s/Hz]" ]),
+        "minrate" => (r -> minimum(sum(r, 5), 4), [ "xlabel" => "Iterations", "ylabel" => "Min rate [bits/s/Hz]", ]),
+    ],
+    "figsize" => (8,4),
+    #"confidence_interval_z_alpha_half" => 1.96,
 ]
 
 ##########################################################################
@@ -49,5 +58,4 @@ plot_SNR(
     data["results"],
     data["simulation_params"],
     data["precoding_settings"],
-    plot_params,
-    plot_confidence_interval=parsed_args["plot_confidence_interval"])
+    plot_params)
