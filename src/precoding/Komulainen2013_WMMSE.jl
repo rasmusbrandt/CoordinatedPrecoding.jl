@@ -95,8 +95,9 @@ function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierCha
             # MMSE receiver, optimal MSE weight, and actually used (diagonal) MSE weight
             F = channel.H[k,i]*state.V[k]
             state.U[k] = Phi\F
-            state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*F)\eye(ds[k]))
-            state.W_diag[k] = Diagonal(abs(diag(state.W[k]))) # _Should_ have real diagonal elements. Ensure this.
+            Emmse = eye(ds[k]) - state.U[k]'*F
+            state.W[k] = Hermitian(Emmse\eye(ds[k]))
+            state.W_diag[k] = Diagonal(max(1, real(1./diag(Emmse))))
         end
     end
 end
