@@ -19,7 +19,7 @@ simulation_params = {
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
-    "Ntest" => 10,
+    "Ntest" => 100,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
