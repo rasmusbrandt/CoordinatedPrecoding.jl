@@ -1,6 +1,7 @@
 immutable Komulainen2013_WMMSEState
-    A::Array{Matrix{Complex128},1}
-    W::Matrix{Float64}
+    U::Array{Matrix{Complex128},1}
+    W::Array{Hermitian{Complex128},1}
+    W_diag::Array{Diagonal{Float64},1}
     V::Array{Matrix{Complex128},1}
 end
 
@@ -16,23 +17,27 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
-        ones(Float64, channel.K, maximum(ds)), # Unused MSE weights (i.e. weights that are never updated) are kept at unity.
         Array(Hermitian{Complex128}, channel.K),
-    rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+        Array(Diagonal{Float64}, channel.K),
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+    logdet_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+    MMSE_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
         update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-        rates[:,:,iter] = calculate_rates(state)
+        logdet_rates[:,:,iter] = calculate_logdet_rates(state)
+        MMSE_rates[:,:,iter] = calculate_MMSE_rates(state)
         update_BSs!(state, channel, Ps, cell_assignment, settings)
     end
     update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-    rates[:,:,end] = calculate_rates(state)
+    logdet_rates[:,:,end] = calculate_logdet_rates(state)
+    MMSE_rates[:,:,end] = calculate_MMSE_rates(state)
 
     if settings["output_protocol"] == 1
-        return [ "rates" => rates ]
+        return [ "logdet_rates" => logdet_rates, "MMSE_rates" => MMSE_rates ]
     elseif settings["output_protocol"] == 2
-        return [ "rates" => rates[:,:,end] ]
+        return [ "logdet_rates" => logdet_rates[:,:,end],
+                 "MMSE_rates" => MMSE_rates[:,:,end] ]
     end
 end
 
@@ -179,19 +184,4 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
         # The upper point is always feasible, therefore we use it
         return mu_upper, Gamma_eigen
     end
-end
-
-function calculate_rates(state::Komulainen2013_WMMSEState)
-    K, max_d = size(state.W)
-
-    rates = Array(Float64, K, max_d)
-
-    for k = 1:K
-        for n = 1:max_d
-            # The weights are theoretically never below 1, but just in case!
-            rates[k,n] = log2(max(1, state.W[k,n]))
-        end
-    end
-
-    return rates
 end

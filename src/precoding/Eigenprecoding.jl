@@ -42,7 +42,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
         end
     end
 
-    return calculate_rates(state, channel, sigma2s, cell_assignment, settings)
+    return calculate_logdet_rates(state, channel, sigma2s, cell_assignment, settings)
 end
 
 function check_and_defaultize_settings(::Type{EigenprecodingState}, settings)
@@ -66,20 +66,20 @@ function check_and_defaultize_settings(::Type{EigenprecodingState}, settings)
     return settings
 end
 
-function calculate_rates(state::EigenprecodingState,
+function calculate_logdet_rates(state::EigenprecodingState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
     cell_assignment::CellAssignment, settings)
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
     if settings["output_protocol"] == 1
-        intercell_tdma_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
-        intracell_tdma_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
-        uncoord_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        uncoord_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
     elseif settings["output_protocol"] == 2
-        intercell_tdma_rates = Array(Float64, channel.K, max_d)
-        intracell_tdma_rates = Array(Float64, channel.K, max_d)
-        uncoord_rates = Array(Float64, channel.K, max_d)
+        intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
+        intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
+        uncoord_logdet_rates = Array(Float64, channel.K, max_d)
     end
 
     for i = 1:channel.I
@@ -107,19 +107,19 @@ function calculate_rates(state::EigenprecodingState,
 
             if settings["output_protocol"] == 1
                 for iter = 1:settings["stop_crit"]
-                    intercell_tdma_rates[k,:,iter] = cat(1, r_intercell, zeros(Float64, max_d - d))
-                    intracell_tdma_rates[k,:,iter] = cat(1, r_intracell, zeros(Float64, max_d - d))
-                    uncoord_rates[k,:,iter] = cat(1, r_uncoord, zeros(Float64, max_d - d))
+                    intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell, zeros(Float64, max_d - d))
+                    intracell_tdma_logdet_rates[k,:,iter] = cat(1, r_intracell, zeros(Float64, max_d - d))
+                    uncoord_logdet_rates[k,:,iter] = cat(1, r_uncoord, zeros(Float64, max_d - d))
                 end
             elseif settings["output_protocol"] == 2
-                intercell_tdma_rates[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
-                intracell_tdma_rates[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
-                uncoord_rates[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
+                intercell_tdma_logdet_rates[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
+                intracell_tdma_logdet_rates[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
+                uncoord_logdet_rates[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
             end
         end
     end
 
-    return [ "intercell_tdma_rates" => intercell_tdma_rates,
-             "intracell_tdma_rates" => intracell_tdma_rates,
-             "uncoord_rates" => uncoord_rates ]
+    return [ "intercell_tdma_logdet_rates" => intercell_tdma_logdet_rates,
+             "intracell_tdma_logdet_rates" => intracell_tdma_logdet_rates,
+             "uncoord_logdet_rates" => uncoord_logdet_rates ]
 end

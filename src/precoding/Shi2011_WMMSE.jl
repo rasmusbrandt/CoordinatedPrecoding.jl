@@ -16,20 +16,25 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     state = Shi2011_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
         Array(Hermitian{Complex128}, channel.K),
-    rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+    logdet_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+    MMSE_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
         update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-        rates[:,:,iter] = calculate_rates(state)
+        logdet_rates[:,:,iter] = calculate_logdet_rates(state)
+        MMSE_rates[:,:,iter] = calculate_MMSE_rates(state)
         update_BSs!(state, channel, Ps, cell_assignment, settings)
     end
     update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-    rates[:,:,end] = calculate_rates(state)
+    logdet_rates[:,:,end] = calculate_logdet_rates(state)
+    MMSE_rates[:,:,end] = calculate_MMSE_rates(state)
 
     if settings["output_protocol"] == 1
-        return [ "rates" => rates ]
+        return [ "logdet_rates" => logdet_rates, "MMSE_rates" => MMSE_rates ]
     elseif settings["output_protocol"] == 2
-        return [ "rates" => rates[:,:,end] ]
+        return [ "logdet_rates" => logdet_rates[:,:,end],
+                 "MMSE_rates" => MMSE_rates[:,:,end] ]
     end
 end
 
@@ -173,27 +178,4 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
         # The upper point is always feasible, therefore we use it
         return mu_upper, Gamma_eigen
     end
-end
-
-function calculate_rates(state::Shi2011_WMMSEState)
-    K = length(state.W)
-    ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
-
-    rates = Array(Float64, K, max_d)
-
-    for k = 1:K
-        # W is p.d., so we should only get real eigenvalues. Numerically we may
-        # get some imaginary noise however. Also, numerically the eigenvalues
-        # may be less that 1, so we need to handle that to not get negative
-        # rates.
-        r = log2(max(1, real(eigvals(state.W[k]))))
-
-        if ds[k] < max_d
-            rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
-        else
-            rates[k,:] = r
-        end
-    end
-
-    return rates
 end

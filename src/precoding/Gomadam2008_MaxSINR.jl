@@ -1,5 +1,6 @@
 immutable Gomadam2008_MaxSINRState
     U::Array{Matrix{Complex128},1}
+    W::Array{Hermitian{Complex128},1} # these are only used for rate calculations
     V::Array{Matrix{Complex128},1}
 end
 
@@ -13,23 +14,27 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     ds = get_no_streams(network)
 
     state = Gomadam2008_MaxSINRState(
-        zero_receivers(channel, ds, cell_assignment),
-    rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+        zero_receivers(channel, ds), # needed since I index directly into the matrices right away
+        Array(Hermitian{Complex128}, channel.K),
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+    logdet_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
+    MMSE_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
         update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-        rates[:,:,iter] = calculate_rates(channel, state,
-                                                  cell_assignment)
+        logdet_rates[:,:,iter] = calculate_logdet_rates(state)
+        MMSE_rates[:,:,iter] = calculate_MMSE_rates(state)
         update_BSs!(state, channel, Ps, sigma2s, ds, cell_assignment, settings)
     end
     update_MSs!(state, channel, sigma2s, ds, cell_assignment)
-    rates[:,:,end] = calculate_rates(channel, state, cell_assignment)
+    logdet_rates[:,:,end] = calculate_logdet_rates(state)
+    MMSE_rates[:,:,end] = calculate_MMSE_rates(state)
 
     if settings["output_protocol"] == 1
-        return [ "rates" => rates ]
+        return [ "logdet_rates" => logdet_rates, "MMSE_rates" => MMSE_rates ]
     elseif settings["output_protocol"] == 2
-        return [ "rates" => rates[:,:,end] ]
+        return [ "logdet_rates" => logdet_rates[:,:,end],
+                 "MMSE_rates" => MMSE_rates[:,:,end] ]
     end
 end
 
