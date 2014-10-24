@@ -2,9 +2,6 @@ immutable Shi2011_WMMSEState
     U::Array{Matrix{Complex128},1}
     W::Array{Hermitian{Complex128},1}
     V::Array{Matrix{Complex128},1}
-
-    Phi::Array{Hermitian{Complex128},1}
-    Gamma::Array{Hermitian{Complex128},1}
 end
 
 function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
@@ -19,9 +16,6 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     state = Shi2011_WMMSEState(
         Array(Matrix{Complex128}, channel.K),
         Array(Hermitian{Complex128}, channel.K),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings),
-        Array(Hermitian{Complex128}, channel.K),
-        Array(Hermitian{Complex128}, channel.K))
     rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
@@ -80,18 +74,18 @@ function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
     for i = 1:channel.I
         for k in served_MS_ids(i, cell_assignment)
             # Received covariance
-            state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+            Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
             for j = 1:channel.I
                 for l in served_MS_ids(j, cell_assignment)
-                    #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                    herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+                    #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+                    herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
                 end
             end
 
             # MMSE receiver and optimal MSE weight
-            Fk = channel.H[k,i]*state.V[k]
-            state.U[k] = state.Phi[k]\Fk
-            state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*Fk)\eye(ds[k]))
+            F = channel.H[k,i]*state.V[k]
+            state.U[k] = Phi\F
+            state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*F)\eye(ds[k]))
         end
     end
 end
@@ -100,15 +94,17 @@ function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
     Ps::Vector{Float64}, cell_assignment::CellAssignment, settings)
 
     for i = 1:channel.I
-        # Covariance
-        state.Gamma[i] = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
-        for k = 1:channel.K
-            state.Gamma[i] += Hermitian(channel.H[k,i]'*(state.U[k]*state.W[k]*state.U[k]')*channel.H[k,i])
+        # Virtual uplink covariance
+        Gamma = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
+        for j = 1:channel.I
+            for l in served_MS_ids(j, cell_assignment)
+                Gamma += Hermitian(channel.H[l,i]'*(state.U[l]*state.W[l]*state.U[l]')*channel.H[l,i])
+            end
         end
 
         # Find optimal Lagrange multiplier
         mu_star, Gamma_eigen =
-            optimal_mu(i, state, channel, Ps, cell_assignment, settings)
+            optimal_mu(i, Gamma, state, channel, Ps, cell_assignment, settings)
 
         # Precoders (reuse EVD)
         for k in served_MS_ids(i, cell_assignment)
@@ -117,9 +113,9 @@ function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
     end
 end
 
-function optimal_mu(i::Int, state::Shi2011_WMMSEState,
-    channel::SinglecarrierChannel, Ps::Vector{Float64},
-    cell_assignment::CellAssignment, settings)
+function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
+    state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
+    Ps::Vector{Float64}, cell_assignment::CellAssignment, settings)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))
@@ -127,7 +123,7 @@ function optimal_mu(i::Int, state::Shi2011_WMMSEState,
         #bis_M += Hermitian(channel.H[k,i]'*(state.U[k]*(state.W[k]*state.W[k])*state.U[k]')*channel.H[k,i])
         herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k]*state.W[k], complex(1.), bis_M.S)
     end
-    Gamma_eigen = eigfact(state.Gamma[i])
+    Gamma_eigen = eigfact(Gamma)
     bis_JMJ_diag = real(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen.values .+ mu).*(Gamma_eigen.values .+ mu)))
 

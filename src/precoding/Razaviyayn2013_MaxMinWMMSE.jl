@@ -2,9 +2,6 @@ immutable Razaviyayn2013_MaxMinWMMSEState
     U::Array{Matrix{Complex128},1}
     W::Array{Hermitian{Complex128},1}
     V::Array{Matrix{Complex128},1}
-
-    Phi::Array{Hermitian{Complex128},1}
-    Gamma::Array{Hermitian{Complex128},1}
 end
 
 function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
@@ -28,9 +25,7 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     state = Razaviyayn2013_MaxMinWMMSEState(
         Array(Matrix{Complex128}, channel.K),
         Array(Hermitian{Complex128}, channel.K),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings),
-        Array(Hermitian{Complex128}, channel.K),
-        Array(Hermitian{Complex128}, channel.K))
+        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
     rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
@@ -85,18 +80,18 @@ function update_MSs!(state::Razaviyayn2013_MaxMinWMMSEState,
     for i = 1:channel.I
         for k in served_MS_ids(i, cell_assignment)
             # Received covariance
-            state.Phi[k] = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+            Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
             for j = 1:channel.I
                 for l in served_MS_ids(j, cell_assignment)
-                    #state.Phi[k] += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                    herk!(state.Phi[k].uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), state.Phi[k].S)
+                    #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+                    herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
                 end
             end
 
             # MMSE receiver and optimal MSE weight
-            Fk = channel.H[k,i]*state.V[k]
-            state.U[k] = state.Phi[k]\Fk
-            state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*Fk)\eye(ds[k]))
+            F = channel.H[k,i]*state.V[k]
+            state.U[k] = Phi\F
+            state.W[k] = Hermitian((eye(ds[k]) - state.U[k]'*F)\eye(ds[k]))
         end
     end
 end
