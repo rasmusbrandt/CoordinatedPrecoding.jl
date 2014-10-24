@@ -1,3 +1,5 @@
+##########################################################################
+# General utilities
 function clean_simulation_params_for_jld(simulation_params)
     # Remove all function pointers from precoding_methods
     cleaned_precoding_methods = Array(ASCIIString, 0)
@@ -11,27 +13,17 @@ function clean_simulation_params_for_jld(simulation_params)
     return cleaned_simulation_params
 end
 
-# All of these things should ideally be in Base. Investigate and pull request?
-+(A::Hermitian{Complex{Float64}}, B::Hermitian{Complex{Float64}}) = Hermitian(A.S + B.S)
+##########################################################################
+# Hermitian utility functions. These should probably be in Base. Contribute?
++(A::Hermitian{Complex128}, B::Hermitian{Complex128}) = Hermitian(A.S + B.S)
++(A::Hermitian{Complex128}, B::Matrix{Float64}) = A.S + B
++(B::Matrix{Float64}, A::Hermitian{Complex128}) = +(A, B)
 
-function +(A::Hermitian{Complex{Float64}}, B::Array{Float64,2})
-    if ishermitian(B)
-        return Hermitian(A.S + B)
-    else
-        return A.S + B
-    end
-end
-+(B::Array{Float64,2}, A::Hermitian{Complex{Float64}}) = +(A::Hermitian{Complex{Float64}}, B::Array{Float64,2})
+-(A::Hermitian{Complex128}, B::Array{Complex128,2}) = A.S - B
+-(B::Array{Complex128,2}, A::Hermitian{Complex128}) = -(A, B)
 
-function -(A::Hermitian{Complex{Float64}}, B::Array{Complex{Float64},2})
-    if ishermitian(B)
-        return Hermitian(A.S - B)
-    else
-        return A.S - B
-    end
-end
--(B::Array{Complex{Float64},2}, A::Hermitian{Complex{Float64}}) = -(A::Hermitian{Complex{Float64}}, B::Array{Complex{Float64},2})
+.*(a::Float64, B::Hermitian{Complex128}) = Hermitian(a.*B.S)
 
-.*(a::Float64, B::Hermitian{Complex{Float64}}) = a.*B.S
-
-logdet(A::Hermitian{Complex{Float64}}) = Base.logdet(A.S)
+import Base.logdet, Base.diag
+logdet(A::Hermitian{Complex128}) = logdet(A.S)
+diag(A::Hermitian{Complex128}) = diag(A.S)
