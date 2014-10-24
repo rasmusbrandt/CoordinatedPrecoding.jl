@@ -76,10 +76,18 @@ function calculate_logdet_rates(state::EigenprecodingState,
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
         uncoord_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+
+        intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        uncoord_MMSE_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
     elseif settings["output_protocol"] == 2
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         uncoord_logdet_rates = Array(Float64, channel.K, max_d)
+
+        intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d)
+        intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d)
+        uncoord_MMSE_rates = Array(Float64, channel.K, max_d)
     end
 
     for i = 1:channel.I
@@ -101,25 +109,44 @@ function calculate_logdet_rates(state::EigenprecodingState,
             end
 
             d = size(state.V[k], 2)
-            r_intercell = (1/channel.K)*log2(abs(eigvals(eye(d) + (channel.K/Kc)*state.V[k]'*channel.H[k,i]'*(1/sigma2s[k])*channel.H[k,i]*state.V[k])))
-            r_intracell = (1/Kc)*log2(abs(eigvals(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k])))
-            r_uncoord = log2(abs(eigvals(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k])))
+            W_intercell = eye(d) + (channel.K/Kc)*state.V[k]'*channel.H[k,i]'*(1/sigma2s[k])*channel.H[k,i]*state.V[k]
+            W_intracell = eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k]
+            W_uncoord = eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k]
+
+            r_intercell_logdet = (1/channel.K)*log2(max(1, real(eigvals(W_intercell))))
+            r_intracell_logdet = (1/Kc)*log2(max(1, real(eigvals(W_intracell))))
+            r_uncoord_logdet = log2(max(1, real(eigvals(W_uncoord))))
+
+            r_intercell_MMSE = (1/channel.K)*log2(max(1, real(1./diag(inv(W_intercell)))))
+            r_intracell_MMSE = (1/Kc)*log2(max(1, real(1./diag(inv(W_intracell)))))
+            r_uncoord_MMSE = log2(max(1, real(1./diag(inv(W_uncoord)))))
 
             if settings["output_protocol"] == 1
                 for iter = 1:settings["stop_crit"]
-                    intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell, zeros(Float64, max_d - d))
-                    intracell_tdma_logdet_rates[k,:,iter] = cat(1, r_intracell, zeros(Float64, max_d - d))
-                    uncoord_logdet_rates[k,:,iter] = cat(1, r_uncoord, zeros(Float64, max_d - d))
+                    intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
+                    intracell_tdma_logdet_rates[k,:,iter] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
+                    uncoord_logdet_rates[k,:,iter] = cat(1, r_uncoord_logdet, zeros(Float64, max_d - d))
+
+                    intercell_tdma_MMSE_rates[k,:,iter] = cat(1, r_intercell_MMSE, zeros(Float64, max_d - d))
+                    intracell_tdma_MMSE_rates[k,:,iter] = cat(1, r_intracell_MMSE, zeros(Float64, max_d - d))
+                    uncoord_MMSE_rates[k,:,iter] = cat(1, r_uncoord_MMSE, zeros(Float64, max_d - d))
                 end
             elseif settings["output_protocol"] == 2
-                intercell_tdma_logdet_rates[k,:] = cat(1, r_intercell, zeros(Float64, max_d - d))
-                intracell_tdma_logdet_rates[k,:] = cat(1, r_intracell, zeros(Float64, max_d - d))
-                uncoord_logdet_rates[k,:] = cat(1, r_uncoord, zeros(Float64, max_d - d))
+                intercell_tdma_logdet_rates[k,:] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
+                intracell_tdma_logdet_rates[k,:] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
+                uncoord_logdet_rates[k,:] = cat(1, r_uncoord_logdet, zeros(Float64, max_d - d))
+
+                intercell_tdma_MMSE_rates[k,:] = cat(1, r_intercell_MMSE, zeros(Float64, max_d - d))
+                intracell_tdma_MMSE_rates[k,:] = cat(1, r_intracell_MMSE, zeros(Float64, max_d - d))
+                uncoord_MMSE_rates[k,:] = cat(1, r_uncoord_MMSE, zeros(Float64, max_d - d))
             end
         end
     end
 
     return [ "intercell_tdma_logdet_rates" => intercell_tdma_logdet_rates,
              "intracell_tdma_logdet_rates" => intracell_tdma_logdet_rates,
-             "uncoord_logdet_rates" => uncoord_logdet_rates ]
+             "uncoord_logdet_rates" => uncoord_logdet_rates,
+             "intercell_tdma_MMSE_rates" => intercell_tdma_MMSE_rates,
+             "intracell_tdma_MMSE_rates" => intracell_tdma_MMSE_rates,
+             "uncoord_MMSE_rates" => uncoord_MMSE_rates ]
 end
