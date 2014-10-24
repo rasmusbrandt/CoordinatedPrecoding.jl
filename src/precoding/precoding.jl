@@ -10,6 +10,9 @@ function zero_receivers(channel::SinglecarrierChannel, ds::Vector{Int},
     return A
 end
 
+
+unity_MSE_weights(ds::Vector{Int}) = [ Hermitian(eye(ds[k])) for k = 1:length(ds) ]
+
 function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
     sigma2s::Vector{Float64}, ds::Vector{Int}, cell_assignment::CellAssignment,
     settings)

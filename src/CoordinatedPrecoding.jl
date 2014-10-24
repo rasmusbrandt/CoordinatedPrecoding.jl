@@ -30,7 +30,7 @@ export
 
 # Cell assignment
     CellAssignment,
-    serving_BS_id, served_MS_ids,
+    serving_BS_id, served_MS_ids, served_MS_ids_except_me,
     assign_cells_by_id, assign_cells_by_pathloss,
     assign_cells_by_instantaneous_channels,
     require_equal_no_MSs_per_cell,
@@ -41,7 +41,7 @@ export
     Razaviyayn2013_MaxMinWMMSE,
     Shi2011_WMMSE,
     Eigenprecoding,
-    zero_receivers, initial_precoders,
+    zero_receivers, initial_precoders, unity_MSE_weights,
 
 # Simulation
     simulate_convergence, simulate_SNR, perform_performancetest,
