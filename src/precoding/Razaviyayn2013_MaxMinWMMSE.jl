@@ -267,12 +267,14 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
         sol = Gurobi.get_solution(model)
 
         # Put into state variable
-        for k = 1:channel.K
-            for m = 1:M
-                for n = 1:d
-                    real_ind = v_ind(k, m, n, false)
-                    imag_ind = v_ind(k, m, n, true)
-                    state.V[k][m,n] = sol[real_ind] + im*sol[imag_ind]
+        for i = 1:channel.I
+            for k in served_MS_ids(i, cell_assignment)
+                for m = 1:M
+                    for n = 1:d
+                        real_ind = v_ind(k, m, n, false)
+                        imag_ind = v_ind(k, m, n, true)
+                        state.V[k][m,n] = sol[real_ind] + im*sol[imag_ind]
+                    end
                 end
             end
         end
