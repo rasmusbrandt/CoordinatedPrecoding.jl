@@ -24,18 +24,18 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
 
     state = Razaviyayn2013_MaxMinWMMSEState(
         Array(Matrix{Complex128}, channel.K),
-        Array(Hermitian{Complex128}, channel.K),
+        unity_MSE_weights(ds),
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
     logdet_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
     MMSE_rates = Array(Float64, channel.K, maximum(ds), settings["stop_crit"])
 
     for iter = 1:(settings["stop_crit"]-1)
-        update_MSs!(state, channel, sigma2s, ds, cell_assignment)
+        update_MSs!(state, channel, sigma2s, cell_assignment)
         logdet_rates[:,:,iter] = calculate_logdet_rates(state)
         MMSE_rates[:,:,iter] = calculate_MMSE_rates(state)
         update_BSs!(state, channel, Ps, sigma2s, cell_assignment, settings)
     end
-    update_MSs!(state, channel, sigma2s, ds, cell_assignment)
+    update_MSs!(state, channel, sigma2s, cell_assignment)
     logdet_rates[:,:,end] = calculate_logdet_rates(state)
     MMSE_rates[:,:,end] = calculate_MMSE_rates(state)
 
@@ -78,8 +78,10 @@ function check_and_defaultize_settings(::Type{Razaviyayn2013_MaxMinWMMSEState},
 end
 
 function update_MSs!(state::Razaviyayn2013_MaxMinWMMSEState,
-    channel::SinglecarrierChannel, sigma2s::Vector{Float64}, ds::Vector{Int},
+    channel::SinglecarrierChannel, sigma2s::Vector{Float64},
     cell_assignment::CellAssignment)
+
+    ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i = 1:channel.I
         for k in served_MS_ids(i, cell_assignment)
