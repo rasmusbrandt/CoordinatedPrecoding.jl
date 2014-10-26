@@ -271,7 +271,7 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
 
     if Gurobi.get_status(model) == :optimal || Gurobi.get_status(model) == :suboptimal
         if Gurobi.get_status(model) == :suboptimal
-            warning("Suboptimal precoder solution found in Razaviyayn2013_MaxMinWMMSE")
+            warn("Suboptimal precoder solution found in Razaviyayn2013_MaxMinWMMSE")
         end
 
         sol = Gurobi.get_solution(model)
