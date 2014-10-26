@@ -153,8 +153,16 @@ require_equal_no_MS_antennas(network::Network) =
 require_equal_no_BS_antennas(network::Network) =
     (Ms = get_no_BS_antennas(network); all(Ms .== Ms[1]) || error("BSs must all have the same number of antennas."))
 
+require_single_antenna_MSs(network::Network) =
+    (Ns = get_no_MS_antennas(network); all(Ns .== 1) || error("MSs must not have multiple antennas."))
+require_single_antenna_BSs(network::Network) =
+    (Ms = get_no_BS_antennas(network); all(Ms .== 1) || error("BSs must not have multiple antennas."))
+
 require_equal_no_streams(network::Network) =
     (ds = get_no_streams(network); all(ds .== ds[1]) || error("MSs must all have the same number of streams."))
+
+require_single_stream(network::Network) =
+    (ds = get_no_streams(network); all(ds .== 1) || error("MSs must not have multiple streams."))
 
 get_distances(network::PhysicalNetwork) = 
     Float64[ get_distance(network.MSs[k].position, network.BSs[i].position) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
