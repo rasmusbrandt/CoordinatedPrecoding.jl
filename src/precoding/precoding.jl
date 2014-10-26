@@ -5,10 +5,19 @@ include("Gomadam2008_MaxSINR.jl")
 include("Komulainen2013_WMMSE.jl")
 include("Razaviyayn2013_MaxMinWMMSE.jl")
 include("Shi2011_WMMSE.jl")
+include("SumMSEMinimization.jl")
 
 ##########################################################################
 # Standard functions to calculate rates from optimal MSE weights
-function calculate_logdet_rates(state::Union(Gomadam2008_MaxSINRState, Komulainen2013_WMMSEState, Razaviyayn2013_MaxMinWMMSEState, Shi2011_WMMSEState))
+ReferenceImplementationState = Union(
+        Gomadam2008_MaxSINRState,
+        Komulainen2013_WMMSEState,
+        Razaviyayn2013_MaxMinWMMSEState,
+        Shi2011_WMMSEState,
+        SumMSEMinimizationState,
+)
+
+function calculate_logdet_rates(state::ReferenceImplementationState)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
@@ -31,7 +40,7 @@ function calculate_logdet_rates(state::Union(Gomadam2008_MaxSINRState, Komulaine
     return logdet_rates
 end
 
-function calculate_MMSE_rates(state::Union(Gomadam2008_MaxSINRState, Komulainen2013_WMMSEState, Razaviyayn2013_MaxMinWMMSEState, Shi2011_WMMSEState))
+function calculate_MMSE_rates(state::ReferenceImplementationState)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 

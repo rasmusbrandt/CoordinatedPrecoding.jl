@@ -36,11 +36,12 @@ export
     require_equal_no_MSs_per_cell,
 
 # Precoding
+    Eigenprecoding,
     Gomadam2008_MaxSINR,
     Komulainen2013_WMMSE,
     Razaviyayn2013_MaxMinWMMSE,
     Shi2011_WMMSE,
-    Eigenprecoding,
+    SumMSEMinimization,
     zero_receivers, initial_precoders, unity_MSE_weights,
 
 # Simulation
