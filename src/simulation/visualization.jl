@@ -1,5 +1,5 @@
-function plot_methods(xvals, results_mean, results_var,
-    simulation_params, plot_params)
+function plot_methods(results_mean, results_var, simulation_params,
+    plot_params; xvals=[])
 
     fig = PyPlot.figure(figsize=plot_params["figsize"])
     ax = fig[:add_subplot](1, 1, 1)
@@ -13,11 +13,19 @@ function plot_methods(xvals, results_mean, results_var,
                 result_name = string(string(calculator), "_", calculate_from)
             end
 
-            ax[:plot](xvals, results_mean[method_name][result_name], result_plot_params["key"], label=result_plot_params["legend"])
+            xvals_plot = (xvals != []) ? xvals : 1:length(results_mean[method_name][result_name])
+
+            ax[:plot](xvals_plot,
+                      results_mean[method_name][result_name],
+                      result_plot_params["key"],
+                      label=result_plot_params["legend"])
 
             if haskey(plot_params, "confidence_interval_z_alpha_half")
                 facecolor = match(r"[a-z]", result_plot_params["key"]).match
-                ax[:fill_between](xvals, results_mean[method_name][result_name] + plot_params["confidence_interval_z_alpha_half"]*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]), results_mean[method_name][result_name] - plot_params["confidence_interval_z_alpha_half"]*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]), facecolor=facecolor, alpha=0.5)
+                ax[:fill_between](xvals_plot,
+                                  results_mean[method_name][result_name] + plot_params["confidence_interval_z_alpha_half"]*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]),
+                                  results_mean[method_name][result_name] - plot_params["confidence_interval_z_alpha_half"]*results_var[method_name][result_name]/sqrt(simulation_params["Ndrops"]),
+                                  facecolor=facecolor, alpha=0.5)
             end
         end
     end
@@ -74,9 +82,10 @@ function plot_convergence(results, simulation_params, precoding_settings, plot_p
 
     ### SYSTEM-LEVEL OBJECTIVE EVOLUTION ###
     for (systemlevel_name, (_, systemlevel_params)) in plot_params["systemlevel_objectives"]
-        fig, ax = plot_methods(1:precoding_settings["stop_crit"],
-                    results_mean[systemlevel_name], results_var[systemlevel_name],
-                    simulation_params, plot_params)
+        fig, ax = plot_methods(results_mean[systemlevel_name],
+                               results_var[systemlevel_name],
+                               simulation_params,
+                               plot_params)
 
         set_axis_params!(ax, systemlevel_params)
 
@@ -107,7 +116,10 @@ function plot_convergence(results, simulation_params, precoding_settings, plot_p
                     result = calculator(results[method_name][calculate_from])
                 end
 
-                ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(sum(result[:,:,k,:,:], 4), 1:2), 1:4), result_plot_params["key"], label=result_plot_params["legend"])
+                ax[:plot](1:size(result, 5),
+                          squeeze(mean(sum(result[:,:,k,:,:], 4), 1:2), 1:4),
+                          result_plot_params["key"],
+                          label=result_plot_params["legend"])
             end
 
             if k == 1
@@ -148,7 +160,10 @@ function plot_convergence(results, simulation_params, precoding_settings, plot_p
                         result = calculator(results[method_name][calculate_from])
                     end
 
-                    ax[:plot](1:precoding_settings["stop_crit"], squeeze(mean(result[:,:,k,n,:], 1:2), 1:4), result_plot_params["key"], label=result_plot_params["legend"])
+                    ax[:plot](1:size(result, 5),
+                              squeeze(mean(result[:,:,k,n,:], 1:2), 1:4),
+                              result_plot_params["key"],
+                              label=result_plot_params["legend"])
                 end
             end
 
@@ -209,9 +224,11 @@ function plot_SNR(results, simulation_params, precoding_settings, plot_params)
 
     ### SYSTEM-LEVEL OBJECTIVE EVOLUTION ###
     for (systemlevel_name, (_, systemlevel_params)) in plot_params["systemlevel_objectives"]
-        fig, ax = plot_methods(simulation_params["Ps_dBm"],
-                    results_mean[systemlevel_name], results_var[systemlevel_name],
-                    simulation_params, plot_params)
+        fig, ax = plot_methods(results_mean[systemlevel_name],
+                               results_var[systemlevel_name],
+                               simulation_params,
+                               plot_params,
+                               xvals=simulation_params["Ps_dBm"])
 
         set_axis_params!(ax, systemlevel_params)
 
