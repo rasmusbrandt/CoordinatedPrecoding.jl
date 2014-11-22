@@ -46,27 +46,6 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
     return calculate_logdet_rates(state, channel, sigma2s, cell_assignment, settings)
 end
 
-function check_and_defaultize_settings(::Type{EigenprecodingState}, settings)
-
-    settings = copy(settings)
-
-    # Global settings and consistency checks
-    if !haskey(settings, "output_protocol")
-        settings["output_protocol"] = 1
-    end
-    if !haskey(settings, "stop_crit")
-        settings["stop_crit"] = 20
-    end
-    if !haskey(settings, "initial_precoders")
-        settings["initial_precoders"] = "dft"
-    end
-    if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
-        error("Unknown output protocol")
-    end
-
-    return settings
-end
-
 function calculate_logdet_rates(state::EigenprecodingState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
     cell_assignment::CellAssignment, settings)

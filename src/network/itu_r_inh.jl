@@ -50,12 +50,12 @@ end
 function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::ITU_R_InH_Network{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
     assignment = Array(Int, I*Kc)
-inter_site_distance
+
     for i = 1:I
         assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    CellAssignment(assignment)
+    return CellAssignment(assignment, I)
 end
 
 ##########################################################################
@@ -132,7 +132,7 @@ function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::ITU_R_InH
         end
     end
 
-    SinglecarrierChannel(coefs, Ns, Ms, K, I)
+    return SinglecarrierChannel(coefs, Ns, Ms, K, I)
 end
 
 ##########################################################################

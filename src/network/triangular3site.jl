@@ -76,7 +76,7 @@ function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
         assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    CellAssignment(assignment)
+    return CellAssignment(assignment, I)
 end
 
 ##########################################################################
@@ -155,7 +155,7 @@ function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::Triangula
         end
     end
 
-    SinglecarrierChannel(coefs, Ns, Ms, K, I)
+    return SinglecarrierChannel(coefs, Ns, Ms, K, I)
 end
 
 ##########################################################################

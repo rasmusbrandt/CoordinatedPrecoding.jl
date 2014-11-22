@@ -39,7 +39,7 @@ function assign_cells_by_id{System_t <: System}(network::InterferingBroadcastCha
         assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    CellAssignment(assignment)
+    return CellAssignment(assignment, I)
 end
 
 ##########################################################################
@@ -65,7 +65,7 @@ function draw_channel{System_t <: SinglecarrierSystem}(network::InterferingBroad
         end
     end
 
-    SinglecarrierChannel(coefs, Ns, Ms, I*Kc, I)
+    return SinglecarrierChannel(coefs, Ns, Ms, I*Kc, I)
 end
 
 function draw_channel{System_t <: MulticarrierSystem}(network::InterferingBroadcastChannel{System_t})
@@ -89,5 +89,5 @@ function draw_channel{System_t <: MulticarrierSystem}(network::InterferingBroadc
         end
     end
 
-    MulticarrierChannel(coefs, Ns, Ms, I*Kc, I, Lc)
+    return MulticarrierChannel(coefs, Ns, Ms, I*Kc, I, Lc)
 end
