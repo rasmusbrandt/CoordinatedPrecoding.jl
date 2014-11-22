@@ -47,7 +47,7 @@ function set_axis_params!(axis, systemlevel_params)
     end
 end
 
-function plot_convergence(results, simulation_params, precoding_settings, plot_params)
+function plot_convergence(results, simulation_params, plot_params)
     ### SYSTEM-LEVEL POSTPROCESSING ###
     results_mean = [
         systemlevel_name =>
@@ -189,7 +189,7 @@ function plot_convergence(results, simulation_params, precoding_settings, plot_p
     PyPlot.close(fig)
 end
 
-function plot_SNR(results, simulation_params, precoding_settings, plot_params)
+function plot_SNR(results, simulation_params, plot_params)
     ### SYSTEM-LEVEL POSTPROCESSING ###
     results_mean = [
         systemlevel_name =>

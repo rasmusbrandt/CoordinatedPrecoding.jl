@@ -66,5 +66,4 @@ plot_params = [
 plot_convergence(
     data["results"],
     data["simulation_params"],
-    data["precoding_settings"],
     plot_params)
