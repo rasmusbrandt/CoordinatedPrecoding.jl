@@ -10,6 +10,11 @@ using CoordinatedPrecoding
 using HDF5, JLD
 
 ##########################################################################
+# Set up logging
+Lumberjack.configure(Lumberjack._lumber_mill.timber_trucks["console"]; mode = "warn")
+Lumberjack.add_truck(Lumberjack.LumberjackTruck("debug.log", "debug"), "debug")
+
+##########################################################################
 # General settings
 srand(83196723)
 start_time = strftime("%Y%m%dT%H%M%S", time())
@@ -17,7 +22,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 ##########################################################################
 # Canonical network
 simulation_params = [
-    "name" => "$(start_time)-canonical",
+    "name" => "$(start_time)-ic",
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
@@ -30,10 +35,11 @@ simulation_params = [
         Eigenprecoding
     ]
 ]
-precoding_settings = [
-    "stop_crit" => 100,
-    "initial_precoders" => "dft",
-]
+precoding_settings = {
+    "stop_crit" => 0,
+    "max_iters" => 100,
+}
+precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
@@ -51,7 +57,7 @@ save("convergence_$(simulation_params["name"]).jld",
 ##########################################################################
 # Largescale network
 simulation_params = [
-    "name" => "$(start_time)-largescale",
+    "name" => "$(start_time)-triangular3site",
     "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
     "P_dBm" => 18.2,
     "d" => 1,
@@ -64,10 +70,11 @@ simulation_params = [
         Eigenprecoding
     ]
 ]
-precoding_settings = [
-    "stop_crit" => 100,
-    "initial_precoders" => "dft",
-]
+precoding_settings = {
+    "stop_crit" => 0,
+    "max_iters" => 100,
+}
+precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_triangular3site_network(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],

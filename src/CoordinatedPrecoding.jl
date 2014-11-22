@@ -6,8 +6,7 @@
 
 module CoordinatedPrecoding
 
-using Base.LinAlg.BLAS
-import Gurobi, PyPlot
+import Gurobi, PyPlot, Lumberjack
 
 export
 

@@ -1,6 +1,9 @@
 function simulate_convergence(network, simulation_params, precoding_settings)
     println("-- simulate_convergence on $network.")
     println("--- Ndrops: $(simulation_params["Ndrops"]), Nsim: $(simulation_params["Nsim"]).")
+    Lumberjack.info("Starting convergence simulation.",
+        { :network => network, :simulation_params => simulation_params,
+          :precoding_settings => precoding_settings })
 
     cell_assignment = assign_cells_by_id(network)
 
@@ -47,6 +50,9 @@ end
 function simulate_SNR(network, simulation_params, precoding_settings)
     println("-- simulate_SNR on $network.")
     println("--- Ndrops: $(simulation_params["Ndrops"]), Nsim: $(simulation_params["Nsim"]).")
+    Lumberjack.info("Starting SNR simulation.",
+        { :network => network, :simulation_params => simulation_params,
+          :precoding_settings => precoding_settings })
 
     cell_assignment = assign_cells_by_id(network)
 
@@ -96,6 +102,9 @@ end
 
 function perform_performancetest(network, simulation_params, precoding_settings)
     println("-- performance test on $network.")
+    Lumberjack.info("Starting performance test.",
+        { :network => network, :simulation_params => simulation_params,
+          :precoding_settings => precoding_settings })
 
     cell_assignment = assign_cells_by_id(network)
 

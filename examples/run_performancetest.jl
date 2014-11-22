@@ -9,6 +9,11 @@
 using CoordinatedPrecoding
 
 ##########################################################################
+# Set up logging
+Lumberjack.configure(Lumberjack._lumber_mill.timber_trucks["console"]; mode = "warn")
+Lumberjack.add_truck(Lumberjack.LumberjackTruck("debug.log", "debug"), "debug")
+
+##########################################################################
 # General settings
 srand(8071232234)
 start_time = strftime("%Y%m%dT%H%M%S", time())
@@ -29,9 +34,10 @@ simulation_params = {
     ]
 }
 precoding_settings = {
-    "stop_crit" => 20,
-    "initial_precoders" => "dft",
+    "stop_crit" => 0,
+    "max_iters" => 100,
 }
+precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],

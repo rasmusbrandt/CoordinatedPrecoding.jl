@@ -5,14 +5,15 @@ end
 function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
-    settings = check_and_defaultize_settings(Gomadam2008_MaxSINRState, settings)
+    check_and_defaultize_settings!(settings)
 
+    I = get_no_BSs(network)
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
 
     state = EigenprecodingState(Array(Matrix{Complex128}, channel.K))
 
-    for i = 1:channel.I
+    for i = 1:I
         served = served_MS_ids(i, cell_assignment)
         Kc = length(served)
 
@@ -99,13 +100,13 @@ function calculate_logdet_rates(state::EigenprecodingState,
             for j in delete!(IntSet(1:channel.I), i)
                 for l in served_MS_ids(j, cell_assignment)
                     #Phi_intracell += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                    herk!(Phi_intracell.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi_intracell.S)
+                    Base.LinAlg.BLAS.herk!(Phi_intracell.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi_intracell.S)
                 end
             end
             Phi_uncoord = copy(Phi_intracell)
             for l in served_MS_ids_except_me(k, i, cell_assignment)
                 #Phi_uncoord += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                herk!(Phi_uncoord.uplo, 'N', complex(1.), channel.H[k,i]*state.V[l], complex(1.), Phi_uncoord.S)
+                Base.LinAlg.BLAS.herk!(Phi_uncoord.uplo, 'N', complex(1.), channel.H[k,i]*state.V[l], complex(1.), Phi_uncoord.S)
             end
 
             d = size(state.V[k], 2)

@@ -8,19 +8,51 @@ include("Shi2011_WMMSE.jl")
 include("SumMSEMinimization.jl")
 
 ##########################################################################
+# Global settings and consistency checks
+function check_and_defaultize_settings!(settings)
+    if !haskey(settings, "user_priorities")
+        error("Supply user_priorities.")
+    end
+    if !haskey(settings, "output_protocol")
+        settings["output_protocol"] = 1
+        Lumberjack.info("Setting default setting output_protocol.",
+                         { :output_protocol => settings["output_protocol"] })
+    end
+    if !haskey(settings, "stop_crit")
+        settings["stop_crit"] = 1e-3
+        Lumberjack.info("Setting default setting stop_crit.",
+                         { :stop_crit => settings["stop_crit"] })
+    end
+    if !haskey(settings, "max_iters")
+        settings["max_iters"] = 500
+        Lumberjack.info("Setting default setting max_iters.",
+                         { :max_iters => settings["max_iters"] })
+    end
+    if !haskey(settings, "initial_precoders")
+        settings["initial_precoders"] = "dft"
+        Lumberjack.info("Setting default setting initial_precoders.",
+                         { :initial_precoders => settings["initial_precoders"] })
+    end
+    if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
+        error("Unknown output protocol")
+    end
+end
+
+##########################################################################
 # Standard functions to calculate rates from optimal MSE weights
 ReferenceImplementationState = Union(
-        Gomadam2008_MaxSINRState,
-        Komulainen2013_WMMSEState,
-        Razaviyayn2013_MaxMinWMMSEState,
-        Shi2011_WMMSEState,
-        SumMSEMinimizationState,
+    Gomadam2008_MaxSINRState,
+    Komulainen2013_WMMSEState,
+    Razaviyayn2013_MaxMinWMMSEState,
+    Shi2011_WMMSEState,
+    SumMSEMinimizationState,
 )
 
-function calculate_logdet_rates(state::ReferenceImplementationState)
+function calculate_logdet_rates(state::ReferenceImplementationState, settings)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
+    logdet_rates_objective = 0.
     logdet_rates = Array(Float64, K, max_d)
 
     for k = 1:K
@@ -29,6 +61,7 @@ function calculate_logdet_rates(state::ReferenceImplementationState)
         # may be less than 1, so we need to handle that to not get negative
         # rates.
         r = log2(max(1, real(eigvals(state.W[k]))))
+        logdet_rates_objective += settings["user_priorities"][k]*sum(r)
 
         if ds[k] < max_d
             logdet_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
@@ -37,13 +70,14 @@ function calculate_logdet_rates(state::ReferenceImplementationState)
         end
     end
 
-    return logdet_rates
+    return logdet_rates, logdet_rates_objective
 end
 
-function calculate_MMSE_rates(state::ReferenceImplementationState)
+function calculate_MMSE_rates(state::ReferenceImplementationState, settings)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
+    MMSE_rates_objective = 0.
     MMSE_rates = Array(Float64, K, max_d)
 
     for k = 1:K
@@ -55,6 +89,7 @@ function calculate_MMSE_rates(state::ReferenceImplementationState)
         # small (like 2-by-2 or 3-by-3), so the complexity isn't too bad.
         E = state.W[k]\eye(state.W[k])
         r = log2(max(1, real(1./diag(E))))
+        MMSE_rates_objective += settings["user_priorities"][k]*sum(r)
 
         if ds[k] < max_d
             MMSE_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
@@ -63,7 +98,26 @@ function calculate_MMSE_rates(state::ReferenceImplementationState)
         end
     end
 
-    return MMSE_rates
+    return MMSE_rates, MMSE_rates_objective
+end
+
+function calculate_allocated_power(state::ReferenceImplementationState)
+    K = length(state.W)
+    ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
+
+    allocated_power = Array(Float64, K, max_d)
+
+    for k = 1:K
+        p = [ vecnorm(state.V[k][:,n]) for n = 1:ds[k] ]
+
+        if ds[k] < max_d
+            allocated_power[k,:] = cat(1, p, zeros(Float64, max_d - ds[k]))
+        else
+            allocated_power[k,:] = p
+        end
+    end
+
+    return allocated_power
 end
 
 ##########################################################################
@@ -71,7 +125,8 @@ end
 zero_receivers(channel::SinglecarrierChannel, ds::Vector{Int}) = 
     [ zeros(Complex128, channel.Ns[k], ds[k]) for k = 1:channel.K ]
 
-unity_MSE_weights(ds::Vector{Int}) = [ Hermitian(eye(ds[k])) for k = 1:length(ds) ]
+unity_MSE_weights(ds::Vector{Int}) =
+    [ Hermitian(eye(ds[k])) for k = 1:length(ds) ]
 
 function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
     sigma2s::Vector{Float64}, ds::Vector{Int}, cell_assignment::CellAssignment,
