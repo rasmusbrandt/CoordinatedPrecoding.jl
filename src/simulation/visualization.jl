@@ -1,4 +1,4 @@
-function plot_methods(results_mean, results_var, simulation_params,
+function plot_precoding_methods(results_mean, results_var, simulation_params,
     plot_params; xvals=[])
 
     fig = PyPlot.figure(figsize=plot_params["figsize"])
@@ -33,16 +33,16 @@ function plot_methods(results_mean, results_var, simulation_params,
     return (fig, ax)
 end
 
-function set_axis_params!(axis, systemlevel_params)
-    haskey(systemlevel_params, "xlabel") ? axis[:set_xlabel](systemlevel_params["xlabel"]) : nothing
-    haskey(systemlevel_params, "ylabel") ? axis[:set_ylabel](systemlevel_params["ylabel"]) : nothing
+function set_axis_params!(axis, objective_params)
+    haskey(objective_params, "xlabel") ? axis[:set_xlabel](objective_params["xlabel"]) : nothing
+    haskey(objective_params, "ylabel") ? axis[:set_ylabel](objective_params["ylabel"]) : nothing
 
-    if haskey(systemlevel_params, "legend_loc")
-        if haskey(systemlevel_params, "legend_prop")
-            axis[:legend](loc=systemlevel_params["legend_loc"],
-                        prop=systemlevel_params["legend_prop"])
+    if haskey(objective_params, "legend_loc")
+        if haskey(objective_params, "legend_prop")
+            axis[:legend](loc=objective_params["legend_loc"],
+                        prop=objective_params["legend_prop"])
         else
-            axis[:legend](loc=systemlevel_params["legend_loc"])
+            axis[:legend](loc=objective_params["legend_loc"])
         end
     end
 end
@@ -50,17 +50,17 @@ end
 function plot_convergence(results, simulation_params, plot_params)
     ### SYSTEM-LEVEL POSTPROCESSING ###
     results_mean = [
-        systemlevel_name =>
+        objective_name =>
             [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (systemlevel_name,) in plot_params["systemlevel_objectives"]
+        for (objective_name,) in plot_params["objectives"]
     ]
     results_var = [
-        systemlevel_name =>
+        objective_name =>
             [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (systemlevel_name,) in plot_params["systemlevel_objectives"]
+        for (objective_name,) in plot_params["objectives"]
     ]
 
-    for (systemlevel_name, (systemlevel_func,)) in plot_params["systemlevel_objectives"]
+    for (objective_name, (objective_func,)) in plot_params["objectives"]
         for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
             for (result_param,) in plot_params["precoding_methods"][method_name]
                 if isa(result_param, ASCIIString)
@@ -74,25 +74,26 @@ function plot_convergence(results, simulation_params, plot_params)
 
                 # mean: average over drops and sims
                 # var: average over sims, estimate var over drops
-                results_mean[systemlevel_name][method_name][result_name] = squeeze(mean(systemlevel_func(result), 1:2), 1:4)
-                results_var[systemlevel_name][method_name][result_name] = squeeze(var(mean(systemlevel_func(result), 2), 1), 1:4)
+                results_mean[objective_name][method_name][result_name] = squeeze(mean(objective_func(result), 1:2), 1:4)
+                results_var[objective_name][method_name][result_name] = squeeze(var(mean(objective_func(result), 2), 1), 1:4)
             end
         end
     end
 
     ### SYSTEM-LEVEL OBJECTIVE EVOLUTION ###
-    for (systemlevel_name, (_, systemlevel_params)) in plot_params["systemlevel_objectives"]
-        fig, ax = plot_methods(results_mean[systemlevel_name],
-                               results_var[systemlevel_name],
-                               simulation_params,
-                               plot_params)
+    for (objective_name, (_, objective_params)) in plot_params["objectives"]
+        fig, ax = plot_precoding_methods(
+                    results_mean[objective_name],
+                    results_var[objective_name],
+                    simulation_params,
+                    plot_params)
 
-        set_axis_params!(ax, systemlevel_params)
+        set_axis_params!(ax, objective_params)
 
         if displayable("application/pdf")
             display(fig)
         else
-            open("convergence_$(simulation_params["name"])_$(systemlevel_name).pdf", "w") do file
+            open("convergence_$(simulation_params["name"])_$(plot_params["name_suffix"])_$(objective_name).pdf", "w") do file
                 writemime(file, "application/pdf", fig)
             end
         end
@@ -137,7 +138,7 @@ function plot_convergence(results, simulation_params, plot_params)
     if displayable("application/pdf")
         display(fig)
     else
-        open("convergence_$(simulation_params["name"])_peruser.pdf", "w") do file
+        open("convergence_$(simulation_params["name"])_$(plot_params["name_suffix"])_peruser.pdf", "w") do file
             writemime(file, "application/pdf", fig)
         end
     end
@@ -182,7 +183,7 @@ function plot_convergence(results, simulation_params, plot_params)
     if displayable("application/pdf")
         display(fig)
     else
-        open("convergence_$(simulation_params["name"])_perstream.pdf", "w") do file
+        open("convergence_$(simulation_params["name"])_$(plot_params["name_suffix"])_perstream.pdf", "w") do file
             writemime(file, "application/pdf", fig)
         end
     end
@@ -192,17 +193,17 @@ end
 function plot_SNR(results, simulation_params, plot_params)
     ### SYSTEM-LEVEL POSTPROCESSING ###
     results_mean = [
-        systemlevel_name =>
+        objective_name =>
             [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (systemlevel_name,) in plot_params["systemlevel_objectives"]
+        for (objective_name,) in plot_params["objectives"]
     ]
     results_var = [
-        systemlevel_name =>
+        objective_name =>
             [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (systemlevel_name,) in plot_params["systemlevel_objectives"]
+        for (objective_name,) in plot_params["objectives"]
     ]
 
-    for (systemlevel_name, (systemlevel_func,)) in plot_params["systemlevel_objectives"]
+    for (objective_name, (objective_func,)) in plot_params["objectives"]
         for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
             for (result_param,) in plot_params["precoding_methods"][method_name]
                 if isa(result_param, ASCIIString)
@@ -216,26 +217,27 @@ function plot_SNR(results, simulation_params, plot_params)
 
                 # mean: average over drops and sims
                 # var: average over sims, estimate var over drops
-                results_mean[systemlevel_name][method_name][result_name] = squeeze(mean(systemlevel_func(result), 1:2), [1,2,4,5])
-                results_var[systemlevel_name][method_name][result_name] = squeeze(var(mean(systemlevel_func(result), 2), 1), [1,2,4,5])
+                results_mean[objective_name][method_name][result_name] = squeeze(mean(objective_func(result), 1:2), [1,2,4,5])
+                results_var[objective_name][method_name][result_name] = squeeze(var(mean(objective_func(result), 2), 1), [1,2,4,5])
             end
         end
     end
 
     ### SYSTEM-LEVEL OBJECTIVE EVOLUTION ###
-    for (systemlevel_name, (_, systemlevel_params)) in plot_params["systemlevel_objectives"]
-        fig, ax = plot_methods(results_mean[systemlevel_name],
-                               results_var[systemlevel_name],
-                               simulation_params,
-                               plot_params,
-                               xvals=simulation_params["Ps_dBm"])
+    for (objective_name, (_, objective_params)) in plot_params["objectives"]
+        fig, ax = plot_precoding_methods(
+                   results_mean[objective_name],
+                   results_var[objective_name],
+                   simulation_params,
+                   plot_params,
+                   xvals=simulation_params["Ps_dBm"])
 
-        set_axis_params!(ax, systemlevel_params)
+        set_axis_params!(ax, objective_params)
 
         if displayable("application/pdf")
             display(fig)
         else
-            open("SNR_$(simulation_params["name"])_$(systemlevel_name).pdf", "w") do file
+            open("SNR_$(simulation_params["name"])_$(plot_params["name_suffix"])_$(objective_name).pdf", "w") do file
                 writemime(file, "application/pdf", fig)
             end
         end

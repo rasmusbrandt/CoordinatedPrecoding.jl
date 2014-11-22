@@ -25,40 +25,42 @@ data = load(parsed_args["file_name"])
 using CoordinatedPrecoding
 
 plot_params = [
-    "precoding_methods" =>
-        [
-          "Shi2011_WMMSE" => [
-            ("logdet_rates", [ "key" => "b-", "legend" => "WMMSE" ]),
-            ("MMSE_rates", [ "key" => "b--", "legend" => "WMMSE" ]),
-          ],
+    "name_suffix" => "",
 
-          "Gomadam2008_MaxSINR" => [
-            ("logdet_rates", [ "key" => "r-", "legend" => "MaxSINR" ]),
-            ("MMSE_rates", [ "key" => "r--", "legend" => "MaxSINR" ]),
-          ],
+    "figsize" => (8,5),
 
-          "Razaviyayn2013_MaxMinWMMSE" => [
-            ("logdet_rates", [ "key" => "g-", "legend" => "MaxMin-WMMSE" ]),
-            ("MMSE_rates", [ "key" => "g--", "legend" => "MaxMin-WMMSE" ]),
-          ],
-
-          "Komulainen2013_WMMSE" => [
-            ("logdet_rates", [ "key" => "m-", "legend" => "MaxMin-WMMSE" ]),
-            ("MMSE_rates", [ "key" => "m--", "legend" => "MaxMin-WMMSE" ]),
-          ],
-
-          "Eigenprecoding" => {
-            ("intercell_tdma_logdet_rates", [ "key" => "c-", "legend" => "TDMA" ]),
-            ("intracell_tdma_logdet_rates", [ "key" => "c-.", "legend" => "Intracell TDMA" ]),
-            ("uncoord_logdet_rates", [ "key" => "k-", "legend" => "Uncoordinated" ]),
-          },
-        ],
-    "systemlevel_objectives" => [
+    "objectives" => [
         "sumrate" => (r -> sum(r, 4:5), [ "xlabel" => "Iterations", "ylabel" => "Sum rate [bits/s/Hz]" ]),
         "minrate" => (r -> minimum(sum(r, 5), 4), [ "xlabel" => "Iterations", "ylabel" => "Min rate [bits/s/Hz]", ]),
     ],
-    "figsize" => (8,4),
-    # "confidence_interval_z_alpha_half" => 1.96,
+
+    "precoding_methods" => {
+        "Shi2011_WMMSE" => [
+            ("logdet_rates", [ "key" => "b-", "legend" => "WMMSE" ]),
+            ("MMSE_rates", [ "key" => "b--", "legend" => "WMMSE" ]),
+        ],
+
+        "Gomadam2008_MaxSINR" => [
+            ("logdet_rates", [ "key" => "r-", "legend" => "MaxSINR" ]),
+            ("MMSE_rates", [ "key" => "r--", "legend" => "MaxSINR" ]),
+        ],
+
+        "Razaviyayn2013_MaxMinWMMSE" => [
+            ("logdet_rates", [ "key" => "g-", "legend" => "MaxMin-WMMSE" ]),
+            ("MMSE_rates", [ "key" => "g--", "legend" => "MaxMin-WMMSE" ]),
+        ],
+
+        "Komulainen2013_WMMSE" => [
+            ("logdet_rates", [ "key" => "m-", "legend" => "MaxMin-WMMSE" ]),
+            ("MMSE_rates", [ "key" => "m--", "legend" => "MaxMin-WMMSE" ]),
+        ],
+
+        "Eigenprecoding" => {
+            ("intercell_tdma_logdet_rates", [ "key" => "c-", "legend" => "TDMA" ]),
+            ("intracell_tdma_logdet_rates", [ "key" => "c-.", "legend" => "Intracell TDMA" ]),
+            ("uncoord_logdet_rates", [ "key" => "k-", "legend" => "Uncoordinated" ]),
+        },
+    },
 ]
 
 ##########################################################################
