@@ -149,7 +149,8 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
         Gurobi.setparam!(env, "OutputFlag", 0)
     end
     Gurobi.setparam!(env, "PSDTol", settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol"])
-    model = Gurobi.Model(env, "Razaviyayn2013_MaxMinWMMSE", :maximize)
+    model = Gurobi.Model(env, "Razaviyayn2013_MaxMinWMMSE", finalize_env=true)
+    Gurobi.set_sense!(model, :maximize)
 
     # Objective
     Gurobi.add_cvar!(model, 1., 0, Inf) # t
