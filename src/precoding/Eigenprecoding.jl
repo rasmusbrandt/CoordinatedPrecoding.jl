@@ -53,13 +53,13 @@ function calculate_logdet_rates(state::EigenprecodingState,
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
     if settings["output_protocol"] == 1
-        intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
-        intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
-        uncoord_logdet_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
+        intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
+        uncoord_logdet_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
 
-        intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
-        intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
-        uncoord_MMSE_rates = Array(Float64, channel.K, max_d, settings["stop_crit"])
+        intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
+        intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
+        uncoord_MMSE_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
     elseif settings["output_protocol"] == 2
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
@@ -102,7 +102,7 @@ function calculate_logdet_rates(state::EigenprecodingState,
             r_uncoord_MMSE = log2(max(1, real(1./diag(inv(W_uncoord)))))
 
             if settings["output_protocol"] == 1
-                for iter = 1:settings["stop_crit"]
+                for iter = 1:settings["max_iters"]
                     intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
                     intracell_tdma_logdet_rates[k,:,iter] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
                     uncoord_logdet_rates[k,:,iter] = cat(1, r_uncoord_logdet, zeros(Float64, max_d - d))
