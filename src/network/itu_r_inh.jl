@@ -10,6 +10,10 @@ type ITU_R_InH_Network{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Syste
     inter_site_distance::Float64
     guard_distance::Float64
 end
+Base.show(io::IO, x::ITU_R_InH_Network) =
+    print(io, "ITU_R_InH(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
+Base.showcompact(io::IO, x::ITU_R_InH_Network) =
+    print(io, "ITU_R_InH($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
 
 get_no_MSs(network::ITU_R_InH_Network) = 2*network.no_MSs_per_cell
 get_no_BSs(network::ITU_R_InH_Network) = 2

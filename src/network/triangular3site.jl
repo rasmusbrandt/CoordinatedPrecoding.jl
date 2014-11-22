@@ -20,6 +20,10 @@ type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
     inter_site_distance::Float64
     guard_distance::Float64
 end
+Base.show(io::IO, x::Triangular3SiteNetwork) =
+    print(io, "Triangular3Site(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
+Base.showcompact(io::IO, x::Triangular3SiteNetwork) =
+    print(io, "Triangular3Site($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
 
 get_no_MSs(network::Triangular3SiteNetwork) = 3*network.no_MSs_per_cell
 get_no_BSs(network::Triangular3SiteNetwork) = 3

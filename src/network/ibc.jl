@@ -8,6 +8,10 @@ type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
     no_MSs_per_cell::Int
     alpha::Float64
 end
+Base.show(io::IO, x::InterferingBroadcastChannel) =
+    print(io, "IBC(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), α = $(x.alpha))")
+Base.showcompact(io::IO, x::InterferingBroadcastChannel) =
+    print(io, "IBC($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.alpha))")
 
 get_no_MSs_per_cell(network::InterferingBroadcastChannel) = network.no_MSs_per_cell
 
