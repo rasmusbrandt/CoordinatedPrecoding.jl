@@ -5,7 +5,7 @@ end
 function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_settings!(settings)
+    check_and_defaultize_precoding_settings!(settings)
 
     I = get_no_BSs(network)
     Ps = get_transmit_powers(network)

@@ -8,7 +8,7 @@ end
 function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_settings!(settings, Komulainen2013_WMMSEState)
+    check_and_defaultize_precoding_settings!(settings, Komulainen2013_WMMSEState)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -75,9 +75,9 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_settings!(settings, ::Type{Komulainen2013_WMMSEState})
+function check_and_defaultize_precoding_settings!(settings, ::Type{Komulainen2013_WMMSEState})
     # Global settings
-    check_and_defaultize_settings!(settings)
+    check_and_defaultize_precoding_settings!(settings)
 
     # Local settings
     if !haskey(settings, "Komulainen2013_WMMSE:bisection_Gamma_cond")

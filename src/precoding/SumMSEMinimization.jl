@@ -7,7 +7,7 @@ end
 function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_settings(settings, SumMSEMinimizationState)
+    check_and_defaultize_precoding_settings(settings, SumMSEMinimizationState)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -73,9 +73,9 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_settings!(settings, ::Type{SumMSEMinimizationState})
+function check_and_defaultize_precoding_settings!(settings, ::Type{SumMSEMinimizationState})
     # Global settings
-    check_and_defaultize_settings!(settings)
+    check_and_defaultize_precoding_settings!(settings)
 
     # Local settings
     if !haskey(settings, "SumMSEMinimization:bisection_Gamma_cond")

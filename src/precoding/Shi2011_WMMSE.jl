@@ -7,7 +7,7 @@ end
 function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_settings!(settings, Shi2011_WMMSEState)
+    check_and_defaultize_precoding_settings!(settings, Shi2011_WMMSEState)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -73,9 +73,9 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_settings!(settings, ::Type{Shi2011_WMMSEState})
+function check_and_defaultize_precoding_settings!(settings, ::Type{Shi2011_WMMSEState})
     # Global settings
-    check_and_defaultize_settings!(settings)
+    check_and_defaultize_precoding_settings!(settings)
 
     # Local settings
     if !haskey(settings, "Shi2011_WMMSE:bisection_Gamma_cond")

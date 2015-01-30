@@ -7,7 +7,7 @@ end
 function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     network::Network, cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_settings!(settings, Razaviyayn2013_MaxMinWMMSEState)
+    check_and_defaultize_precoding_settings!(settings, Razaviyayn2013_MaxMinWMMSEState)
 
     # The implementation is currently limited in the respects below. This is in
     # order to simplify the Gurobi optimization variable indexing. With equal
@@ -81,9 +81,9 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     return results
 end
 
-function check_and_defaultize_settings!(settings, ::Type{Razaviyayn2013_MaxMinWMMSEState})
+function check_and_defaultize_precoding_settings!(settings, ::Type{Razaviyayn2013_MaxMinWMMSEState})
     # Global settings
-    check_and_defaultize_settings!(settings)
+    check_and_defaultize_precoding_settings!(settings)
 
     # Local settings
     if !haskey(settings, "Razaviyayn2013_MaxMinWMMSE:Gurobi_verbose")

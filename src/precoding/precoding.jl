@@ -9,7 +9,7 @@ include("SumMSEMinimization.jl")
 
 ##########################################################################
 # Global settings and consistency checks
-function check_and_defaultize_settings!(settings::Dict{ASCIIString, Any})
+function check_and_defaultize_precoding_settings!(settings::Dict{ASCIIString, Any})
     if !haskey(settings, "user_priorities")
         error("Supply user_priorities.")
     end

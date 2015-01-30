@@ -7,7 +7,7 @@ end
 function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_settings!(settings, Gomadam2008_MaxSINRState)
+    check_and_defaultize_precoding_settings!(settings, Gomadam2008_MaxSINRState)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -73,9 +73,9 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_settings!(settings, ::Type{Gomadam2008_MaxSINRState})
+function check_and_defaultize_precoding_settings!(settings, ::Type{Gomadam2008_MaxSINRState})
     # Global settings
-    check_and_defaultize_settings!(settings)
+    check_and_defaultize_precoding_settings!(settings)
 
     # Local settings
 end
