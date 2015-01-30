@@ -36,7 +36,7 @@ simulation_params = [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
         Komulainen2013_WMMSE,
-        Razaviyayn2013_MaxMinWMMSE,
+        Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ]
 ]
@@ -66,7 +66,7 @@ simulation_params = [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
         Komulainen2013_WMMSE,
-        Razaviyayn2013_MaxMinWMMSE,
+        Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ]
 ]

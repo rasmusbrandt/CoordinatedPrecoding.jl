@@ -45,14 +45,14 @@ plot_params = [
             ("MMSE_rates", [ "key" => "r--", "legend" => "MaxSINR" ]),
         ],
 
-        "Razaviyayn2013_MaxMinWMMSE" => [
-            ("logdet_rates", [ "key" => "g-", "legend" => "MaxMin-WMMSE" ]),
-            ("MMSE_rates", [ "key" => "g--", "legend" => "MaxMin-WMMSE" ]),
+        "Razaviyayn2013_MinMaxWMMSE" => [
+            ("logdet_rates", [ "key" => "g-", "legend" => "MinMax-WMMSE" ]),
+            ("MMSE_rates", [ "key" => "g--", "legend" => "MinMax-WMMSE" ]),
         ],
 
         "Komulainen2013_WMMSE" => [
-            ("logdet_rates", [ "key" => "m-", "legend" => "MaxMin-WMMSE" ]),
-            ("MMSE_rates", [ "key" => "m--", "legend" => "MaxMin-WMMSE" ]),
+            ("logdet_rates", [ "key" => "m-", "legend" => "DiagWMMSE" ]),
+            ("MMSE_rates", [ "key" => "m--", "legend" => "DiagWMMSE" ]),
         ],
 
         "Eigenprecoding" => {

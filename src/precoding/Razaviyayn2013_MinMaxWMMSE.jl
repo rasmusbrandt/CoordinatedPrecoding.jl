@@ -1,13 +1,13 @@
-immutable Razaviyayn2013_MaxMinWMMSEState
+immutable Razaviyayn2013_MinMaxWMMSEState
     U::Array{Matrix{Complex128},1}
     W::Array{Hermitian{Complex128},1}
     V::Array{Matrix{Complex128},1}
 end
 
-function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
+function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     network::Network, cell_assignment::CellAssignment, settings=Dict())
 
-    check_and_defaultize_precoding_settings!(settings, Razaviyayn2013_MaxMinWMMSEState)
+    check_and_defaultize_precoding_settings!(settings, Razaviyayn2013_MinMaxWMMSEState)
 
     # The implementation is currently limited in the respects below. This is in
     # order to simplify the Gurobi optimization variable indexing. With equal
@@ -22,7 +22,7 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
 
-    state = Razaviyayn2013_MaxMinWMMSEState(
+    state = Razaviyayn2013_MinMaxWMMSEState(
         Array(Matrix{Complex128}, K),
         unity_MSE_weights(ds),
         initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
@@ -46,7 +46,7 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
         if iters >= 2
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
             if conv_crit < settings["stop_crit"]
-                Lumberjack.debug("Razaviyayn2013_MaxMinWMMSE converged.",
+                Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE converged.",
                     { :no_iters => iters, :final_objective => objective[end],
                       :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
                       :max_iters => settings["max_iters"] })
@@ -60,7 +60,7 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
         end
     end
     if iters == settings["max_iters"]
-        Lumberjack.debug("Razaviyayn2013_MaxMinWMMSE did NOT converge.",
+        Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE did NOT converge.",
             { :no_iters => iters, :final_objective => objective[end],
               :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
               :max_iters => settings["max_iters"] })
@@ -81,20 +81,20 @@ function Razaviyayn2013_MaxMinWMMSE(channel::SinglecarrierChannel,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings, ::Type{Razaviyayn2013_MaxMinWMMSEState})
+function check_and_defaultize_precoding_settings!(settings, ::Type{Razaviyayn2013_MinMaxWMMSEState})
     # Global settings
     check_and_defaultize_precoding_settings!(settings)
 
     # Local settings
-    if !haskey(settings, "Razaviyayn2013_MaxMinWMMSE:Gurobi_verbose")
-        settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_verbose"] = false
+    if !haskey(settings, "Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose")
+        settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"] = false
     end
-    if !haskey(settings, "Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol")
-        settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol"] = 1e-5
+    if !haskey(settings, "Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol")
+        settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"] = 1e-5
     end
 end
 
-function update_MSs!(state::Razaviyayn2013_MaxMinWMMSEState,
+function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
     cell_assignment::CellAssignment)
 
@@ -123,7 +123,7 @@ end
 # could be prebuilt and reused in the iterations. Probably no major performance
 # boost would come from that though, based on experience with the
 # JointPrecodingMCSSelection implementation.
-function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
+function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     channel::SinglecarrierChannel, Ps::Vector{Float64},
     sigma2s::Vector{Float64}, cell_assignment::CellAssignment, settings)
 
@@ -145,11 +145,11 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
 
     # Gurobi environment
     env = Gurobi.Env()
-    if !settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_verbose"]
+    if !settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"]
         Gurobi.setparam!(env, "OutputFlag", 0)
     end
-    Gurobi.setparam!(env, "PSDTol", settings["Razaviyayn2013_MaxMinWMMSE:Gurobi_PSDTol"])
-    model = Gurobi.Model(env, "Razaviyayn2013_MaxMinWMMSE", finalize_env=true)
+    Gurobi.setparam!(env, "PSDTol", settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"])
+    model = Gurobi.Model(env, "Razaviyayn2013_MinMaxWMMSE", finalize_env=true)
     Gurobi.set_sense!(model, :maximize)
 
     # Objective
@@ -289,7 +289,7 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
 
     if Gurobi.get_status(model) == :optimal || Gurobi.get_status(model) == :suboptimal
         if Gurobi.get_status(model) == :suboptimal
-            warn("Suboptimal precoder solution found in Razaviyayn2013_MaxMinWMMSE")
+            warn("Suboptimal precoder solution found in Razaviyayn2013_MinMaxWMMSE")
         end
 
         sol = Gurobi.get_solution(model)
@@ -307,7 +307,7 @@ function update_BSs!(state::Razaviyayn2013_MaxMinWMMSEState,
             end
         end
     else
-        warn("Numerical problems with Gurobi in Razaviyayn2013_MaxMinWMMSE")
+        warn("Numerical problems with Gurobi in Razaviyayn2013_MinMaxWMMSE")
         println("Solver returned ", string(Gurobi.get_status(model)))
     end
 end

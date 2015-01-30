@@ -39,7 +39,7 @@ export
     Eigenprecoding,
     Gomadam2008_MaxSINR,
     Komulainen2013_WMMSE,
-    Razaviyayn2013_MaxMinWMMSE,
+    Razaviyayn2013_MinMaxWMMSE,
     Shi2011_WMMSE,
     SumMSEMinimization,
     zero_receivers, initial_precoders, unity_MSE_weights,

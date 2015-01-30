@@ -3,7 +3,7 @@
 include("Eigenprecoding.jl")
 include("Gomadam2008_MaxSINR.jl")
 include("Komulainen2013_WMMSE.jl")
-include("Razaviyayn2013_MaxMinWMMSE.jl")
+include("Razaviyayn2013_MinMaxWMMSE.jl")
 include("Shi2011_WMMSE.jl")
 include("SumMSEMinimization.jl")
 
@@ -43,7 +43,7 @@ end
 ReferenceImplementationState = Union(
     Gomadam2008_MaxSINRState,
     Komulainen2013_WMMSEState,
-    Razaviyayn2013_MaxMinWMMSEState,
+    Razaviyayn2013_MinMaxWMMSEState,
     Shi2011_WMMSEState,
     SumMSEMinimizationState,
 )
