@@ -30,11 +30,13 @@ end
 ##########################################################################
 # Hermitian utility functions. These should probably be in Base. Contribute?
 +(A::Hermitian{Complex128}, B::Hermitian{Complex128}) = Hermitian(A.S + B.S)
-+(A::Hermitian{Complex128}, B::Matrix{Float64}) = A.S + B
 +(B::Matrix{Float64}, A::Hermitian{Complex128}) = +(A, B)
++(A::Hermitian{Complex128}, B::Matrix{Float64}) = A.S + B
++(A::Hermitian{Complex128}, B::Matrix{Complex128}) = A.S + B
 
--(A::Hermitian{Complex128}, B::Array{Complex128,2}) = A.S - B
+-(A::Hermitian{Complex128}, B::Matrix{Complex128}) = A.S - B
 -(B::Array{Complex128,2}, A::Hermitian{Complex128}) = -(A, B)
+-(A::Hermitian{Complex128}, B::Matrix{Float64}) = A.S - B
 
 .*(a::Float64, B::Hermitian{Complex128}) = Hermitian(a.*B.S)
 
