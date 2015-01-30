@@ -78,9 +78,9 @@ function calculate_MMSE_rates(state::ReferenceImplementationState, settings)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
     MMSE_rates_objective = 0.
-    MMSE_rates = Array(Float64, K, max_d)
+    MMSE_rates = zeros(Float64, K, max_d)
 
-    for k = 1:K
+    for k = 1:K; if ds[k] > 0
         # Invert W to get MMSE matrix and pick out diagonal elements, to obtain
         # MSE performance of MMSE receiver. Then take log2 of the reciprocal
         # to get the rates for the streams.
@@ -96,7 +96,7 @@ function calculate_MMSE_rates(state::ReferenceImplementationState, settings)
         else
             MMSE_rates[k,:] = r
         end
-    end
+    end; end
 
     return MMSE_rates, MMSE_rates_objective
 end
@@ -108,7 +108,7 @@ function calculate_allocated_power(state::ReferenceImplementationState)
     allocated_power = Array(Float64, K, max_d)
 
     for k = 1:K
-        p = [ vecnorm(state.V[k][:,n]) for n = 1:ds[k] ]
+        p = [ vecnorm(state.V[k][:,n])^2 for n = 1:ds[k] ]
 
         if ds[k] < max_d
             allocated_power[k,:] = cat(1, p, zeros(Float64, max_d - ds[k]))
