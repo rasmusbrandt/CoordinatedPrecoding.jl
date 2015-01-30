@@ -33,10 +33,10 @@ simulation_params = {
         Eigenprecoding
     ]
 }
-precoding_settings = {
-    "stop_crit" => 0,
+precoding_settings = [
+    "stop_crit" => 0.,
     "max_iters" => 100,
-}
+]
 precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],

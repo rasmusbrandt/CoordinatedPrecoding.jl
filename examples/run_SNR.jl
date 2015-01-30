@@ -19,6 +19,11 @@ Lumberjack.add_truck(Lumberjack.LumberjackTruck("debug.log", "debug"), "debug")
 srand(973472333)
 start_time = strftime("%Y%m%dT%H%M%S", time())
 
+precoding_settings = [
+    "stop_crit" => 1e-3,
+    "initial_precoders" => "dft", # mainly just to ensure Dict{ASCIIString, Any} type
+]
+
 ##########################################################################
 # Canonical network
 simulation_params = [
@@ -35,9 +40,6 @@ simulation_params = [
         Eigenprecoding
     ]
 ]
-precoding_settings = {
-    "stop_crit" => 1e-3,
-}
 precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
@@ -68,9 +70,6 @@ simulation_params = [
         Eigenprecoding
     ]
 ]
-precoding_settings = {
-    "stop_crit" => 1e-3,
-}
 precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_triangular3site_network(simulation_params["I"],
