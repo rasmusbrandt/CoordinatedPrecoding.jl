@@ -46,6 +46,7 @@ export
     zero_receivers, initial_precoders, unity_MSE_weights,
 
 # Simulation
+    SimulationParams,
     simulate_convergence, simulate_SNR, perform_performancetest,
     plot_convergence, plot_SNR,
 
@@ -61,9 +62,10 @@ include("network/network.jl")
 include("cell_assignment/cell_assignment.jl")
 # Precoding algorithms
 include("precoding/precoding.jl")
-# Simulation and visualization
+# Simulation
 include("simulation/simulation.jl")
-include("simulation/visualization.jl")
+# Visualization
+include("visualization/visualization.jl")
 # Other useful stuff
 include("utils.jl")
 ##########################################################################
