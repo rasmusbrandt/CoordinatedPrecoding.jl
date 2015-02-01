@@ -3,7 +3,7 @@ immutable EigenprecodingState
 end
 
 function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=Dict())
+    cell_assignment::CellAssignment, settings=PrecodingSettings())
 
     check_and_defaultize_precoding_settings!(settings)
 

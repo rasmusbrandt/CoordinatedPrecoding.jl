@@ -5,7 +5,7 @@ immutable Razaviyayn2013_MinMaxWMMSEState
 end
 
 function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
-    network::Network, cell_assignment::CellAssignment, settings=Dict())
+    network::Network, cell_assignment::CellAssignment, settings=PrecodingSettings())
 
     check_and_defaultize_precoding_settings!(settings, Razaviyayn2013_MinMaxWMMSEState)
 
@@ -66,7 +66,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
               :max_iters => settings["max_iters"] })
     end
 
-    results = Dict{ASCIIString, Any}()
+    results = PrecodingResults()
     if settings["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
@@ -81,7 +81,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings, ::Type{Razaviyayn2013_MinMaxWMMSEState})
+function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{Razaviyayn2013_MinMaxWMMSEState})
     # Global settings
     check_and_defaultize_precoding_settings!(settings)
 

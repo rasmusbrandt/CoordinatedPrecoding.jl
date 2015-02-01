@@ -6,7 +6,7 @@ immutable Komulainen2013_WMMSEState
 end
 
 function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=Dict())
+    cell_assignment::CellAssignment, settings=PrecodingSettings())
 
     check_and_defaultize_precoding_settings!(settings, Komulainen2013_WMMSEState)
 
@@ -60,7 +60,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
               :max_iters => settings["max_iters"] })
     end
 
-    results = Dict{ASCIIString, Any}()
+    results = PrecodingResults()
     if settings["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
@@ -75,7 +75,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings, ::Type{Komulainen2013_WMMSEState})
+function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{Komulainen2013_WMMSEState})
     # Global settings
     check_and_defaultize_precoding_settings!(settings)
 

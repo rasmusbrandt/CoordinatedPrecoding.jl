@@ -5,9 +5,10 @@ immutable Gomadam2008_MaxSINRState
 end
 
 function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=Dict())
+    cell_assignment::CellAssignment, settings=PrecodingSettings())
 
-    check_and_defaultize_precoding_settings!(settings, Gomadam2008_MaxSINRState)
+    # No specific precoding settings for this algorithm
+    check_and_defaultize_precoding_settings!(settings)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -58,7 +59,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
               :max_iters => settings["max_iters"] })
     end
 
-    results = Dict{ASCIIString, Any}()
+    results = PrecodingResults()
     if settings["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
@@ -71,13 +72,6 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
         results["allocated_power"] = allocated_power[:,:,iters]
     end
     return results
-end
-
-function check_and_defaultize_precoding_settings!(settings, ::Type{Gomadam2008_MaxSINRState})
-    # Global settings
-    check_and_defaultize_precoding_settings!(settings)
-
-    # Local settings
 end
 
 function update_MSs!(state::Gomadam2008_MaxSINRState,

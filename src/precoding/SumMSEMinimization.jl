@@ -5,7 +5,7 @@ immutable SumMSEMinimizationState
 end
 
 function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=Dict())
+    cell_assignment::CellAssignment, settings=PrecodingSettings())
 
     check_and_defaultize_precoding_settings(settings, SumMSEMinimizationState)
 
@@ -58,7 +58,7 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
               :max_iters => settings["max_iters"] })
     end
 
-    results = Dict{ASCIIString, Any}()
+    results = PrecodingResults()
     if settings["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
@@ -73,7 +73,7 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings, ::Type{SumMSEMinimizationState})
+function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{SumMSEMinimizationState})
     # Global settings
     check_and_defaultize_precoding_settings!(settings)
 

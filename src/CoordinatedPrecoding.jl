@@ -36,6 +36,7 @@ export
     require_equal_no_MSs_per_cell,
 
 # Precoding
+    PrecodingSettings, PrecodingResults,
     Eigenprecoding,
     Gomadam2008_MaxSINR,
     Komulainen2013_WMMSE,

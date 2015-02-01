@@ -5,7 +5,7 @@ immutable Shi2011_WMMSEState
 end
 
 function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=Dict())
+    cell_assignment::CellAssignment, settings=PrecodingSettings())
 
     check_and_defaultize_precoding_settings!(settings, Shi2011_WMMSEState)
 
@@ -58,7 +58,7 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
               :max_iters => settings["max_iters"] })
     end
 
-    results = Dict{ASCIIString, Any}()
+    results = PrecodingResults()
     if settings["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
@@ -73,7 +73,7 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings, ::Type{Shi2011_WMMSEState})
+function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{Shi2011_WMMSEState})
     # Global settings
     check_and_defaultize_precoding_settings!(settings)
 
