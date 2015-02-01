@@ -20,11 +20,12 @@ function setup_interfering_broadcast_channel(
     system = SinglecarrierSystem(0, 0),
     alpha::Float64 = 1.,
     transmit_power::Float64 = 1.,
+    user_priority::Float64 = 1.,
     no_streams::Int = 1,
     receiver_noise_power::Float64 = 1.)
 
     BSs = [ CanonicalBS(no_BS_antennas, transmit_power) for i = 1:no_BSs ]
-    MSs = [ CanonicalMS(no_MS_antennas, no_streams, receiver_noise_power) for k = 1:no_BSs*no_MSs_per_cell ]    
+    MSs = [ CanonicalMS(no_MS_antennas, user_priority, no_streams, receiver_noise_power) for k = 1:no_BSs*no_MSs_per_cell ]
 
     InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha)
 end

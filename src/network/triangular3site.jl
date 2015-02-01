@@ -40,6 +40,7 @@ function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
         [SixSector3gppAntennaParams(-90/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams( 30/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams(150/180*pi, 35/180*pi, 23)],
+    user_priority::Float64 = 1.,
     no_streams::Int = 1,
     MS_antenna_gain_dB::Float64 = 0.,
     receiver_noise_figure::Float64 = 9.)
@@ -60,7 +61,7 @@ function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
             Position(+inter_site_distance/2, -inter_site_distance/(2*sqrt(3))),
             transmit_power, BS_antenna_gain_params[3])
     ]
-    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:3*no_MSs_per_cell ] 
+    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), user_priority, no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:3*no_MSs_per_cell ]
 
     Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environment, inter_site_distance, guard_distance)

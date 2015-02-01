@@ -24,9 +24,6 @@ include("SumMSEMinimization.jl")
 ##########################################################################
 # Global params and consistency checks
 function check_and_defaultize_precoding_params!(params::PrecodingParams)
-    if !haskey(params, "user_priorities")
-        error("Supply user_priorities.")
-    end
     if !haskey(params, "output_protocol")
         params["output_protocol"] = 1
         Lumberjack.info("Setting default setting output_protocol.",

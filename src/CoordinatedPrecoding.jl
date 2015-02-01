@@ -20,6 +20,8 @@ export
     get_no_antennas, get_no_MS_antennas, get_no_BS_antennas,
     get_transmit_powers, get_receiver_noise_powers, get_no_streams,
     set_transmit_powers!, set_receiver_noise_powers!, set_no_streams!,
+    get_user_priority, get_user_priorities,
+    set_user_priority, set_user_priorities,
     require_equal_no_MS_antennas, require_equal_no_BS_antennas,
     require_single_antenna_MSs, require_single_antenna_BSs,
     require_equal_no_streams, require_single_stream,

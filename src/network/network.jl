@@ -84,6 +84,7 @@ abstract MS <: Node
 type CanonicalMS <: MS
     no_antennas::Int
 
+    user_priority::Float64
     no_streams::Int
 
     receiver_noise_power::Float64
@@ -94,6 +95,7 @@ type PhysicalMS{PropagationEnvironmentState_t <: PropagationEnvironmentState} <:
     position::Position
     velocity::Velocity
 
+    user_priority::Float64
     no_streams::Int
 
     antenna_gain_dB::Float64
@@ -139,6 +141,14 @@ get_receiver_noise_powers (network::Network) =
     Float64[ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
 set_receiver_noise_powers!(network::Network, sigma2::Float64) =
     (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
+
+get_user_priority (MS::MS) = MS.user_priority
+set_user_priority!(MS::MS, α::Float64) = (MS.user_priority = α)
+
+get_user_priorities (network::Network) =
+    Float64[ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
+set_user_priorities!(network::Network, α::Float64) =
+    (for MS in network.MSs; set_user_priority(MS.no_streams, α); end)
 
 get_no_streams (MS::MS) = MS.no_streams
 set_no_streams!(MS::MS, d::Int) = (MS.no_streams = d)

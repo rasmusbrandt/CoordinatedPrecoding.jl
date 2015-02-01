@@ -27,6 +27,7 @@ function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
     guard_distance::Float64 = 3.,
     transmit_power::Float64 = 10^(-9.8/10), # 21 dBm over 20 MHz, 1200 used subcarriers
     BS_antenna_gain_params::Vector{AntennaParams_t} = [OmnidirectionalAntennaParams(0), OmnidirectionalAntennaParams(0)],
+    user_priority::Float64 = 1.,
     no_streams::Int = 1,
     MS_antenna_gain_dB::Float64 = 0.,
     receiver_noise_figure::Float64 = 7.)
@@ -39,7 +40,7 @@ function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
     BSs = [
         PhysicalBS(no_BS_antennas, Position(0.5*inter_site_distance, 10), transmit_power, BS_antenna_gain_params[1]),
         PhysicalBS(no_BS_antennas, Position(1.5*inter_site_distance, 10), transmit_power, BS_antenna_gain_params[2]) ]
-    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:2*no_MSs_per_cell ] 
+    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), user_priority, no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:2*no_MSs_per_cell ]
 
     ITU_R_InH_Network(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environments, inter_site_distance, guard_distance)
