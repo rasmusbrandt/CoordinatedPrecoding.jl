@@ -5,9 +5,9 @@ immutable Razaviyayn2013_MinMaxWMMSEState
 end
 
 function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
-    network::Network, cell_assignment::CellAssignment, settings=PrecodingSettings())
+    network::Network, cell_assignment::CellAssignment, params=PrecodingParams())
 
-    check_and_defaultize_precoding_settings!(settings, Razaviyayn2013_MinMaxWMMSEState)
+    check_and_defaultize_precoding_params!(params, Razaviyayn2013_MinMaxWMMSEState)
 
     # The implementation is currently limited in the respects below. This is in
     # order to simplify the Gurobi optimization variable indexing. With equal
@@ -25,54 +25,54 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     state = Razaviyayn2013_MinMaxWMMSEState(
         Array(Matrix{Complex128}, K),
         unity_MSE_weights(ds),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, params))
     objective = Float64[]
-    logdet_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    MMSE_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    allocated_power = Array(Float64, K, maximum(ds), settings["max_iters"])
+    logdet_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    MMSE_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    allocated_power = Array(Float64, K, maximum(ds), params["max_iters"])
 
     iters = 0; conv_crit = Inf
-    while iters < settings["max_iters"]
+    while iters < params["max_iters"]
         update_MSs!(state, channel, sigma2s, cell_assignment)
         iters += 1
 
         # Results after this iteration
-        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, settings)
+        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, params)
         push!(objective, t)
-        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, settings)
+        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, params)
         allocated_power[:,:,iters] = calculate_allocated_power(state)
 
         # Check convergence
         if iters >= 2
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
-            if conv_crit < settings["stop_crit"]
+            if conv_crit < params["stop_crit"]
                 Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE converged.",
                     { :no_iters => iters, :final_objective => objective[end],
-                      :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-                      :max_iters => settings["max_iters"] })
+                      :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+                      :max_iters => params["max_iters"] })
                 break
             end
         end
 
         # Begin next iteration, unless the loop will end
-        if iters < settings["max_iters"]
-            update_BSs!(state, channel, Ps, sigma2s, cell_assignment, settings)
+        if iters < params["max_iters"]
+            update_BSs!(state, channel, Ps, sigma2s, cell_assignment, params)
         end
     end
-    if iters == settings["max_iters"]
+    if iters == params["max_iters"]
         Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE did NOT converge.",
             { :no_iters => iters, :final_objective => objective[end],
-              :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-              :max_iters => settings["max_iters"] })
+              :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+              :max_iters => params["max_iters"] })
     end
 
     results = PrecodingResults()
-    if settings["output_protocol"] == 1
+    if params["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
         results["MMSE_rates"] = MMSE_rates
         results["allocated_power"] = allocated_power
-    elseif settings["output_protocol"] == 2
+    elseif params["output_protocol"] == 2
         results["objective"] = objective[iters]
         results["logdet_rates"] = logdet_rates[:,:,iters]
         results["MMSE_rates"] = MMSE_rates[:,:,iters]
@@ -81,16 +81,16 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{Razaviyayn2013_MinMaxWMMSEState})
-    # Global settings
-    check_and_defaultize_precoding_settings!(settings)
+function check_and_defaultize_precoding_params!(params::PrecodingParams, ::Type{Razaviyayn2013_MinMaxWMMSEState})
+    # Global params
+    check_and_defaultize_precoding_params!(params)
 
-    # Local settings
-    if !haskey(settings, "Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose")
-        settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"] = false
+    # Local params
+    if !haskey(params, "Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose")
+        params["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"] = false
     end
-    if !haskey(settings, "Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol")
-        settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"] = 1e-5
+    if !haskey(params, "Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol")
+        params["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"] = 1e-5
     end
 end
 
@@ -125,7 +125,7 @@ end
 # JointPrecodingMCSSelection implementation.
 function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, cell_assignment::CellAssignment, settings)
+    sigma2s::Vector{Float64}, cell_assignment::CellAssignment, params)
 
     # The following is OK, since we have checked this at the top of
     # the outer function.
@@ -145,10 +145,10 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
 
     # Gurobi environment
     env = Gurobi.Env()
-    if !settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"]
+    if !params["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"]
         Gurobi.setparam!(env, "OutputFlag", 0)
     end
-    Gurobi.setparam!(env, "PSDTol", settings["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"])
+    Gurobi.setparam!(env, "PSDTol", params["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"])
     model = Gurobi.Model(env, "Razaviyayn2013_MinMaxWMMSE", finalize_env=true)
     Gurobi.set_sense!(model, :maximize)
 

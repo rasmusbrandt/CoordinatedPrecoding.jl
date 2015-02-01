@@ -6,11 +6,11 @@
 # Plots convergence curves.
 ##########################################################################
 
+using CoordinatedPrecoding
+using HDF5, JLD, ArgParse
+
 ##########################################################################
 # Load data
-#
-# Do this before loading other code, otherwise the JLD module might crash!
-using HDF5, JLD, ArgParse
 s = ArgParseSettings()
 @add_arg_table s begin
     "file_name"
@@ -22,8 +22,6 @@ data = load(parsed_args["file_name"])
 
 ##########################################################################
 # Plot parameters
-using CoordinatedPrecoding
-
 plot_params = [
     "name_suffix" => "",
 
@@ -65,7 +63,5 @@ plot_params = [
 
 ##########################################################################
 # Plot it
-plot_convergence(
-    data["results"],
-    data["simulation_params"],
-    plot_params)
+processed_results = process_convergence(data["raw_results"], data["simulation_params"], plot_params)
+plot_convergence(processed_results, data["simulation_params"], plot_params)

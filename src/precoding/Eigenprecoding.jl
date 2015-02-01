@@ -3,9 +3,9 @@ immutable EigenprecodingState
 end
 
 function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=PrecodingSettings())
+    cell_assignment::CellAssignment, params=PrecodingParams())
 
-    check_and_defaultize_precoding_settings!(settings)
+    check_and_defaultize_precoding_params!(params)
 
     I = get_no_BSs(network)
     Ps = get_transmit_powers(network)
@@ -43,24 +43,24 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
         end
     end
 
-    return calculate_logdet_rates(state, channel, sigma2s, cell_assignment, settings)
+    return calculate_logdet_rates(state, channel, sigma2s, cell_assignment, params)
 end
 
 function calculate_logdet_rates(state::EigenprecodingState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    cell_assignment::CellAssignment, settings)
+    cell_assignment::CellAssignment, params)
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
-    if settings["output_protocol"] == 1
-        intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
-        intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
-        uncoord_logdet_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
+    if params["output_protocol"] == 1
+        intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, params["max_iters"])
+        intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, params["max_iters"])
+        uncoord_logdet_rates = Array(Float64, channel.K, max_d, params["max_iters"])
 
-        intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
-        intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
-        uncoord_MMSE_rates = Array(Float64, channel.K, max_d, settings["max_iters"])
-    elseif settings["output_protocol"] == 2
+        intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, params["max_iters"])
+        intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, params["max_iters"])
+        uncoord_MMSE_rates = Array(Float64, channel.K, max_d, params["max_iters"])
+    elseif params["output_protocol"] == 2
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         uncoord_logdet_rates = Array(Float64, channel.K, max_d)
@@ -101,8 +101,8 @@ function calculate_logdet_rates(state::EigenprecodingState,
             r_intracell_MMSE = (1/Kc)*log2(max(1, real(1./diag(inv(W_intracell)))))
             r_uncoord_MMSE = log2(max(1, real(1./diag(inv(W_uncoord)))))
 
-            if settings["output_protocol"] == 1
-                for iter = 1:settings["max_iters"]
+            if params["output_protocol"] == 1
+                for iter = 1:params["max_iters"]
                     intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
                     intracell_tdma_logdet_rates[k,:,iter] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
                     uncoord_logdet_rates[k,:,iter] = cat(1, r_uncoord_logdet, zeros(Float64, max_d - d))
@@ -111,7 +111,7 @@ function calculate_logdet_rates(state::EigenprecodingState,
                     intracell_tdma_MMSE_rates[k,:,iter] = cat(1, r_intracell_MMSE, zeros(Float64, max_d - d))
                     uncoord_MMSE_rates[k,:,iter] = cat(1, r_uncoord_MMSE, zeros(Float64, max_d - d))
                 end
-            elseif settings["output_protocol"] == 2
+            elseif params["output_protocol"] == 2
                 intercell_tdma_logdet_rates[k,:] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
                 intracell_tdma_logdet_rates[k,:] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
                 uncoord_logdet_rates[k,:] = cat(1, r_uncoord_logdet, zeros(Float64, max_d - d))
@@ -123,10 +123,12 @@ function calculate_logdet_rates(state::EigenprecodingState,
         end
     end
 
-    return [ "intercell_tdma_logdet_rates" => intercell_tdma_logdet_rates,
-             "intracell_tdma_logdet_rates" => intracell_tdma_logdet_rates,
-             "uncoord_logdet_rates" => uncoord_logdet_rates,
-             "intercell_tdma_MMSE_rates" => intercell_tdma_MMSE_rates,
-             "intracell_tdma_MMSE_rates" => intracell_tdma_MMSE_rates,
-             "uncoord_MMSE_rates" => uncoord_MMSE_rates ]
+    results = PrecodingResults()
+    results["intercell_tdma_logdet_rates"] = intercell_tdma_logdet_rates
+    results["intracell_tdma_logdet_rates"] = intracell_tdma_logdet_rates
+    results["uncoord_logdet_rates"] = uncoord_logdet_rates
+    results["intercell_tdma_MMSE_rates"] = intercell_tdma_MMSE_rates
+    results["intracell_tdma_MMSE_rates"] = intracell_tdma_MMSE_rates
+    results["uncoord_MMSE_rates"] = uncoord_MMSE_rates
+    return results
 end

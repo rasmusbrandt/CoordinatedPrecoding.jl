@@ -5,9 +5,9 @@ immutable Shi2011_WMMSEState
 end
 
 function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=PrecodingSettings())
+    cell_assignment::CellAssignment, params=PrecodingParams())
 
-    check_and_defaultize_precoding_settings!(settings, Shi2011_WMMSEState)
+    check_and_defaultize_precoding_params!(params, Shi2011_WMMSEState)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -17,54 +17,54 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     state = Shi2011_WMMSEState(
         Array(Matrix{Complex128}, K),
         unity_MSE_weights(ds),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, params))
     objective = Float64[]
-    logdet_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    MMSE_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    allocated_power = Array(Float64, K, maximum(ds), settings["max_iters"])
+    logdet_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    MMSE_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    allocated_power = Array(Float64, K, maximum(ds), params["max_iters"])
 
     iters = 0; conv_crit = Inf
-    while iters < settings["max_iters"]
+    while iters < params["max_iters"]
         update_MSs!(state, channel, sigma2s, cell_assignment)
         iters += 1
 
         # Results after this iteration
-        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, settings)
+        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, params)
         push!(objective, t)
-        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, settings)
+        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, params)
         allocated_power[:,:,iters] = calculate_allocated_power(state)
 
         # Check convergence
         if iters >= 2
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
-            if conv_crit < settings["stop_crit"]
+            if conv_crit < params["stop_crit"]
                 Lumberjack.debug("Shi2011_WMMSE converged.",
                     { :no_iters => iters, :final_objective => objective[end],
-                      :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-                      :max_iters => settings["max_iters"] })
+                      :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+                      :max_iters => params["max_iters"] })
                 break
             end
         end
 
         # Begin next iteration, unless the loop will end
-        if iters < settings["max_iters"]
-            update_BSs!(state, channel, Ps, cell_assignment, settings)
+        if iters < params["max_iters"]
+            update_BSs!(state, channel, Ps, cell_assignment, params)
         end
     end
-    if iters == settings["max_iters"]
+    if iters == params["max_iters"]
         Lumberjack.debug("Shi2011_WMMSE did NOT converge.",
             { :no_iters => iters, :final_objective => objective[end],
-              :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-              :max_iters => settings["max_iters"] })
+              :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+              :max_iters => params["max_iters"] })
     end
 
     results = PrecodingResults()
-    if settings["output_protocol"] == 1
+    if params["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
         results["MMSE_rates"] = MMSE_rates
         results["allocated_power"] = allocated_power
-    elseif settings["output_protocol"] == 2
+    elseif params["output_protocol"] == 2
         results["objective"] = objective[iters]
         results["logdet_rates"] = logdet_rates[:,:,iters]
         results["MMSE_rates"] = MMSE_rates[:,:,iters]
@@ -73,22 +73,22 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{Shi2011_WMMSEState})
-    # Global settings
-    check_and_defaultize_precoding_settings!(settings)
+function check_and_defaultize_precoding_params!(params::PrecodingParams, ::Type{Shi2011_WMMSEState})
+    # Global params
+    check_and_defaultize_precoding_params!(params)
 
-    # Local settings
-    if !haskey(settings, "Shi2011_WMMSE:bisection_Gamma_cond")
-        settings["Shi2011_WMMSE:bisection_Gamma_cond"] = 1e10
+    # Local params
+    if !haskey(params, "Shi2011_WMMSE:bisection_Gamma_cond")
+        params["Shi2011_WMMSE:bisection_Gamma_cond"] = 1e10
     end
-    if !haskey(settings, "Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound")
-        settings["Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound"] = 1e-14
+    if !haskey(params, "Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound")
+        params["Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound"] = 1e-14
     end
-    if !haskey(settings, "Shi2011_WMMSE:bisection_max_iters")
-        settings["Shi2011_WMMSE:bisection_max_iters"] = 5e1
+    if !haskey(params, "Shi2011_WMMSE:bisection_max_iters")
+        params["Shi2011_WMMSE:bisection_max_iters"] = 5e1
     end
-    if !haskey(settings, "Shi2011_WMMSE:bisection_tolerance")
-        settings["Shi2011_WMMSE:bisection_tolerance"] = 1e-3
+    if !haskey(params, "Shi2011_WMMSE:bisection_tolerance")
+        params["Shi2011_WMMSE:bisection_tolerance"] = 1e-3
     end
 end
 
@@ -117,7 +117,7 @@ function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
 end
 
 function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel, 
-    Ps::Vector{Float64}, cell_assignment::CellAssignment, settings)
+    Ps::Vector{Float64}, cell_assignment::CellAssignment, params)
 
     for i = 1:channel.I
         # Virtual uplink covariance
@@ -130,7 +130,7 @@ function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
 
         # Find optimal Lagrange multiplier
         mu_star, Gamma_eigen =
-            optimal_mu(i, Gamma, state, channel, Ps, cell_assignment, settings)
+            optimal_mu(i, Gamma, state, channel, Ps, cell_assignment, params)
 
         # Precoders (reuse EVD)
         for k in served_MS_ids(i, cell_assignment)
@@ -141,7 +141,7 @@ end
 
 function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
     state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
-    Ps::Vector{Float64}, cell_assignment::CellAssignment, settings)
+    Ps::Vector{Float64}, cell_assignment::CellAssignment, params)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))
@@ -154,11 +154,11 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen.values .+ mu).*(Gamma_eigen.values .+ mu)))
 
     # mu lower bound
-    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < settings["Shi2011_WMMSE:bisection_Gamma_cond"]
+    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < params["Shi2011_WMMSE:bisection_Gamma_cond"]
         # Gamma is invertible
         mu_lower = 0
     else
-        mu_lower = settings["Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound"]
+        mu_lower = params["Shi2011_WMMSE:bisection_singular_Gamma_mu_lower_bound"]
     end
 
     if f(mu_lower) <= Ps[i]
@@ -172,10 +172,10 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
         end
 
         no_iters = 0
-        while no_iters < settings["Shi2011_WMMSE:bisection_max_iters"]
+        while no_iters < params["Shi2011_WMMSE:bisection_max_iters"]
             conv_crit = (Ps[i] - f(mu_upper))/Ps[i]
 
-            if conv_crit < settings["Shi2011_WMMSE:bisection_tolerance"]
+            if conv_crit < params["Shi2011_WMMSE:bisection_tolerance"]
                 break
             else
                 mu = (1/2)*(mu_lower + mu_upper)
@@ -192,7 +192,7 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
             no_iters += 1
         end
 
-        if no_iters == settings["Shi2011_WMMSE:bisection_max_iters"]
+        if no_iters == params["Shi2011_WMMSE:bisection_max_iters"]
             println("Power bisection: reached max iterations.")
         end
 

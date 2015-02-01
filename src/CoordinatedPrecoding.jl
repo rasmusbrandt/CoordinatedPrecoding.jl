@@ -36,7 +36,6 @@ export
     require_equal_no_MSs_per_cell,
 
 # Precoding
-    PrecodingSettings, PrecodingResults,
     Eigenprecoding,
     Gomadam2008_MaxSINR,
     Komulainen2013_WMMSE,
@@ -46,12 +45,12 @@ export
     zero_receivers, initial_precoders, unity_MSE_weights,
 
 # Simulation
-    SimulationParams,
-    simulate_convergence, simulate_SNR, perform_performancetest,
-    plot_convergence, plot_SNR,
+    simulate_convergence, process_convergence, plot_convergence,
+    simulate_SNR, process_SNR, plot_SNR,
+    simulate_performance,
 
 # Utilities
-    clean_simulation_params_for_jld, clean_precoding_settings_for_jld
+    clean_simulation_params_for_jld, clean_precoding_params_for_jld
 
 ##########################################################################
 # Channels
@@ -64,8 +63,6 @@ include("cell_assignment/cell_assignment.jl")
 include("precoding/precoding.jl")
 # Simulation
 include("simulation/simulation.jl")
-# Visualization
-include("visualization/visualization.jl")
 # Other useful stuff
 include("utils.jl")
 ##########################################################################

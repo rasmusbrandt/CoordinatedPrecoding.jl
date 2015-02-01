@@ -13,18 +13,18 @@ function clean_simulation_params_for_jld(simulation_params)
     return cleaned_simulation_params
 end
 
-function clean_precoding_settings_for_jld(precoding_settings)
+function clean_precoding_params_for_jld(precoding_params)
     # Remove all function pointers from precoding_methods
-    cleaned_precoding_settings = Dict{ASCIIString, Any}()
-    for (key, val) in precoding_settings
+    cleaned_precoding_params = Dict{ASCIIString, Any}()
+    for (key, val) in precoding_params
         if isa(val, Function)
-            cleaned_precoding_settings[key] = string(val)
+            cleaned_precoding_params[key] = string(val)
         else
-            cleaned_precoding_settings[key] = val
+            cleaned_precoding_params[key] = val
         end
     end
 
-    return cleaned_precoding_settings
+    return cleaned_precoding_params
 end
 
 ##########################################################################

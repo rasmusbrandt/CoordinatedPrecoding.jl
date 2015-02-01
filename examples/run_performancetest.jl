@@ -20,7 +20,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 
 ##########################################################################
 # Performance test
-simulation_params = {
+simulation_params = [
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
@@ -32,16 +32,16 @@ simulation_params = {
         Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ]
-}
-precoding_settings = [
+]
+precoding_params = [
     "stop_crit" => 0.,
     "max_iters" => 100,
 ]
-precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
+precoding_params["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         transmit_power=10^(simulation_params["P_dBm"]/10),
         no_streams=simulation_params["d"])
 
-perform_performancetest(network, simulation_params, precoding_settings)
+simulate_performance(network, simulation_params, precoding_params)

@@ -19,7 +19,7 @@ Lumberjack.add_truck(Lumberjack.LumberjackTruck("debug.log", "debug"), "debug")
 srand(973472333)
 start_time = strftime("%Y%m%dT%H%M%S", time())
 
-precoding_settings = [
+precoding_params = [
     "stop_crit" => 1e-3,
     "initial_precoders" => "dft", # mainly just to ensure Dict{ASCIIString, Any} type
 ]
@@ -31,7 +31,7 @@ simulation_params = [
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "Ps_dBm" => 0:3:30,
     "d" => 1,
-    "Ndrops" => 10, "Nsim" => 5,
+    "Ndrops" => 10, "Nsim" => 1,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
@@ -40,19 +40,19 @@ simulation_params = [
         Eigenprecoding
     ]
 ]
-precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
+precoding_params["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         no_streams=simulation_params["d"])
 
-results = simulate_SNR(network, simulation_params, precoding_settings)
+raw_results = simulate_SNR(network, simulation_params, precoding_params)
 
 println("-- Saving $(simulation_params["name"]) results")
 save("SNR_$(simulation_params["name"]).jld",
      "simulation_params", clean_simulation_params_for_jld(simulation_params),
-     "precoding_settings", precoding_settings,
-     "results", results)
+     "precoding_params", clean_precoding_params_for_jld(precoding_params),
+     "raw_results", raw_results)
 
 ##########################################################################
 # Largescale network
@@ -61,7 +61,7 @@ simulation_params = [
     "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
     "Ps_dBm" => 0:3:30,
     "d" => 1,
-    "Ndrops" => 1, "Nsim" => 1,
+    "Ndrops" => 10, "Nsim" => 1,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
@@ -70,16 +70,16 @@ simulation_params = [
         Eigenprecoding
     ]
 ]
-precoding_settings["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
+precoding_params["user_priorities"] = ones(simulation_params["I"]*simulation_params["Kc"])
 network =
     setup_triangular3site_network(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         no_streams=simulation_params["d"])
 
-results = simulate_SNR(network, simulation_params, precoding_settings)
+raw_results = simulate_SNR(network, simulation_params, precoding_params)
 
 println("-- Saving $(simulation_params["name"]) results")
 save("SNR_$(simulation_params["name"]).jld",
      "simulation_params", clean_simulation_params_for_jld(simulation_params),
-     "precoding_settings", precoding_settings,
-     "results", results)
+     "precoding_params", clean_precoding_params_for_jld(precoding_params),
+     "raw_results", raw_results)

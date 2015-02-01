@@ -1,7 +1,16 @@
 ##########################################################################
 # Precoding types
-typealias PrecodingSettings Dict{ASCIIString, Any}
-typealias PrecodingResults Dict{ASCIIString, Any}
+typealias PrecodingParams Dict{ASCIIString, Any}
+
+type PrecodingResults
+    results::Dict{ASCIIString, Any}
+end
+PrecodingResults() =
+    PrecodingResults(Dict{ASCIIString, Any}())
+Base.getindex(p::PrecodingResults, k::ASCIIString) =
+    getindex(p.results, k)
+Base.setindex!(p::PrecodingResults, v, k::ASCIIString) =
+    setindex!(p.results, v, k)
 
 ##########################################################################
 # Reference implementation of standard coordinated precoding algorithms
@@ -13,32 +22,32 @@ include("Shi2011_WMMSE.jl")
 include("SumMSEMinimization.jl")
 
 ##########################################################################
-# Global settings and consistency checks
-function check_and_defaultize_precoding_settings!(settings::PrecodingSettings)
-    if !haskey(settings, "user_priorities")
+# Global params and consistency checks
+function check_and_defaultize_precoding_params!(params::PrecodingParams)
+    if !haskey(params, "user_priorities")
         error("Supply user_priorities.")
     end
-    if !haskey(settings, "output_protocol")
-        settings["output_protocol"] = 1
+    if !haskey(params, "output_protocol")
+        params["output_protocol"] = 1
         Lumberjack.info("Setting default setting output_protocol.",
-                         { :output_protocol => settings["output_protocol"] })
+                         { :output_protocol => params["output_protocol"] })
     end
-    if !haskey(settings, "stop_crit")
-        settings["stop_crit"] = 1e-3
+    if !haskey(params, "stop_crit")
+        params["stop_crit"] = 1e-3
         Lumberjack.info("Setting default setting stop_crit.",
-                         { :stop_crit => settings["stop_crit"] })
+                         { :stop_crit => params["stop_crit"] })
     end
-    if !haskey(settings, "max_iters")
-        settings["max_iters"] = 500
+    if !haskey(params, "max_iters")
+        params["max_iters"] = 500
         Lumberjack.info("Setting default setting max_iters.",
-                         { :max_iters => settings["max_iters"] })
+                         { :max_iters => params["max_iters"] })
     end
-    if !haskey(settings, "initial_precoders")
-        settings["initial_precoders"] = "dft"
+    if !haskey(params, "initial_precoders")
+        params["initial_precoders"] = "dft"
         Lumberjack.info("Setting default setting initial_precoders.",
-                         { :initial_precoders => settings["initial_precoders"] })
+                         { :initial_precoders => params["initial_precoders"] })
     end
-    if settings["output_protocol"] != 1 && settings["output_protocol"] != 2
+    if params["output_protocol"] != 1 && params["output_protocol"] != 2
         error("Unknown output protocol")
     end
 end
@@ -53,7 +62,7 @@ ReferenceImplementationState = Union(
     SumMSEMinimizationState,
 )
 
-function calculate_logdet_rates(state::ReferenceImplementationState, settings)
+function calculate_logdet_rates(state::ReferenceImplementationState, params)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
@@ -66,7 +75,7 @@ function calculate_logdet_rates(state::ReferenceImplementationState, settings)
         # may be less than 1, so we need to handle that to not get negative
         # rates.
         r = log2(max(1, real(eigvals(state.W[k]))))
-        logdet_rates_objective += settings["user_priorities"][k]*sum(r)
+        logdet_rates_objective += params["user_priorities"][k]*sum(r)
 
         if ds[k] < max_d
             logdet_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
@@ -78,7 +87,7 @@ function calculate_logdet_rates(state::ReferenceImplementationState, settings)
     return logdet_rates, logdet_rates_objective
 end
 
-function calculate_MMSE_rates(state::ReferenceImplementationState, settings)
+function calculate_MMSE_rates(state::ReferenceImplementationState, params)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
@@ -94,7 +103,7 @@ function calculate_MMSE_rates(state::ReferenceImplementationState, settings)
         # small (like 2-by-2 or 3-by-3), so the complexity isn't too bad.
         E = state.W[k]\eye(state.W[k])
         r = log2(max(1, real(1./diag(E))))
-        MMSE_rates_objective += settings["user_priorities"][k]*sum(r)
+        MMSE_rates_objective += params["user_priorities"][k]*sum(r)
 
         if ds[k] < max_d
             MMSE_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
@@ -135,11 +144,11 @@ unity_MSE_weights(ds::Vector{Int}) =
 
 function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
     sigma2s::Vector{Float64}, ds::Vector{Int}, cell_assignment::CellAssignment,
-    settings)
+    params)
 
     V = Array(Matrix{Complex128}, channel.K)
 
-    if settings["initial_precoders"] == "dft"
+    if params["initial_precoders"] == "dft"
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
             Kc = length(served)
@@ -148,7 +157,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
                 V[k] = sqrt(Ps[i]/(channel.Ms[i]*ds[k]*Kc))*fft(eye(channel.Ms[i], ds[k]), 1)
             end
         end
-    elseif settings["initial_precoders"] == "white"
+    elseif params["initial_precoders"] == "white"
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
             Kc = length(served)
@@ -157,7 +166,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
                 V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(channel.Ms[i], ds[k])
             end
         end
-    elseif settings["initial_precoders"] == "zeros"
+    elseif params["initial_precoders"] == "zeros"
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
             Kc = length(served)
@@ -166,7 +175,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
                 V[k] = zeros(channel.Ms[i], ds[k])
             end
         end
-    elseif settings["initial_precoders"] == "eigendirection"
+    elseif params["initial_precoders"] == "eigendirection"
         for i = 1:channel.I
             served = served_MS_ids(i, cell_assignment)
             Kc = length(served)

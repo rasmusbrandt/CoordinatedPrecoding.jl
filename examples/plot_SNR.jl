@@ -6,11 +6,11 @@
 # Plots SNR curves.
 ##########################################################################
 
+using CoordinatedPrecoding
+using HDF5, JLD, ArgParse
+
 ##########################################################################
 # Load data
-#
-# Do this before loading other code, otherwise the JLD module might crash!
-using HDF5, JLD, ArgParse
 s = ArgParseSettings()
 @add_arg_table s begin
     "file_name"
@@ -22,16 +22,14 @@ data = load(parsed_args["file_name"])
 
 ##########################################################################
 # Plot parameters
-using CoordinatedPrecoding
-
 plot_params = [
     "name_suffix" => "",
 
     "figsize" => (8,5),
 
     "objectives" => [
-        "sumrate" => (r -> sum(r, 4:5), [ "xlabel" => "Iterations", "ylabel" => "Sum rate [bits/s/Hz]" ]),
-        "minrate" => (r -> minimum(sum(r, 5), 4), [ "xlabel" => "Iterations", "ylabel" => "Min rate [bits/s/Hz]", ]),
+        "sumrate" => (r -> sum(r, 4:5), [ "xlabel" => "Transmit power [dBm]", "ylabel" => "Sum rate [bits/s/Hz]" ]),
+        "minrate" => (r -> minimum(sum(r, 5), 4), [ "xlabel" => "Transmit power [dBm]", "ylabel" => "Min rate [bits/s/Hz]", ]),
     ],
 
     "precoding_methods" => {
@@ -65,7 +63,5 @@ plot_params = [
 
 ##########################################################################
 # Plot it
-plot_SNR(
-    data["results"],
-    data["simulation_params"],
-    plot_params)
+processed_results = process_SNR(data["raw_results"], data["simulation_params"], plot_params)
+plot_SNR(processed_results, data["simulation_params"], plot_params)

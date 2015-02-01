@@ -5,10 +5,10 @@ immutable Gomadam2008_MaxSINRState
 end
 
 function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=PrecodingSettings())
+    cell_assignment::CellAssignment, params=PrecodingParams())
 
-    # No specific precoding settings for this algorithm
-    check_and_defaultize_precoding_settings!(settings)
+    # No specific precoding params for this algorithm
+    check_and_defaultize_precoding_params!(params)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -18,54 +18,54 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network,
     state = Gomadam2008_MaxSINRState(
         zero_receivers(channel, ds),
         unity_MSE_weights(ds),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, params))
     objective = Float64[]
-    logdet_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    MMSE_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    allocated_power = Array(Float64, K, maximum(ds), settings["max_iters"])
+    logdet_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    MMSE_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    allocated_power = Array(Float64, K, maximum(ds), params["max_iters"])
 
     iters = 0; conv_crit = Inf
-    while iters < settings["max_iters"]
+    while iters < params["max_iters"]
         update_MSs!(state, channel, sigma2s, cell_assignment)
         iters += 1
 
         # Results after this iteration
-        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, settings)
+        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, params)
         push!(objective, t)
-        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, settings)
+        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, params)
         allocated_power[:,:,iters] = calculate_allocated_power(state)
 
         # Check convergence
         if iters >= 2
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
-            if conv_crit < settings["stop_crit"]
+            if conv_crit < params["stop_crit"]
                 Lumberjack.debug("Gomadam2008_MaxSINR converged.",
                     { :no_iters => iters, :final_objective => objective[end],
-                      :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-                      :max_iters => settings["max_iters"] })
+                      :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+                      :max_iters => params["max_iters"] })
                 break
             end
         end
 
         # Begin next iteration, unless the loop will end
-        if iters < settings["max_iters"]
-            update_BSs!(state, channel, Ps, sigma2s, cell_assignment, settings)
+        if iters < params["max_iters"]
+            update_BSs!(state, channel, Ps, sigma2s, cell_assignment, params)
         end
     end
-    if iters == settings["max_iters"]
+    if iters == params["max_iters"]
         Lumberjack.debug("Gomadam2008_MaxSINR did NOT converge.",
             { :no_iters => iters, :final_objective => objective[end],
-              :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-              :max_iters => settings["max_iters"] })
+              :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+              :max_iters => params["max_iters"] })
     end
 
     results = PrecodingResults()
-    if settings["output_protocol"] == 1
+    if params["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
         results["MMSE_rates"] = MMSE_rates
         results["allocated_power"] = allocated_power
-    elseif settings["output_protocol"] == 2
+    elseif params["output_protocol"] == 2
         results["objective"] = objective[iters]
         results["logdet_rates"] = logdet_rates[:,:,iters]
         results["MMSE_rates"] = MMSE_rates[:,:,iters]
@@ -109,7 +109,7 @@ end
 
 function update_BSs!(state::Gomadam2008_MaxSINRState,
     channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, cell_assignment::CellAssignment, settings)
+    sigma2s::Vector{Float64}, cell_assignment::CellAssignment, params)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 

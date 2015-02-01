@@ -5,9 +5,9 @@ immutable SumMSEMinimizationState
 end
 
 function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment, settings=PrecodingSettings())
+    cell_assignment::CellAssignment, params=PrecodingParams())
 
-    check_and_defaultize_precoding_settings(settings, SumMSEMinimizationState)
+    check_and_defaultize_precoding_params(params, SumMSEMinimizationState)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -17,54 +17,54 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
     state = SumMSEMinimizationState(
         Array(Matrix{Complex128}, K),
         unity_MSE_weights(ds),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, settings))
+        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, params))
     objective = Float64[]
-    logdet_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    MMSE_rates = Array(Float64, K, maximum(ds), settings["max_iters"])
-    allocated_power = Array(Float64, K, maximum(ds), settings["max_iters"])
+    logdet_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    MMSE_rates = Array(Float64, K, maximum(ds), params["max_iters"])
+    allocated_power = Array(Float64, K, maximum(ds), params["max_iters"])
 
     iters = 0; conv_crit = Inf
-    while iters < settings["max_iters"]
+    while iters < params["max_iters"]
         update_MSs!(state, channel, sigma2s, cell_assignment)
         iters += 1
 
         # Results after this iteration
-        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, settings)
+        logdet_rates[:,:,iters], t = calculate_logdet_rates(state, params)
         push!(objective, t)
-        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, settings)
+        MMSE_rates[:,:,iters], _ = calculate_MMSE_rates(state, params)
         allocated_power[:,:,iters] = calculate_allocated_power(state)
 
         # Check convergence
         if iters >= 2
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
-            if conv_crit < settings["stop_crit"]
+            if conv_crit < params["stop_crit"]
                 Lumberjack.debug("SumMSEMinimization converged.",
                     { :no_iters => iters, :final_objective => objective[end],
-                      :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-                      :max_iters => settings["max_iters"] })
+                      :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+                      :max_iters => params["max_iters"] })
                 break
             end
         end
 
         # Begin next iteration, unless the loop will end
-        if iters < settings["max_iters"]
-            update_BSs!(state, channel, Ps, cell_assignment, settings)
+        if iters < params["max_iters"]
+            update_BSs!(state, channel, Ps, cell_assignment, params)
         end
     end
-    if iters == settings["max_iters"]
+    if iters == params["max_iters"]
         Lumberjack.debug("SumMSEMinimization did NOT converge.",
             { :no_iters => iters, :final_objective => objective[end],
-              :conv_crit => conv_crit, :stop_crit => settings["stop_crit"],
-              :max_iters => settings["max_iters"] })
+              :conv_crit => conv_crit, :stop_crit => params["stop_crit"],
+              :max_iters => params["max_iters"] })
     end
 
     results = PrecodingResults()
-    if settings["output_protocol"] == 1
+    if params["output_protocol"] == 1
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
         results["MMSE_rates"] = MMSE_rates
         results["allocated_power"] = allocated_power
-    elseif settings["output_protocol"] == 2
+    elseif params["output_protocol"] == 2
         results["objective"] = objective[iters]
         results["logdet_rates"] = logdet_rates[:,:,iters]
         results["MMSE_rates"] = MMSE_rates[:,:,iters]
@@ -73,22 +73,22 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
     return results
 end
 
-function check_and_defaultize_precoding_settings!(settings::PrecodingSettings, ::Type{SumMSEMinimizationState})
-    # Global settings
-    check_and_defaultize_precoding_settings!(settings)
+function check_and_defaultize_precoding_params!(params::PrecodingParams, ::Type{SumMSEMinimizationState})
+    # Global params
+    check_and_defaultize_precoding_params!(params)
 
-    # Local settings
-    if !haskey(settings, "SumMSEMinimization:bisection_Gamma_cond")
-        settings["SumMSEMinimization:bisection_Gamma_cond"] = 1e10
+    # Local params
+    if !haskey(params, "SumMSEMinimization:bisection_Gamma_cond")
+        params["SumMSEMinimization:bisection_Gamma_cond"] = 1e10
     end
-    if !haskey(settings, "SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound")
-        settings["SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound"] = 1e-14
+    if !haskey(params, "SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound")
+        params["SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound"] = 1e-14
     end
-    if !haskey(settings, "SumMSEMinimization:bisection_max_iters")
-        settings["SumMSEMinimization:bisection_max_iters"] = 5e1
+    if !haskey(params, "SumMSEMinimization:bisection_max_iters")
+        params["SumMSEMinimization:bisection_max_iters"] = 5e1
     end
-    if !haskey(settings, "SumMSEMinimization:bisection_tolerance")
-        settings["SumMSEMinimization:bisection_tolerance"] = 1e-3
+    if !haskey(params, "SumMSEMinimization:bisection_tolerance")
+        params["SumMSEMinimization:bisection_tolerance"] = 1e-3
     end
 end
 
@@ -117,7 +117,7 @@ function update_MSs!(state::SumMSEMinimizationState, channel::SinglecarrierChann
 end
 
 function update_BSs!(state::SumMSEMinimizationState, channel::SinglecarrierChannel, 
-    Ps::Vector{Float64}, cell_assignment::CellAssignment, settings)
+    Ps::Vector{Float64}, cell_assignment::CellAssignment, params)
 
     for i = 1:channel.I
         # Virtual uplink covariance
@@ -130,7 +130,7 @@ function update_BSs!(state::SumMSEMinimizationState, channel::SinglecarrierChann
 
         # Find optimal Lagrange multiplier
         mu_star, Gamma_eigen =
-            optimal_mu(i, Gamma, state, channel, Ps, cell_assignment, settings)
+            optimal_mu(i, Gamma, state, channel, Ps, cell_assignment, params)
 
         # Precoders (reuse EVD)
         for k in served_MS_ids(i, cell_assignment)
@@ -141,7 +141,7 @@ end
 
 function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
     state::SumMSEMinimizationState, channel::SinglecarrierChannel,
-    Ps::Vector{Float64}, cell_assignment::CellAssignment, settings)
+    Ps::Vector{Float64}, cell_assignment::CellAssignment, params)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))
@@ -154,11 +154,11 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen.values .+ mu).*(Gamma_eigen.values .+ mu)))
 
     # mu lower bound
-    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < settings["SumMSEMinimization:bisection_Gamma_cond"]
+    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < params["SumMSEMinimization:bisection_Gamma_cond"]
         # Gamma is invertible
         mu_lower = 0
     else
-        mu_lower = settings["SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound"]
+        mu_lower = params["SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound"]
     end
 
     if f(mu_lower) <= Ps[i]
@@ -172,10 +172,10 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
         end
 
         no_iters = 0
-        while no_iters < settings["SumMSEMinimization:bisection_max_iters"]
+        while no_iters < params["SumMSEMinimization:bisection_max_iters"]
             conv_crit = (Ps[i] - f(mu_upper))/Ps[i]
 
-            if conv_crit < settings["SumMSEMinimization:bisection_tolerance"]
+            if conv_crit < params["SumMSEMinimization:bisection_tolerance"]
                 break
             else
                 mu = (1/2)*(mu_lower + mu_upper)
@@ -192,7 +192,7 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
             no_iters += 1
         end
 
-        if no_iters == settings["SumMSEMinimization:bisection_max_iters"]
+        if no_iters == params["SumMSEMinimization:bisection_max_iters"]
             println("Power bisection: reached max iterations.")
         end
 
