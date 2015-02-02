@@ -1,21 +1,18 @@
-function simulate_convergence(network::Network,
-    simulation_params::SimulationParams,
-    precoding_params::PrecodingParams)
-
+function simulate_convergence(network::Network, simulation_params::SimulationParams)
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
 
     println("-- simulate_convergence on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
     Lumberjack.info("Starting convergence simulation.",
-        { :network => network, :simulation_params => simulation_params,
-          :precoding_params => precoding_params })
+        { :network => network, :simulation_params => simulation_params })
 
     cell_assignment = assign_cells_by_id(network)
 
     # Ensure that we are using output protocol 1, because we want to store all
     # intermediate iterations.
-    precoding_params["output_protocol"] = 1
+    aux_params = get_aux_precoding_params(network)
+    aux_params["output_protocol"] = 1
 
     raw_results = MultipleSimulationResults(Ndrops, Nsim)
 
@@ -34,7 +31,7 @@ function simulate_convergence(network::Network,
 
             current_results = SingleSimulationResults()
             for method in simulation_params["precoding_methods"]
-                current_results[string(method)] = method(channel, network, cell_assignment, precoding_params)
+                current_results[string(method)] = method(channel, network, cell_assignment)
             end
 
             raw_results[Ndrops_idx, Nsim_idx] = current_results

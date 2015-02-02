@@ -21,7 +21,7 @@ get_no_MSs_per_cell(network::ITU_R_InH_Network) = network.no_MSs_per_cell
 
 function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
-    system = SinglecarrierSystem(3.4, 15e3),
+    system = SinglecarrierSystem(AuxPrecodingParams(), 3.4, 15e3),
     propagation_environments = [SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3), SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
     inter_site_distance::Float64 = 60.,
     guard_distance::Float64 = 3.,

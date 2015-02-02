@@ -1,30 +1,25 @@
 ##########################################################################
 # General utilities
 function clean_simulation_params_for_jld(simulation_params)
-    # Remove all function pointers from precoding_methods
     cleaned_precoding_methods = Array(ASCIIString, 0)
     for method in simulation_params["precoding_methods"]
         push!(cleaned_precoding_methods, string(method))
     end
 
-    cleaned_simulation_params = copy(simulation_params)
-    cleaned_simulation_params["precoding_methods"] = cleaned_precoding_methods
-
-    return cleaned_simulation_params
-end
-
-function clean_precoding_params_for_jld(precoding_params)
-    # Remove all function pointers from precoding_methods
-    cleaned_precoding_params = Dict{ASCIIString, Any}()
-    for (key, val) in precoding_params
+    cleaned_aux_precoding_params = Dict{ASCIIString, Any}()
+    for (key, val) in simulation_params["aux_precoding_params"]
         if isa(val, Function)
-            cleaned_precoding_params[key] = string(val)
+            cleaned_aux_precoding_params[key] = string(val)
         else
-            cleaned_precoding_params[key] = val
+            cleaned_aux_precoding_params[key] = val
         end
     end
 
-    return cleaned_precoding_params
+    cleaned_simulation_params = copy(simulation_params)
+    cleaned_simulation_params["precoding_methods"] = cleaned_precoding_methods
+    cleaned_simulation_params["aux_precoding_params"] = cleaned_aux_precoding_params
+
+    return cleaned_simulation_params
 end
 
 ##########################################################################

@@ -1,7 +1,4 @@
-function simulate_SNR(network::Network,
-    simulation_params::SimulationParams,
-    precoding_params::PrecodingParams)
-
+function simulate_SNR(network::Network, simulation_params::SimulationParams)
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
     Npowers = length(simulation_params["Ps_dBm"])
@@ -9,14 +6,14 @@ function simulate_SNR(network::Network,
     println("-- simulate_SNR on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
     Lumberjack.info("Starting SNR simulation.",
-        { :network => network, :simulation_params => simulation_params,
-          :precoding_params => precoding_params })
+        { :network => network, :simulation_params => simulation_params })
 
     cell_assignment = assign_cells_by_id(network)
 
     # Ensure that we are using output protocol 2, so we don't have to store all
     # the intermediate iterations.
-    precoding_params["output_protocol"] = 2
+    aux_params = get_aux_precoding_params(network)
+    aux_params["output_protocol"] = 2
 
     raw_results = MultipleSimulationResults(Ndrops, Nsim, Npowers)
 
@@ -38,7 +35,7 @@ function simulate_SNR(network::Network,
 
                 current_results = SingleSimulationResults()
                 for method in simulation_params["precoding_methods"]
-                    current_results[string(method)] = method(channel, network, cell_assignment, precoding_params)
+                    current_results[string(method)] = method(channel, network, cell_assignment)
                 end
 
                 raw_results[Ndrops_idx, Nsim_idx, Npowers_idx] = current_results

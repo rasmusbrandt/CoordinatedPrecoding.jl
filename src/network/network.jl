@@ -1,3 +1,5 @@
+##########################################################################
+# Geography
 immutable Position
     x::Float64
     y::Float64
@@ -18,12 +20,18 @@ end
 # Systems
 abstract System
 
+typealias AuxPrecodingParams Dict{ASCIIString, Any} # belongs in precoding.jl
+
 immutable SinglecarrierSystem <: System
+    aux_precoding_params::AuxPrecodingParams
+
     carrier_frequency::Float64
     bandwidth::Float64
 end
 
 immutable MulticarrierSystem <: System
+    aux_precoding_params::AuxPrecodingParams
+
     carrier_frequency::Float64
     bandwidth::Float64
 
@@ -108,6 +116,8 @@ end
 abstract Network
 abstract CanonicalNetwork <: Network
 abstract PhysicalNetwork <: Network
+
+get_aux_precoding_params (network::Network) = network.system.aux_precoding_params
 
 get_no_MSs(network::Network) = length(network.MSs)
 get_no_BSs(network::Network) = length(network.BSs)
