@@ -22,14 +22,14 @@ abstract System
 
 typealias AuxPrecodingParams Dict{ASCIIString, Any} # belongs in precoding.jl
 
-immutable SinglecarrierSystem <: System
+type SinglecarrierSystem <: System
     aux_precoding_params::AuxPrecodingParams
 
     carrier_frequency::Float64
     bandwidth::Float64
 end
 
-immutable MulticarrierSystem <: System
+type MulticarrierSystem <: System
     aux_precoding_params::AuxPrecodingParams
 
     carrier_frequency::Float64
@@ -117,7 +117,14 @@ abstract Network
 abstract CanonicalNetwork <: Network
 abstract PhysicalNetwork <: Network
 
+get_aux_precoding_param (network::Network, k::ASCIIString) =
+    (network.system.aux_precoding_params[k])
+set_aux_precoding_param!(network::Network, v, k::ASCIIString) =
+    (network.system.aux_precoding_params[k] = v)
+
 get_aux_precoding_params (network::Network) = network.system.aux_precoding_params
+set_aux_precoding_params!(network::Network, additional::AuxPrecodingParams) =
+    merge!(network.system.aux_precoding_params, additional)
 
 get_no_MSs(network::Network) = length(network.MSs)
 get_no_BSs(network::Network) = length(network.BSs)
@@ -131,33 +138,51 @@ get_no_BS_antennas(network::Network) =
 
 get_transmit_power (BS::BS) = BS.transmit_power
 set_transmit_power!(BS::BS, P::Float64) = (BS.transmit_power = P)
+get_transmit_power_dBm (BS::BS) = 10*log10(get_transmit_power(BS))
+set_transmit_power_dBm!(BS::BS, PdBm) = set_transmit_power!(BS, 10^(PdBm/10))
 
 get_transmit_powers (network::Network) =
     Float64[ get_transmit_power(network.BSs[i]) for i = 1:get_no_BSs(network) ]
-set_transmit_powers!(network::Network, P::Float64) =
+set_transmit_powers!(network::Network, P) =
     (for BS in network.BSs; set_transmit_power!(BS, P); end)
+get_transmit_powers_dBm (network::Network) =
+    Float64[ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_no_BSs(network) ]
+set_transmit_powers_dBm!(network::Network, PdBm) =
+    (for BS in network.BSs; set_transmit_power_dBm!(BS, PdBm); end)
 
 get_receiver_noise_power (MS::CanonicalMS, network::Network) =
     MS.receiver_noise_power
-set_receiver_noise_power!(MS::CanonicalMS, sigma2::Float64, network::Network) =
+set_receiver_noise_power!(MS::CanonicalMS, sigma2, network::Network) =
     (MS.receiver_noise_power = sigma2)
+get_receiver_noise_power_dBm (MS::CanonicalMS, network::Network) =
+    10*log10(get_receiver_noise_power(MS, network))
+set_receiver_noise_power_dBm!(MS::CanonicalMS, sigma2dBm, network::Network) =
+    set_receiver_noise_power(MS, 10^(sigma2dBm/10), network)
 
 get_receiver_noise_power (MS::PhysicalMS, network::PhysicalNetwork) =
-    10^((-174 + 10*log10(network.system.bandwidth) + MS.noise_figure)/10)
-set_receiver_noise_power!(MS::PhysicalMS, sigma2::Float64, network::PhysicalNetwork) =
-    (MS.noise_figure = 174 + 10*log10(sigma2) - 10*log10(network.system.bandwidth))
+    10^(get_receiver_noise_power_dBm(MS, network)/10)
+set_receiver_noise_power!(MS::PhysicalMS, sigma2, network::PhysicalNetwork) =
+    (MS.noise_figure = 174. + 10*log10(sigma2) - 10*log10(network.system.bandwidth))
+get_receiver_noise_power_dBm (MS::PhysicalMS, network::PhysicalNetwork) =
+    (-174. + 10*log10(network.system.bandwidth) + MS.noise_figure)
+set_receiver_noise_power_dBm!(MS::PhysicalMS, sigma2dBm, network::PhysicalNetwork) =
+    (MS.noise_figure = 174. + sigma2dBm - 10*log10(network.system.bandwidth))
 
 get_receiver_noise_powers (network::Network) =
     Float64[ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
-set_receiver_noise_powers!(network::Network, sigma2::Float64) =
+set_receiver_noise_powers!(network::Network, sigma2) =
     (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
+get_receiver_noise_powers_dBm (network::Network) =
+    Float64[ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+set_receiver_noise_powers_dBm!(network::Network, sigma2dBm) =
+    (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2dBm, network); end)
 
 get_user_priority (MS::MS) = MS.user_priority
-set_user_priority!(MS::MS, α::Float64) = (MS.user_priority = α)
+set_user_priority!(MS::MS, α) = (MS.user_priority = α)
 
 get_user_priorities (network::Network) =
     Float64[ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
-set_user_priorities!(network::Network, α::Float64) =
+set_user_priorities!(network::Network, α) =
     (for MS in network.MSs; set_user_priority(MS.no_streams, α); end)
 
 get_no_streams (MS::MS) = MS.no_streams

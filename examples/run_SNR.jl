@@ -24,7 +24,6 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 simulation_params = [
     "name" => "$(start_time)-ic",
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
-    "Ps_dBm" => 0:3:30,
     "d" => 1,
     "Ndrops" => 10, "Nsim" => 1,
     "precoding_methods" => [
@@ -37,16 +36,17 @@ simulation_params = [
     "aux_precoding_params" => [
         "initial_precoders" => "dft",
         "stop_crit" => 0.,
-        "max_iters" => 100,
+    ],
+    "independent_variable" => (set_transmit_powers_dBm!, 0:3:30),
+    "aux_independent_variables" => [
+        ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50, 100]),
     ]
 ]
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         no_streams=simulation_params["d"])
-merge!(network.system.aux_precoding_params, simulation_params["aux_precoding_params"])
-
-raw_results = simulate_SNR(network, simulation_params)
+raw_results = simulate(network, simulation_params)
 
 println("-- Saving $(simulation_params["name"]) results")
 save("SNR_$(simulation_params["name"]).jld",
@@ -71,16 +71,17 @@ simulation_params = [
     "aux_precoding_params" => [
         "initial_precoders" => "dft",
         "stop_crit" => 0.,
-        "max_iters" => 100,
+    ],
+    "independent_variable" => (set_transmit_powers_dBm!, 0:3:30),
+    "aux_independent_variables" => [
+        ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50, 100]),
     ]
 ]
 network =
     setup_triangular3site_network(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         no_streams=simulation_params["d"])
-merge!(network.system.aux_precoding_params, simulation_params["aux_precoding_params"])
-
-raw_results = simulate_SNR(network, simulation_params)
+raw_results = simulate(network, simulation_params)
 
 println("-- Saving $(simulation_params["name"]) results")
 save("SNR_$(simulation_params["name"]).jld",

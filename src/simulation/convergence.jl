@@ -9,10 +9,12 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
 
     cell_assignment = assign_cells_by_id(network)
 
+    # Set initial aux precoding params
+    set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
+
     # Ensure that we are using output protocol 1, because we want to store all
     # intermediate iterations.
-    aux_params = get_aux_precoding_params(network)
-    aux_params["output_protocol"] = 1
+    set_aux_precoding_param!(network, 1, "output_protocol")
 
     raw_results = MultipleSimulationResults(Ndrops, Nsim)
 

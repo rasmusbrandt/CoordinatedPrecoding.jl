@@ -16,11 +16,15 @@ export
 
 # Networks
     Network,
-    get_aux_precoding_params,
+    get_aux_precoding_param, set_aux_precoding_param!,
+    get_aux_precoding_params, set_aux_precoding_params!,
     get_no_MSs, get_no_BSs, get_no_MSs_per_cell,
     get_no_antennas, get_no_MS_antennas, get_no_BS_antennas,
-    get_transmit_powers, get_receiver_noise_powers, get_no_streams,
-    set_transmit_powers!, set_receiver_noise_powers!, set_no_streams!,
+    get_transmit_powers, get_receiver_noise_powers,
+    set_transmit_powers!, set_receiver_noise_powers!,
+    get_transmit_powers_dBm, get_receiver_noise_powers_dBm,
+    set_transmit_powers_dBm!, set_receiver_noise_powers_dBm!,
+    get_no_streams, set_no_streams!,
     get_user_priority, get_user_priorities,
     set_user_priority, set_user_priorities,
     require_equal_no_MS_antennas, require_equal_no_BS_antennas,
@@ -49,7 +53,7 @@ export
 
 # Simulation
     simulate_convergence, process_convergence, plot_convergence,
-    simulate_SNR, process_SNR, plot_SNR,
+    simulate, process, plot,
     simulate_performance,
 
 # Utilities

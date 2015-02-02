@@ -28,8 +28,8 @@ plot_params = [
     "figsize" => (8,5),
 
     "objectives" => [
-        "sumrate" => (r -> sum(r, 4:5), [ "xlabel" => "Transmit power [dBm]", "ylabel" => "Sum rate [bits/s/Hz]" ]),
-        "minrate" => (r -> minimum(sum(r, 5), 4), [ "xlabel" => "Transmit power [dBm]", "ylabel" => "Min rate [bits/s/Hz]", ]),
+        "sumrate" => (r -> sum(r, 5:6), [ "xlabel" => "Transmit power [dBm]", "ylabel" => "Sum rate [bits/s/Hz]" ]),
+        "minrate" => (r -> minimum(sum(r, 6), 5), [ "xlabel" => "Transmit power [dBm]", "ylabel" => "Min rate [bits/s/Hz]", ]),
     ],
 
     "precoding_methods" => {
@@ -63,5 +63,5 @@ plot_params = [
 
 ##########################################################################
 # Plot it
-processed_results = process_SNR(data["raw_results"], data["simulation_params"], plot_params)
-plot_SNR(processed_results, data["simulation_params"], plot_params)
+processed_results = process(data["raw_results"], data["simulation_params"], plot_params)
+plot(processed_results, data["simulation_params"], plot_params)
