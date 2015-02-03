@@ -43,6 +43,6 @@ network =
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         transmit_power=10^(simulation_params["P_dBm"]/10),
         no_streams=simulation_params["d"])
-merge!(network.system.aux_precoding_params, simulation_params["aux_precoding_params"])
+set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
 
-simulate_performance(network, simulation_params, precoding_params)
+simulate_performance(network, simulation_params)
