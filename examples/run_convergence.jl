@@ -38,6 +38,9 @@ simulation_params = [
         "initial_precoders" => "dft",
         "stop_crit" => 0.,
         "max_iters" => 100,
+    ],
+    "aux_independent_variables" => [
+        (set_transmit_powers_dBm!, 10:10:30),
     ]
 ]
 network =
@@ -72,6 +75,9 @@ simulation_params = [
         "initial_precoders" => "dft",
         "stop_crit" => 0.,
         "max_iters" => 100,
+    ],
+    "aux_independent_variables" => [
+        (set_transmit_powers_dBm!, 10:10:30),
     ]
 ]
 network =

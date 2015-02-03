@@ -28,8 +28,8 @@ plot_params = [
     "figsize" => (8,5),
 
     "objectives" => [
-        "sumrate" => (r -> sum(r, 3:4), [ "xlabel" => "Iterations", "ylabel" => "Sum rate [bits/s/Hz]" ]),
-        "minrate" => (r -> minimum(sum(r, 4), 3), [ "xlabel" => "Iterations", "ylabel" => "Min rate [bits/s/Hz]", ]),
+        "sumrate" => (r -> sum(r, 4:5), [ "xlabel" => "Iterations", "ylabel" => "Sum rate [bits/s/Hz]" ]),
+        "minrate" => (r -> minimum(sum(r, 5), 4), [ "xlabel" => "Iterations", "ylabel" => "Min rate [bits/s/Hz]", ]),
     ],
 
     "precoding_methods" => {
