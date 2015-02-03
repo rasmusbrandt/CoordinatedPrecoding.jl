@@ -43,13 +43,14 @@ export
     require_equal_no_MSs_per_cell,
 
 # Precoding
+    PrecodingResults,
+    zero_receivers, initial_precoders, unity_MSE_weights,
     Eigenprecoding,
     Gomadam2008_MaxSINR,
     Komulainen2013_WMMSE,
     Razaviyayn2013_MinMaxWMMSE,
     Shi2011_WMMSE,
     SumMSEMinimization,
-    zero_receivers, initial_precoders, unity_MSE_weights,
 
 # Simulation
     simulate_convergence, process_convergence, plot_convergence,
