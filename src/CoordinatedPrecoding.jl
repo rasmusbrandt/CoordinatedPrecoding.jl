@@ -43,7 +43,7 @@ export
     require_equal_no_MSs_per_cell,
 
 # Precoding
-    PrecodingResults,
+    PrecodingResults, AuxPrecodingParams,
     zero_receivers, initial_precoders, unity_MSE_weights,
     calculate_logdet_rates, calculate_MMSE_rates, calculate_allocated_power,
     Eigenprecoding,
