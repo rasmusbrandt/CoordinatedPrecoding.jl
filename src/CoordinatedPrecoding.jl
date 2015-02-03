@@ -45,6 +45,7 @@ export
 # Precoding
     PrecodingResults,
     zero_receivers, initial_precoders, unity_MSE_weights,
+    calculate_logdet_rates, calculate_MMSE_rates, calculate_allocated_power,
     Eigenprecoding,
     Gomadam2008_MaxSINR,
     Komulainen2013_WMMSE,
