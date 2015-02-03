@@ -217,6 +217,9 @@ function simulate_performance(network::Network, simulation_params::SimulationPar
 
     cell_assignment = assign_cells_by_id(network)
 
+    # Set initial aux precoding params
+    set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
+
     # No point storing all intermediate iterations.
     set_aux_precoding_param!(network, 2, "output_protocol")
 
