@@ -36,14 +36,18 @@ function simulate(network::Network, simulation_params::SimulationParams)
     idp_vals_length = length(idp_vals)
 
     # Auxiliary independent variables
-    Naux = length(simulation_params["aux_independent_variables"])
-    aux_idp_funcs = [ simulation_params["aux_independent_variables"][n][1] for n = 1:Naux ]
-    aux_idp_vals = [ simulation_params["aux_independent_variables"][n][2] for n = 1:Naux ]
+    if haskey(simulation_params, "aux_independent_variables")
+        Naux = length(simulation_params["aux_independent_variables"])
+        aux_idp_funcs = [ simulation_params["aux_independent_variables"][n][1] for n = 1:Naux ]
+        aux_idp_vals = [ simulation_params["aux_independent_variables"][n][2] for n = 1:Naux ]
 
-    # Check that all independent variable vectors are the same length
-    aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
-    for n = 2:Naux
-        aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+        # Check that all independent variable vectors are the same length
+        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
+        for n = 2:Naux
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+        end
+    else
+        Naux = 0; aux_idp_vals_length = 1
     end
 
     println("-- simulate on $network.")
@@ -87,9 +91,11 @@ function simulate(network::Network, simulation_params::SimulationParams)
 
                 # Loop over auxiliary variables
                 for aux_idp_vals_idx = 1:aux_idp_vals_length
-                    # Set all auxiliary independent variables
-                    for Naux_idx = 1:Naux
-                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
+                    if Naux != 0
+                        # Set all auxiliary independent variables
+                        for Naux_idx = 1:Naux
+                            aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
+                        end
                     end
 
                     # Run precoding methods
@@ -118,10 +124,14 @@ function process(raw_results::MultipleSimulationResults,
     idp_vals_length = length(simulation_params["independent_variable"][2])
 
     # Auxiliary independent variables
-    Naux = length(simulation_params["aux_independent_variables"])
-    aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
-    for n = 2:Naux
-        aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+    if haskey(simulation_params, "aux_independent_variables")
+        Naux = length(simulation_params["aux_independent_variables"])
+        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
+        for n = 2:Naux
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+        end
+    else
+        Naux = 0; aux_idp_vals_length = 1
     end
 
     # Compact results into result matrices
@@ -188,14 +198,18 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     Nsim = simulation_params["Nsim"]
 
     # Auxiliary independent variables
-    Naux = length(simulation_params["aux_independent_variables"])
-    aux_idp_funcs = [ simulation_params["aux_independent_variables"][n][1] for n = 1:Naux ]
-    aux_idp_vals = [ simulation_params["aux_independent_variables"][n][2] for n = 1:Naux ]
+    if haskey(simulation_params, "aux_independent_variables")
+        Naux = length(simulation_params["aux_independent_variables"])
+        aux_idp_funcs = [ simulation_params["aux_independent_variables"][n][1] for n = 1:Naux ]
+        aux_idp_vals = [ simulation_params["aux_independent_variables"][n][2] for n = 1:Naux ]
 
-    # Check that all independent variable vectors are the same length
-    aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
-    for n = 2:Naux
-        aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+        # Check that all independent variable vectors are the same length
+        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
+        for n = 2:Naux
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+        end
+    else
+        Naux = 0; aux_idp_vals_length = 1
     end
 
     println("-- simulate_convergence on $network.")
@@ -232,9 +246,11 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
 
             # Loop over auxiliary variables
             for aux_idp_vals_idx = 1:aux_idp_vals_length
-                # Set all auxiliary independent variables
-                for Naux_idx = 1:Naux
-                    aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
+                if Naux != 0
+                    # Set all auxiliary independent variables
+                    for Naux_idx = 1:Naux
+                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
+                    end
                 end
 
                 # Run precoding methods
@@ -260,10 +276,14 @@ function process_convergence(raw_results::MultipleSimulationResults,
     precoding_methods = intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
 
     # Auxiliary independent variables
-    Naux = length(simulation_params["aux_independent_variables"])
-    aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
-    for n = 2:Naux
-        aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+    if haskey(simulation_params, "aux_independent_variables")
+        Naux = length(simulation_params["aux_independent_variables"])
+        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
+        for n = 2:Naux
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+        end
+    else
+        Naux = 0; aux_idp_vals_length = 1
     end
 
     # Compact results into result matrices
