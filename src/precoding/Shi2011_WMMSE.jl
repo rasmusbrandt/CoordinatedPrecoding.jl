@@ -146,7 +146,7 @@ function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
         Base.LinAlg.BLAS.herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k]*state.W[k], complex(1.), bis_M.S)
     end
     Gamma_eigen = eigfact(Gamma)
-    bis_JMJ_diag = real(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
+    bis_JMJ_diag = abs(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen.values .+ mu).*(Gamma_eigen.values .+ mu)))
 
     # mu lower bound
