@@ -70,7 +70,7 @@ function plot(processed_results, simulation_params::SimulationParams,
         if displayable("application/pdf")
             display(fig)
         else
-            open("SNR_$(simulation_params["name"])_$(plot_params["name_suffix"])_$(objective_name).pdf", "w") do file
+            open("$(simulation_params["name"])_$(plot_params["name_suffix"])_$(objective_name).pdf", "w") do file
                 writemime(file, "application/pdf", fig)
             end
         end
@@ -100,7 +100,7 @@ function plot_convergence(processed_results,
         if displayable("application/pdf")
             display(fig)
         else
-            open("convergence_$(simulation_params["name"])_$(plot_params["name_suffix"])_$(objective_name).pdf", "w") do file
+            open("$(simulation_params["name"])_$(plot_params["name_suffix"])_$(objective_name).pdf", "w") do file
                 writemime(file, "application/pdf", fig)
             end
         end
@@ -145,7 +145,7 @@ function plot_convergence(processed_results,
     if displayable("application/pdf")
         display(fig)
     else
-        open("convergence_$(simulation_params["name"])_$(plot_params["name_suffix"])_peruser.pdf", "w") do file
+        open("$(simulation_params["name"])_$(plot_params["name_suffix"])_peruser.pdf", "w") do file
             writemime(file, "application/pdf", fig)
         end
     end
@@ -190,7 +190,7 @@ function plot_convergence(processed_results,
     if displayable("application/pdf")
         display(fig)
     else
-        open("convergence_$(simulation_params["name"])_$(plot_params["name_suffix"])_perstream.pdf", "w") do file
+        open("$(simulation_params["name"])_$(plot_params["name_suffix"])_perstream.pdf", "w") do file
             writemime(file, "application/pdf", fig)
         end
     end
