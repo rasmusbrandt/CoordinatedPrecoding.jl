@@ -52,6 +52,7 @@ export
     Razaviyayn2013_MinMaxWMMSE,
     Shi2011_WMMSE,
     SumMSEMinimization,
+    WeightedMaxSINR,
 
 # Simulation
     simulate_convergence, process_convergence, plot_convergence,

@@ -23,24 +23,26 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Canonical network
 simulation_params = [
     "name" => "SNR_$(start_time)-ic",
-    "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
-    "d" => 1,
-    "Ndrops" => 10, "Nsim" => 1,
+    "I" => 3, "Kc" => 1, "N" => 3, "M" => 3,
+    "d" => 2,
+    "Ndrops" => 100, "Nsim" => 1,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
+        WeightedMaxSINR,
         Komulainen2013_WMMSE,
-        Razaviyayn2013_MinMaxWMMSE,
+        # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
     "aux_precoding_params" => [
-        "initial_precoders" => "dft",
-        "stop_crit" => 0.,
+        "initial_precoders" => "eigendirection",
+        "stop_crit" => 1e-3,
+        "max_iters" => 1000,
     ],
     "independent_variable" => (set_transmit_powers_dBm!, 0:3:30),
-    "aux_independent_variables" => [
-        ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50, 100]),
-    ]
+    # "aux_independent_variables" => [
+    #     ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50]),
+    # ]
 ]
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
@@ -58,24 +60,25 @@ save("$(simulation_params["name"]).jld",
 simulation_params = [
     "name" => "SNR_$(start_time)-triangular3site",
     "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
-    "Ps_dBm" => 0:3:30,
     "d" => 1,
-    "Ndrops" => 10, "Nsim" => 1,
+    "Ndrops" => 100, "Nsim" => 1,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
+        WeightedMaxSINR,
         Komulainen2013_WMMSE,
-        Razaviyayn2013_MinMaxWMMSE,
+        # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
     "aux_precoding_params" => [
-        "initial_precoders" => "dft",
-        "stop_crit" => 0.,
+        "initial_precoders" => "eigendirection",
+        "stop_crit" => 1e-3,
+        "max_iters" => 1000,
     ],
     "independent_variable" => (set_transmit_powers_dBm!, 0:3:30),
-    "aux_independent_variables" => [
-        ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50, 100]),
-    ]
+    # "aux_independent_variables" => [
+    #     ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50]),
+    # ]
 ]
 network =
     setup_triangular3site_network(simulation_params["I"],

@@ -13,12 +13,12 @@ using HDF5, JLD, ArgParse
 # Load data
 s = ArgParseSettings()
 @add_arg_table s begin
-    "file_name"
+    "file_names"
         help = "file name with results"
         required = true
+        nargs = '+'
 end
 parsed_args = parse_args(s)
-data = load(parsed_args["file_name"])
 
 ##########################################################################
 # Plot parameters
@@ -43,14 +43,19 @@ plot_params = [
             ("MMSE_rates", [ "key" => "r--", "legend" => "MaxSINR" ]),
         ],
 
-        "Razaviyayn2013_MinMaxWMMSE" => [
-            ("logdet_rates", [ "key" => "g-", "legend" => "MinMax-WMMSE" ]),
-            ("MMSE_rates", [ "key" => "g--", "legend" => "MinMax-WMMSE" ]),
+        "WeightedMaxSINR" => [
+            ("logdet_rates", [ "key" => "g-", "legend" => "WeightedMaxSINR" ]),
+            ("MMSE_rates", [ "key" => "g--", "legend" => "WeightedMaxSINR" ]),
         ],
 
         "Komulainen2013_WMMSE" => [
-            ("logdet_rates", [ "key" => "m-", "legend" => "DiagWMMSE" ]),
-            ("MMSE_rates", [ "key" => "m--", "legend" => "DiagWMMSE" ]),
+            ("logdet_rates", [ "key" => "y-", "legend" => "Diag-WMMSE" ]),
+            ("MMSE_rates", [ "key" => "y--", "legend" => "Diag-WMMSE" ]),
+        ],
+
+        "Razaviyayn2013_MinMaxWMMSE" => [
+            ("logdet_rates", [ "key" => "m-", "legend" => "MinMax-WMMSE" ]),
+            ("MMSE_rates", [ "key" => "m--", "legend" => "MinMax-WMMSE" ]),
         ],
 
         "Eigenprecoding" => {
@@ -63,5 +68,8 @@ plot_params = [
 
 ##########################################################################
 # Plot it
-processed_results = process(data["raw_results"], data["simulation_params"], plot_params)
-plot(processed_results, data["simulation_params"], plot_params)
+for file_name in parsed_args["file_names"]
+    data = load(file_name)
+    processed_results = process(data["raw_results"], data["simulation_params"], plot_params)
+    plot(processed_results, data["simulation_params"], plot_params)
+end

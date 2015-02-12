@@ -21,6 +21,7 @@ include("Komulainen2013_WMMSE.jl")
 include("Razaviyayn2013_MinMaxWMMSE.jl")
 include("Shi2011_WMMSE.jl")
 include("SumMSEMinimization.jl")
+include("WeightedMaxSINR.jl")
 
 ##########################################################################
 # Standard functions to calculate rates from optimal MSE weights
