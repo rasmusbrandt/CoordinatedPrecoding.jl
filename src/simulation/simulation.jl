@@ -224,6 +224,11 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     # We want to store all intermediate iterations.
     set_aux_precoding_param!(network, :all_iterations, "output_protocol")
 
+    # Warn if we are not using a fixed number of iterations.
+    if get_aux_precoding_param(network, "stop_crit") > 0.
+        Lumberjack.warn("process_convergence will not be able to run since stop_crit is non-zero, and the algorithms may therefore use different numbers of iterations.")
+    end
+
     raw_results = MultipleSimulationResults(Ndrops, Nsim, aux_idp_vals_length)
 
     tic()
