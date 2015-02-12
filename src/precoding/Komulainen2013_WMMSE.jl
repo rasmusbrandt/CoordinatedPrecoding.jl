@@ -12,8 +12,12 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
+
     aux_params = get_aux_precoding_params(network)
-    check_aux_precoding_params!(aux_params, Komulainen2013_WMMSEState)
+    @defaultize_param! aux_params "Komulainen2013_WMMSE:bisection_Gamma_cond" 1e10
+    @defaultize_param! aux_params "Komulainen2013_WMMSE:bisection_singular_Gamma_mu_lower_bound" 1e-14
+    @defaultize_param! aux_params "Komulainen2013_WMMSE:bisection_max_iters" 5e1
+    @defaultize_param! aux_params "Komulainen2013_WMMSE:bisection_tolerance" 1e-3
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, K),
@@ -73,21 +77,6 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
         results["allocated_power"] = allocated_power[:,:,iters]
     end
     return results
-end
-
-function check_aux_precoding_params!(aux_params::AuxPrecodingParams, ::Type{Komulainen2013_WMMSEState})
-    if !haskey(aux_params, "Komulainen2013_WMMSE:bisection_Gamma_cond")
-        aux_params["Komulainen2013_WMMSE:bisection_Gamma_cond"] = 1e10
-    end
-    if !haskey(aux_params, "Komulainen2013_WMMSE:bisection_singular_Gamma_mu_lower_bound")
-        aux_params["Komulainen2013_WMMSE:bisection_singular_Gamma_mu_lower_bound"] = 1e-14
-    end
-    if !haskey(aux_params, "Komulainen2013_WMMSE:bisection_max_iters")
-        aux_params["Komulainen2013_WMMSE:bisection_max_iters"] = 5e1
-    end
-    if !haskey(aux_params, "Komulainen2013_WMMSE:bisection_tolerance")
-        aux_params["Komulainen2013_WMMSE:bisection_tolerance"] = 1e-3
-    end
 end
 
 function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel,

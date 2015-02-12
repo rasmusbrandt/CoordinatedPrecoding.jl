@@ -59,6 +59,7 @@ export
     simulate_performance,
 
 # Utilities
+    @defaultize_param!,
     clean_simulation_params_for_jld
 
 ##########################################################################
@@ -68,12 +69,12 @@ include("channel.jl")
 include("network/network.jl")
 # Cell assignment
 include("cell_assignment/cell_assignment.jl")
+# Useful stuff
+include("utils.jl")
 # Precoding algorithms
 include("precoding/precoding.jl")
 # Simulation
 include("simulation/simulation.jl")
-# Other useful stuff
-include("utils.jl")
 ##########################################################################
 
 end

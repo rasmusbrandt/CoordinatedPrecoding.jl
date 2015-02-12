@@ -19,8 +19,10 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     ds = get_no_streams(network)
+
     aux_params = get_aux_precoding_params(network)
-    check_aux_precoding_params!(aux_params, Razaviyayn2013_MinMaxWMMSEState)
+    @defaultize_param! aux_params "Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose" false
+    @defaultize_param! aux_params "Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol" 1e-5
 
     state = Razaviyayn2013_MinMaxWMMSEState(
         Array(Matrix{Complex128}, K),
@@ -79,15 +81,6 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
         results["allocated_power"] = allocated_power[:,:,iters]
     end
     return results
-end
-
-function check_aux_precoding_params!(aux_params::AuxPrecodingParams, ::Type{Razaviyayn2013_MinMaxWMMSEState})
-    if !haskey(aux_params, "Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose")
-        aux_params["Razaviyayn2013_MinMaxWMMSE:Gurobi_verbose"] = false
-    end
-    if !haskey(aux_params, "Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol")
-        aux_params["Razaviyayn2013_MinMaxWMMSE:Gurobi_PSDTol"] = 1e-5
-    end
 end
 
 function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,

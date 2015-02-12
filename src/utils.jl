@@ -44,6 +44,13 @@ function clean_simulation_params_for_jld(simulation_params)
 end
 
 ##########################################################################
+# Parameter dict defaultization
+macro defaultize_param!(params, key, default_val)
+    # Note that we are intentionally violating macro hygiene here...
+    return esc(:(haskey($params, $key) || setindex!($params, $default_val, $key)))
+end
+
+##########################################################################
 # Hermitian utility functions. These should probably be in Base. Contribute?
 +(A::Hermitian{Complex128}, B::Hermitian{Complex128}) = Hermitian(A.S + B.S)
 +(B::Matrix{Float64}, A::Hermitian{Complex128}) = +(A, B)
