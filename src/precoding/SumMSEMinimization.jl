@@ -63,12 +63,12 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network,
     end
 
     results = PrecodingResults()
-    if aux_params["output_protocol"] == 1
+    if aux_params["output_protocol"] == :all_iterations
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
         results["MMSE_rates"] = MMSE_rates
         results["allocated_power"] = allocated_power
-    elseif aux_params["output_protocol"] == 2
+    elseif aux_params["output_protocol"] == :final_iteration
         results["objective"] = objective[iters]
         results["logdet_rates"] = logdet_rates[:,:,iters]
         results["MMSE_rates"] = MMSE_rates[:,:,iters]

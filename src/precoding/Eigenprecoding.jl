@@ -51,7 +51,7 @@ function calculate_logdet_rates(state::EigenprecodingState,
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
-    if aux_params["output_protocol"] == 1
+    if aux_params["output_protocol"] == :all_iterations
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
         uncoord_logdet_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
@@ -59,7 +59,7 @@ function calculate_logdet_rates(state::EigenprecodingState,
         intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
         intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
         uncoord_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
-    elseif aux_params["output_protocol"] == 2
+    elseif aux_params["output_protocol"] == :final_iteration
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         uncoord_logdet_rates = Array(Float64, channel.K, max_d)
@@ -100,7 +100,7 @@ function calculate_logdet_rates(state::EigenprecodingState,
             r_intracell_MMSE = (1/Kc)*log2(max(1, real(1./diag(inv(W_intracell)))))
             r_uncoord_MMSE = log2(max(1, real(1./diag(inv(W_uncoord)))))
 
-            if aux_params["output_protocol"] == 1
+            if aux_params["output_protocol"] == :all_iterations
                 for iter = 1:aux_params["max_iters"]
                     intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
                     intracell_tdma_logdet_rates[k,:,iter] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
@@ -110,7 +110,7 @@ function calculate_logdet_rates(state::EigenprecodingState,
                     intracell_tdma_MMSE_rates[k,:,iter] = cat(1, r_intracell_MMSE, zeros(Float64, max_d - d))
                     uncoord_MMSE_rates[k,:,iter] = cat(1, r_uncoord_MMSE, zeros(Float64, max_d - d))
                 end
-            elseif aux_params["output_protocol"] == 2
+            elseif aux_params["output_protocol"] == :final_iteration
                 intercell_tdma_logdet_rates[k,:] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
                 intracell_tdma_logdet_rates[k,:] = cat(1, r_intracell_logdet, zeros(Float64, max_d - d))
                 uncoord_logdet_rates[k,:] = cat(1, r_uncoord_logdet, zeros(Float64, max_d - d))

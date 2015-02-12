@@ -60,9 +60,8 @@ function simulate(network::Network, simulation_params::SimulationParams)
     # Set initial aux precoding params
     set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
 
-    # Ensure that we are using output protocol 2, so we don't have to store all
-    # the intermediate iterations.
-    set_aux_precoding_param!(network, 2, "output_protocol")
+    # Ensure that we are not storing all intermediate iterations.
+    set_aux_precoding_param!(network, :final_iteration, "output_protocol")
 
     # Storage container for results
     raw_results = MultipleSimulationResults(Ndrops, Nsim, idp_vals_length, aux_idp_vals_length)
@@ -222,9 +221,8 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     # Set initial aux precoding params
     set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
 
-    # Ensure that we are using output protocol 1, because we want to store all
-    # intermediate iterations.
-    set_aux_precoding_param!(network, 1, "output_protocol")
+    # We want to store all intermediate iterations.
+    set_aux_precoding_param!(network, :all_iterations, "output_protocol")
 
     raw_results = MultipleSimulationResults(Ndrops, Nsim, aux_idp_vals_length)
 
@@ -356,7 +354,7 @@ function simulate_performance(network::Network, simulation_params::SimulationPar
     set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
 
     # No point storing all intermediate iterations.
-    set_aux_precoding_param!(network, 2, "output_protocol")
+    set_aux_precoding_param!(network, :final_iteration, "output_protocol")
 
     draw_user_drop!(network)
     channel = draw_channel(network)
