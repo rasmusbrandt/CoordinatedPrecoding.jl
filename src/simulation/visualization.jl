@@ -4,6 +4,10 @@ function plot_precoding_methods(results_mean, results_var, simulation_params,
     fig = PyPlot.figure(figsize=plot_params["figsize"])
     ax = fig[:add_subplot](1, 1, 1)
 
+    # Set type of scales for the axes
+    haskey(plot_params, "xscale") ? ax[:set_xscale](plot_params["xscale"]) : nothing
+    haskey(plot_params, "yscale") ? ax[:set_yscale](plot_params["yscale"]) : nothing
+
     for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
         for (result_param, result_plot_params) in plot_params["precoding_methods"][method_name]
             if isa(result_param, ASCIIString)
