@@ -22,7 +22,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 ##########################################################################
 # Canonical network
 simulation_params = [
-    "name" => "$(start_time)-ic",
+    "name" => "convergence_$(start_time)-ic",
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
@@ -52,14 +52,14 @@ network =
 raw_results = simulate_convergence(network, simulation_params)
 
 println("-- Saving $(simulation_params["name"]) results")
-save("convergence_$(simulation_params["name"]).jld",
+save("$(simulation_params["name"]).jld",
      "simulation_params", clean_simulation_params_for_jld(simulation_params),
      "raw_results", raw_results)
 
 ##########################################################################
 # Largescale network
 simulation_params = [
-    "name" => "$(start_time)-triangular3site",
+    "name" => "convergence_$(start_time)-triangular3site",
     "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
     "P_dBm" => 18.2,
     "d" => 1,
@@ -89,6 +89,6 @@ network =
 raw_results = simulate_convergence(network, simulation_params)
 
 println("-- Saving $(simulation_params["name"]) results")
-save("convergence_$(simulation_params["name"]).jld",
+save("$(simulation_params["name"]).jld",
      "simulation_params", clean_simulation_params_for_jld(simulation_params),
      "raw_results", raw_results)
