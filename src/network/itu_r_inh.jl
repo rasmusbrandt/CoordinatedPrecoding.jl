@@ -65,7 +65,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
     # ITU-R M.2135-1, p. 33
     P_LoS = d -> begin
         if d <= 18
-            return 1
+            return 1.
         elseif d < 37
             return exp(-(d - 18)/27)
         else
