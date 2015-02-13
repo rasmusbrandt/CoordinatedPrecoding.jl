@@ -112,84 +112,6 @@ function simulate(network::Network, simulation_params::SimulationParams)
     return raw_results
 end
 
-function process(raw_results::MultipleSimulationResults,
-    simulation_params::SimulationParams, plot_params::PlotParams)
-
-    Ndrops = simulation_params["Ndrops"]
-    Nsim = simulation_params["Nsim"]
-    precoding_methods = intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
-
-    # Main independent variable
-    idp_vals_length = length(simulation_params["independent_variable"][2])
-
-    # Auxiliary independent variables
-    if haskey(simulation_params, "aux_independent_variables")
-        Naux = length(simulation_params["aux_independent_variables"])
-        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
-        for n = 2:Naux
-            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
-        end
-    else
-        Naux = 0; aux_idp_vals_length = 1
-    end
-
-    # Compact results into result matrices
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    for method_name in precoding_methods
-        for (result_param,) in plot_params["precoding_methods"][method_name]
-            if isa(result_param, ASCIIString)
-                result_name = result_param
-            else
-                (calculator, calculate_from) = result_param
-                result_name = string(string(calculator), "_", calculate_from)
-            end
-
-            result_dimensions = size(raw_results[1, 1, 1][method_name][result_name])
-            result_ranges = [ 1:s for s in result_dimensions ]
-            results[method_name][result_name] = Array(Float64, Ndrops, Nsim, idp_vals_length, aux_idp_vals_length, result_dimensions...)
-            for Ndrops_idx = 1:Ndrops; for Nsim_idx = 1:Nsim; for idp_vals_idx = 1:idp_vals_length; for aux_idp_vals_idx = 1:aux_idp_vals_length
-                if isa(result_param, ASCIIString)
-                    result = raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][method_name][result_name]
-                else
-                    result = calculator(raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][method_name][calculate_from])
-                end
-                results[method_name][result_name][Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx, result_ranges...] = result
-            end; end; end; end
-        end
-    end
-
-    # Calculate statistics on result matrices
-    results_mean = [
-        objective_name =>
-            [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (objective_name,) in plot_params["objectives"]
-    ]
-    results_var = [
-        objective_name =>
-            [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (objective_name,) in plot_params["objectives"]
-    ]
-    for (objective_name, (objective_func,)) in plot_params["objectives"]
-        for method_name in precoding_methods
-            for (result_param,) in plot_params["precoding_methods"][method_name]
-                if isa(result_param, ASCIIString)
-                    result_name = result_param
-                else
-                    result_name = string(string(calculator), "_", calculate_from)
-                end
-
-                # mean: average over drops and sims
-                results_mean[objective_name][method_name][result_name] = squeeze(mean(objective_func(results[method_name][result_name]), 1:2), [1,2,5,6])
-
-                # var: average over sims, estimate var over drops
-                results_var[objective_name][method_name][result_name] = squeeze(var(mean(objective_func(results[method_name][result_name]), 2), 1), [1,2,5,6])
-            end
-        end
-    end
-
-    return results, results_mean, results_var
-end
-
 ##########################################################################
 # Convergence simulation functions
 function simulate_convergence(network::Network, simulation_params::SimulationParams)
@@ -271,81 +193,6 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     return raw_results
 end
 
-function process_convergence(raw_results::MultipleSimulationResults,
-    simulation_params::SimulationParams, plot_params::PlotParams)
-
-    Ndrops = simulation_params["Ndrops"]
-    Nsim = simulation_params["Nsim"]
-    precoding_methods = intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
-
-    # Auxiliary independent variables
-    if haskey(simulation_params, "aux_independent_variables")
-        Naux = length(simulation_params["aux_independent_variables"])
-        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
-        for n = 2:Naux
-            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
-        end
-    else
-        Naux = 0; aux_idp_vals_length = 1
-    end
-
-    # Compact results into result matrices
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    for method_name in precoding_methods
-        for (result_param,) in plot_params["precoding_methods"][method_name]
-            if isa(result_param, ASCIIString)
-                result_name = result_param
-            else
-                (calculator, calculate_from) = result_param
-                result_name = string(string(calculator), "_", calculate_from)
-            end
-
-            result_dimensions = size(raw_results[1, 1, 1][method_name][result_name])
-            result_ranges = [ 1:s for s in result_dimensions ]
-            results[method_name][result_name] = Array(Float64, Ndrops, Nsim, aux_idp_vals_length, result_dimensions...)
-            for Ndrops_idx = 1:Ndrops; for Nsim_idx = 1:Nsim; for aux_idp_vals_idx = 1:aux_idp_vals_length
-                if isa(result_param, ASCIIString)
-                    result = raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][method_name][result_name]
-                else
-                    result = calculator(raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][method_name][calculate_from])
-                end
-                results[method_name][result_name][Ndrops_idx, Nsim_idx, aux_idp_vals_idx, result_ranges...] = result
-            end; end; end
-        end
-    end
-
-    # Calculate statistics on result matrices
-    results_mean = [
-        objective_name =>
-            [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (objective_name,) in plot_params["objectives"]
-    ]
-    results_var = [
-        objective_name =>
-            [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-        for (objective_name,) in plot_params["objectives"]
-    ]
-    for (objective_name, (objective_func,)) in plot_params["objectives"]
-        for method_name in precoding_methods
-            for (result_param,) in plot_params["precoding_methods"][method_name]
-                if isa(result_param, ASCIIString)
-                    result_name = result_param
-                else
-                    result_name = string(string(calculator), "_", calculate_from)
-                end
-
-                # mean: average over drops and sims
-                results_mean[objective_name][method_name][result_name] = transpose(squeeze(mean(objective_func(results[method_name][result_name]), 1:2), [1,2,4,5]))
-
-                # var: average over sims, estimate var over drops
-                results_var[objective_name][method_name][result_name] = transpose(squeeze(var(mean(objective_func(results[method_name][result_name]), 2), 1), [1,2,4,5]))
-            end
-        end
-    end
-
-    return results, results_mean, results_var
-end
-
 ##########################################################################
 # Performance test
 function simulate_performance(network::Network, simulation_params::SimulationParams)
@@ -377,7 +224,6 @@ function simulate_performance(network::Network, simulation_params::SimulationPar
         @time for i = 1:simulation_params["Ntest"]; method(channel, network, cell_assignment); end
     end
 end
-
 
 ##########################################################################
 # Other functions

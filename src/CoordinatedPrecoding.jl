@@ -55,8 +55,8 @@ export
     WeightedMaxSINR,
 
 # Simulation
-    simulate_convergence, process_convergence, plot_convergence,
-    simulate, process, plot,
+    simulate_convergence, postprocess_convergence, plot_convergence,
+    simulate, postprocess, plot,
     simulate_performance,
 
 # Utilities

@@ -22,7 +22,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 ##########################################################################
 # Canonical network
 simulation_params = [
-    "name" => "SNR_$(start_time)-ic",
+    "simulation_name" => "SNR_$(start_time)-ic",
     "I" => 3, "Kc" => 1, "N" => 3, "M" => 3,
     "d" => 2,
     "Ndrops" => 100, "Nsim" => 1,
@@ -50,15 +50,15 @@ network =
         no_streams=simulation_params["d"])
 raw_results = simulate(network, simulation_params)
 
-println("-- Saving $(simulation_params["name"]) results")
-save("$(simulation_params["name"]).jld",
+println("-- Saving $(simulation_params["simulation_name"]) results")
+save("$(simulation_params["simulation_name"]).jld",
      "simulation_params", clean_simulation_params_for_jld(simulation_params),
      "raw_results", raw_results)
 
 ##########################################################################
 # Largescale network
 simulation_params = [
-    "name" => "SNR_$(start_time)-triangular3site",
+    "simulation_name" => "SNR_$(start_time)-triangular3site",
     "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
     "d" => 1,
     "Ndrops" => 100, "Nsim" => 1,
@@ -86,7 +86,7 @@ network =
         no_streams=simulation_params["d"])
 raw_results = simulate(network, simulation_params)
 
-println("-- Saving $(simulation_params["name"]) results")
-save("$(simulation_params["name"]).jld",
+println("-- Saving $(simulation_params["simulation_name"]) results")
+save("$(simulation_params["simulation_name"]).jld",
      "simulation_params", clean_simulation_params_for_jld(simulation_params),
      "raw_results", raw_results)
