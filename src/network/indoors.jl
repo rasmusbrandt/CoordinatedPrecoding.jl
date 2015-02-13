@@ -1,6 +1,6 @@
 ##########################################################################
 # Network definition
-type ITU_R_InH_Network{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
+type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
     MSs::Vector{MS_t}
     BSs::Vector{BS_t}
 
@@ -10,16 +10,16 @@ type ITU_R_InH_Network{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Syste
     inter_site_distance::Float64
     guard_distance::Float64
 end
-Base.show(io::IO, x::ITU_R_InH_Network) =
-    print(io, "ITU_R_InH(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
-Base.showcompact(io::IO, x::ITU_R_InH_Network) =
-    print(io, "ITU_R_InH($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
+Base.show(io::IO, x::IndoorsNetwork) =
+    print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
+Base.showcompact(io::IO, x::IndoorsNetwork) =
+    print(io, "Indoors($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
 
-get_no_MSs(network::ITU_R_InH_Network) = 2*network.no_MSs_per_cell
-get_no_BSs(network::ITU_R_InH_Network) = 2
-get_no_MSs_per_cell(network::ITU_R_InH_Network) = network.no_MSs_per_cell
+get_no_MSs(network::IndoorsNetwork) = 2*network.no_MSs_per_cell
+get_no_BSs(network::IndoorsNetwork) = 2
+get_no_MSs_per_cell(network::IndoorsNetwork) = network.no_MSs_per_cell
 
-function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
+function setup_indoors_network{AntennaParams_t <: AntennaParams}(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
     system = SinglecarrierSystem(AuxPrecodingParams(), 3.4, 15e3),
     propagation_environments = [SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3), SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
@@ -34,7 +34,7 @@ function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
 
     # Consistency check
     if no_BSs != 2
-        error("ITU_R_InH_Network only allows for I = 2.")
+        error("IndoorsNetwork only allows for I = 2.")
     end
 
     BSs = [
@@ -42,13 +42,13 @@ function setup_itu_r_inh_network{AntennaParams_t <: AntennaParams}(
         PhysicalBS(no_BS_antennas, Position(1.5*inter_site_distance, 10), transmit_power, BS_antenna_gain_params[2]) ]
     MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), user_priorities[k], no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:2*no_MSs_per_cell ]
 
-    ITU_R_InH_Network(MSs, BSs, system, no_MSs_per_cell, 
+    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environments, inter_site_distance, guard_distance)
 end
 
 ##########################################################################
 # Standard cell assignment functions
-function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::ITU_R_InH_Network{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
     assignment = Array(Int, I*Kc)
 
@@ -61,7 +61,7 @@ end
 
 ##########################################################################
 # Simulation functions
-function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::ITU_R_InH_Network{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
+function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::IndoorsNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
     # ITU-R M.2135-1, p. 33
     P_LoS = d -> begin
         if d <= 18
@@ -97,7 +97,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
     end
 end
 
-function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::ITU_R_InH_Network{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
+function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::IndoorsNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
     K = get_no_MSs(network); I = get_no_BSs(network)
     Ns = Int[ network.MSs[k].no_antennas for k = 1:K ]
     Ms = Int[ network.BSs[i].no_antennas for i = 1:I ]
@@ -138,6 +138,6 @@ end
 
 ##########################################################################
 # Visualization functions
-# function plot_network_layout(network::ITU_R_InH_Network)
+# function plot_network_layout(network::IndoorsNetwork)
 #     using PyCall; @pyimport matplotlib.pyplot as plt
 # end

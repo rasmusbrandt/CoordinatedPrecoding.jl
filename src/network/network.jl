@@ -218,8 +218,8 @@ get_angles(network::PhysicalNetwork) =
 # Interfering broadcast channel
 include("ibc.jl")
 
-# ITU_R_InHNetwork
-include("itu_r_inh.jl")
+# IndoorsNetwork
+include("indoors.jl")
 
 # Triangular3SiteNetwork
 include("triangular3site.jl")

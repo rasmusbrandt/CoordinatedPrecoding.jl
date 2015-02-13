@@ -32,7 +32,7 @@ export
     require_equal_no_streams, require_single_stream,
     InterferingBroadcastChannel, setup_interfering_broadcast_channel,
     Triangular3SiteNetwork, setup_triangular3site_network,
-    ITU_R_InH_Network, setup_itu_r_inh_network,
+    IndoorsNetwork, setup_indoors_network,
     draw_user_drop!, draw_channel,
 
 # Cell assignment
