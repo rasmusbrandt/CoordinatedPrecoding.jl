@@ -46,7 +46,7 @@ plot_params = [
         :fontsize => 8,
     ],
 
-    "confidence_interval_zalpha2" => 1.96,
+    # "confidence_interval_zalpha2" => 1.96,
 
     "precoding_methods" => [
         "Shi2011_WMMSE" => [
