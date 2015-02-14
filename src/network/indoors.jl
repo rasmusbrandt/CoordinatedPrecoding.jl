@@ -1,4 +1,13 @@
 ##########################################################################
+# The IndoorsNetwork is an indoors microcell network inspired by the ITU-R
+# InH indoors network. The channel model is simplified; it is just using
+# uncorrelated Rayleigh fading. The large-scale fading parameters should
+# be close to the InH model though. The number of BSs has also been
+# generalized compared to InH. The LoS is independent between BSs, for
+# each MS. The same holds for the shadow fading. This is motivated by
+# Sec. 3.3.1 in Deliverable 1.1.2 of IST-WINNER II.
+
+##########################################################################
 # Network definition
 type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
     MSs::Vector{MS_t}
@@ -6,44 +15,47 @@ type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, 
 
     system::System_t
     no_MSs_per_cell::Int
-    propagation_environments::Vector{PropagationEnvironment_t} # 2 component vector: LoS/NLoS
-    inter_site_distance::Float64
+    propagation_environments::Dict{Symbol,PropagationEnvironment_t} # two keys only, :LoS and :NLoS
+    corridor_length::Float64
+    corridor_width::Float64
     guard_distance::Float64
 end
 Base.show(io::IO, x::IndoorsNetwork) =
-    print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
+    print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), corridor_length = $(x.corridor_length), corridor_width = $(x.corridor_width), GD = $(x.guard_distance))")
 Base.showcompact(io::IO, x::IndoorsNetwork) =
-    print(io, "Indoors($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
+    print(io, "Indoors($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.corridor_length), $(x.corridor_width), $(x.guard_distance))")
 
-get_no_MSs(network::IndoorsNetwork) = 2*network.no_MSs_per_cell
-get_no_BSs(network::IndoorsNetwork) = 2
 get_no_MSs_per_cell(network::IndoorsNetwork) = network.no_MSs_per_cell
 
+# The default parameter values are taken from ITU-R M.2135-1.
 function setup_indoors_network{AntennaParams_t <: AntennaParams}(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
     system = SinglecarrierSystem(AuxPrecodingParams(), 3.4, 15e3),
-    propagation_environments = [SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3), SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
-    inter_site_distance::Float64 = 60.,
+    propagation_environments = [:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
+                                :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
+    corridor_length::Float64 = 120.,
+    corridor_width::Float64 = 50.,
     guard_distance::Float64 = 3.,
     transmit_power::Float64 = 10^(-9.8/10), # 21 dBm over 20 MHz, 1200 used subcarriers
-    BS_antenna_gain_params::Vector{AntennaParams_t} = [OmnidirectionalAntennaParams(0), OmnidirectionalAntennaParams(0)],
+    BS_antenna_gain_params::Vector{AntennaParams_t} = [ OmnidirectionalAntennaParams(0) for i = 1:no_BSs ],
     user_priorities::Vector{Float64} = ones(Float64, no_BSs*no_MSs_per_cell),
     no_streams::Int = 1,
     MS_antenna_gain_dB::Float64 = 0.,
     receiver_noise_figure::Float64 = 7.)
 
-    # Consistency check
-    if no_BSs != 2
-        error("IndoorsNetwork only allows for I = 2.")
+    # BS positions
+    y = corridor_width/2
+    Δ = corridor_length/no_BSs
+    BSs = Array(PhysicalBS, 0)
+    for i = 1:no_BSs
+        # BSs uniformly placed along corridor
+        push!(BSs, PhysicalBS(no_BS_antennas, Position((i-1)*Δ + Δ/2, y), transmit_power, BS_antenna_gain_params[i]))
     end
 
-    BSs = [
-        PhysicalBS(no_BS_antennas, Position(0.5*inter_site_distance, 10), transmit_power, BS_antenna_gain_params[1]),
-        PhysicalBS(no_BS_antennas, Position(1.5*inter_site_distance, 10), transmit_power, BS_antenna_gain_params[2]) ]
-    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), user_priorities[k], no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(0., false)) for k = 1:2*no_MSs_per_cell ]
+    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), user_priorities[k], no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_BSs*no_MSs_per_cell ]
 
     IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, 
-        propagation_environments, inter_site_distance, guard_distance)
+        propagation_environments, corridor_length, corridor_width, guard_distance)
 end
 
 ##########################################################################
@@ -62,6 +74,9 @@ end
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::IndoorsNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
+    I = get_no_BSs(network); K = get_no_MSs(network)
+    Δ = network.corridor_length/I
+
     # ITU-R M.2135-1, p. 33
     P_LoS = d -> begin
         if d <= 18
@@ -73,27 +88,35 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
         end
     end
 
-    for i = 1:get_no_BSs(network)
-        for k = 1:get_no_MSs_per_cell(network)
-            # User position?
-            while true
-                x = network.inter_site_distance*rand(); y = 20*rand()
-                i == 2 ? nothing : (x += network.inter_site_distance; y += network.inter_site_distance)
-                candidate_position = Position(x, y)
+    for k = 1:K
+        i = div(k - 1, get_no_MSs_per_cell(network)) + 1 # serving BS id
 
-                if get_distance(network.BSs[i].position, candidate_position) > network.guard_distance
-                    network.MSs[k].position = candidate_position
-                    break
-                end
-            end
+        # MS position
+        while true
+            x = (i-1)*Δ + Δ*rand()
+            y = network.corridor_width*rand()
+            candidate_position = Position(x, y)
 
-            # LoS/NLoS ?
-            if rand() <= P_LoS(get_distance(network.BSs[i].position, network.MSs[k].position))
-                network.MSs[k].propagation_environment_state = SimpleLargescaleFadingEnvironmentState(network.propagation_environments[1].shadow_sigma_dB*randn(), true)
-            else
-                network.MSs[k].propagation_environment_state = SimpleLargescaleFadingEnvironmentState(network.propagation_environments[2].shadow_sigma_dB*randn(), false)
+            if get_distance(network.BSs[i].position, candidate_position) > network.guard_distance
+                network.MSs[k].position = candidate_position
+                break
             end
         end
+
+        # Shadow fading and LoS/NLoS. Uncorrelated between BS links.
+        shadow_realizations_dB = zeros(Float64, I)
+        LoSs = BitArray(I)
+        for j = 1:I
+            if rand() <= P_LoS(get_distance(network.BSs[j].position, network.MSs[k].position))
+                LoSs[j] = true
+                shadow_realizations_dB[j] = network.propagation_environments[:LoS].shadow_sigma_dB*randn()
+            else
+                LoSs[j] = false
+                shadow_realizations_dB[j] = network.propagation_environments[:NLoS].shadow_sigma_dB*randn()
+            end
+        end
+        network.MSs[k].propagation_environment_state =
+            SimpleLargescaleFadingEnvironmentState(shadow_realizations_dB, LoSs)
     end
 end
 
@@ -107,20 +130,22 @@ function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::IndoorsNe
     distances = get_distances(network)
 
     for k = 1:K
-        for i = 1:2
+        for i = 1:I
             # Small scale fading
             coefs[k,i] = (1/sqrt(2))*(randn(Ns[k], Ms[i])
                                  + im*randn(Ns[k], Ms[i]))
 
             # Pathloss
-            if network.MSs[k].propagation_environment_state.LoS
-                pathloss_factor = sqrt(10^(-(network.propagation_environments[1].pathloss_beta + network.propagation_environments[1].pathloss_alpha*log10(distances[k,i]))/10))
+            if network.MSs[k].propagation_environment_state.LoSs[i]
+                pathloss_factor =
+                    sqrt(10^(-(network.propagation_environments[:LoS].pathloss_beta + network.propagation_environments[:LoS].pathloss_alpha*log10(distances[k,i]))/10))
             else
-                pathloss_factor = sqrt(10^(-(network.propagation_environments[2].pathloss_beta + network.propagation_environments[2].pathloss_alpha*log10(distances[k,i]))/10))
+                pathloss_factor =
+                    sqrt(10^(-(network.propagation_environments[:NLoS].pathloss_beta + network.propagation_environments[:NLoS].pathloss_alpha*log10(distances[k,i]))/10))
             end
 
             # Shadow fading
-            shadow_factor = sqrt(10^(network.MSs[k].propagation_environment_state.shadow_realization_dB/10))
+            shadow_factor = sqrt(10^(network.MSs[k].propagation_environment_state.shadow_realizations_dB[i]/10))
 
             # BS antenna gain
             bs_antenna_gain = sqrt(get_antenna_gain(network.BSs[i].antenna_params))
