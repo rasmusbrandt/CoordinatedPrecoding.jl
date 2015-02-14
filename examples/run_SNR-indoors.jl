@@ -23,8 +23,8 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Indoors network
 simulation_params = [
     "simulation_name" => "SNR_$(start_time)-indoors",
-    "I" => 3, "Kc" => 8, "N" => 2, "M" => 4,
-    "d" => 1,
+    "I" => 4, "Kc" => 8, "N" => 2, "M" => 2,
+    "d" => 2,
     "Ndrops" => 100, "Nsim" => 1,
     "precoding_methods" => [
         Shi2011_WMMSE,
@@ -39,7 +39,7 @@ simulation_params = [
         "stop_crit" => 1e-3,
         "max_iters" => 1000,
     ],
-    "independent_variable" => (set_transmit_powers_dBm!, -80:5:-40),
+    "independent_variable" => (set_transmit_powers_dBm!, -80:10:0),
     # "aux_independent_variables" => [
     #     ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50]),
     # ]

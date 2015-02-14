@@ -23,8 +23,8 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Indoors network
 simulation_params = [
     "simulation_name" => "convergence_$(start_time)-indoors",
-    "I" => 3, "Kc" => 8, "N" => 2, "M" => 4,
-    "d" => 1,
+    "I" => 4, "Kc" => 8, "N" => 2, "M" => 2,
+    "d" => 2,
     "Ndrops" => 100, "Nsim" => 1,
     "precoding_methods" => [
         Shi2011_WMMSE,
@@ -40,7 +40,7 @@ simulation_params = [
         "max_iters" => 20,
     ],
     "aux_independent_variables" => [
-        (set_transmit_powers_dBm!, [-30, -20, -10]),
+        (set_transmit_powers_dBm!, [-30, -20, -10, 0]),
     ]
 ]
 network =

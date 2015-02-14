@@ -39,7 +39,7 @@ simulation_params = [
         "stop_crit" => 1e-3,
         "max_iters" => 1000,
     ],
-    "independent_variable" => (set_transmit_powers_dBm!, -10:3:30),
+    "independent_variable" => (set_transmit_powers_dBm!, -20:5:30),
     # "aux_independent_variables" => [
     #     ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50]),
     # ]
