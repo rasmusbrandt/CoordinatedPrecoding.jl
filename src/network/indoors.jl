@@ -7,8 +7,8 @@
 # each MS. The same holds for the shadow fading. This is motivated by
 # Sec. 3.3.1 in Deliverable 1.1.2 of IST-WINNER II.
 #
-# The typical transmit power is 21 dBm over 20 MHz (600 subcarriers).
-# This leads to 10*log10(10^(21/10)/600) = -6.7 dBm for one 15 kHz subcarrier.
+# The typical transmit power is 21 dBm over 20 MHz (1200 subcarriers).
+# This leads to 10*log10(10^(21/10)/1200) = -9.8 dBm for one 15 kHz subcarrier.
 
 ##########################################################################
 # Network definition
@@ -39,7 +39,7 @@ function setup_indoors_network{AntennaParams_t <: AntennaParams}(
     corridor_length::Float64 = 120.,
     corridor_width::Float64 = 50.,
     guard_distance::Float64 = 3.,
-    transmit_power::Float64 = 10^(-9.8/10), # 21 dBm over 20 MHz, 1200 used subcarriers
+    transmit_power::Float64 = 10^(-9.8/10),
     BS_antenna_gain_params::Vector{AntennaParams_t} = [ OmnidirectionalAntennaParams(0) for i = 1:no_BSs ],
     user_priorities::Vector{Float64} = ones(Float64, no_BSs*no_MSs_per_cell),
     no_streams::Int = 1,

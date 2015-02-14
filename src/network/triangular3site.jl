@@ -7,7 +7,7 @@
 # coefficient 0.5) from each MS to the three BSs, but independent
 # between MSs.
 #
-# The typical transmit power is 46 dBm over 20 MHz (600 subcarriers).
+# The typical transmit power is 46 dBm over 10 MHz (600 subcarriers).
 # This leads to 10*log10(10^(46/10)/600) = 18.2 dBm for one 15 kHz subcarrier.
 
 ##########################################################################
