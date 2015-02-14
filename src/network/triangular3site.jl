@@ -4,7 +4,8 @@
 # parameters are based on 3GPP Case 1 (TR 25.814 and TR 36.814) macrocell
 # simulation environment. Distance-dependent pathloss and log-normal
 # shadow fading is used. The shadow fading is correlated (with correlation
-# coefficient 0.5) between the three cells.
+# coefficient 0.5) from each MS to the three BSs, but independent
+# between MSs.
 
 ##########################################################################
 # Six sector antenna params from 3gpp TR 25.996
