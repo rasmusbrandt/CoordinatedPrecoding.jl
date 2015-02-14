@@ -62,8 +62,8 @@ immutable SimpleLargescaleFadingEnvironment <: PropagationEnvironment
 end
 
 immutable SimpleLargescaleFadingEnvironmentState <: PropagationEnvironmentState
-    shadow_realization_dB::Float64
-    LoS::Bool
+    shadow_realizations_dB::Vector{Float64}
+    LoSs::BitArray
 end
 
 ##########################################################################
