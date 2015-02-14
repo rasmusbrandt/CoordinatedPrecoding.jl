@@ -6,6 +6,9 @@
 # generalized compared to InH. The LoS is independent between BSs, for
 # each MS. The same holds for the shadow fading. This is motivated by
 # Sec. 3.3.1 in Deliverable 1.1.2 of IST-WINNER II.
+#
+# The typical transmit power is 21 dBm over 20 MHz (600 subcarriers).
+# This leads to 10*log10(10^(21/10)/600) = -6.7 dBm for one 15 kHz subcarrier.
 
 ##########################################################################
 # Network definition
