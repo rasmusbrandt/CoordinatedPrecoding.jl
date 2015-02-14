@@ -125,10 +125,9 @@ end
 
 function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::IndoorsNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
     K = get_no_MSs(network); I = get_no_BSs(network)
-    Ns = Int[ network.MSs[k].no_antennas for k = 1:K ]
-    Ms = Int[ network.BSs[i].no_antennas for i = 1:I ]
+    Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
 
-    coefs = Array(Matrix{Complex128}, K, 3)
+    coefs = Array(Matrix{Complex128}, K, I)
 
     distances = get_distances(network)
 
