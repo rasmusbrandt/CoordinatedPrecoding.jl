@@ -166,6 +166,39 @@ end
 
 ##########################################################################
 # Visualization functions
-# function plot_network_layout(network::IndoorsNetwork)
-#     using PyCall; @pyimport matplotlib.pyplot as plt
-# end
+function plot_network_layout(network::IndoorsNetwork)
+    I = get_no_BSs(network); K = get_no_MSs(network)
+    Δ = network.corridor_length/I
+    δ = network.corridor_width
+
+    fig = PyPlot.figure()
+    ax = fig[:add_subplot](1, 1, 1)
+
+    # Corridor outline
+    pos1 = network.BSs[1].position; pos2 = network.BSs[end].position
+    sw = (pos1.x - Δ/2, pos1.y - δ/2); se = (pos2.x + Δ/2, pos2.y - δ/2)
+    nw = (pos1.x - Δ/2, pos1.y + δ/2); ne = (pos2.x + Δ/2, pos2.y + δ/2)
+    ax[:plot]([sw[1], se[1]], [sw[2], se[2]]; color="b", linestyle="-", linewidth=4)
+    ax[:plot]([se[1], ne[1]], [se[2], ne[2]]; color="b", linestyle="-", linewidth=4)
+    ax[:plot]([ne[1], nw[1]], [ne[2], nw[2]]; color="b", linestyle="-", linewidth=4)
+    ax[:plot]([nw[1], sw[1]], [nw[2], sw[2]]; color="b", linestyle="-", linewidth=4)
+
+    # BSs
+    for i = 1:I
+        pos = network.BSs[i].position
+        ax[:plot](pos.x, pos.y; marker="x", color="b", markersize=10)
+
+        # Cell outline
+        if i < I
+            ax[:plot]([pos.x + Δ/2, pos.x + Δ/2], [pos.y - δ/2, pos.y + δ/2]; color="b", linestyle="--", linewidth=2)
+        end
+    end
+
+    # MSs
+    for k = 1:K
+        pos = network.MSs[k].position
+        ax[:plot](pos.x, pos.y; marker="o", color="r", markersize=10)
+    end
+
+    display(fig)
+end

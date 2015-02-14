@@ -34,6 +34,7 @@ export
     Triangular3SiteNetwork, setup_triangular3site_network,
     IndoorsNetwork, setup_indoors_network,
     draw_user_drop!, draw_channel,
+    plot_network_layout,
 
 # Cell assignment
     CellAssignment,

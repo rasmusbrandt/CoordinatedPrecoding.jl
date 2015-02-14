@@ -181,6 +181,32 @@ end
 
 ##########################################################################
 # Visualization functions
-# function plot_network_layout(network::Triangular3SiteNetwork)
-#     using PyCall; @pyimport matplotlib.pyplot as plt
-# end
+function plot_network_layout(network::Triangular3SiteNetwork)
+    I = get_no_BSs(network); K = get_no_MSs(network)
+
+    fig = PyPlot.figure()
+    ax = fig[:add_subplot](1, 1, 1)
+
+    # Equilateral triangle, with cell edges
+    cm = mean([ [network.BSs[i].position.x, network.BSs[i].position.y] for i = 1:I ])
+    for i = 1:I
+        pos1 = network.BSs[i].position
+        pos2 = network.BSs[mod(i, I) + 1].position
+        ax[:plot]([pos1.x, pos2.x], [pos1.y, pos2.y]; color="b", linestyle="-")
+        ax[:plot]([mean([pos1.x, pos2.x]), cm[1]], [mean([pos1.y, pos2.y]), cm[2]]; color="b", linestyle="--")
+    end
+
+    # BSs
+    for i = 1:I
+        pos = network.BSs[i].position
+        ax[:plot](pos.x, pos.y; marker="x", color="b", markersize=10)
+    end
+
+    # MSs
+    for k = 1:K
+        pos = network.MSs[k].position
+        ax[:plot](pos.x, pos.y; marker="o", color="r", markersize=10)
+    end
+
+    display(fig)
+end
