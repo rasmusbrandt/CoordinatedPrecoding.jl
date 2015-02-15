@@ -31,11 +31,11 @@ function calculate_logdet_rates(state)
 
     logdet_rates = zeros(Float64, K, max_d)
     for k = 1:K; if ds[k] > 0
-        # W is p.d., so we should only get real eigenvalues. Numerically we may
+        # W is p.d., so we should only get abs eigenvalues. Numerically we may
         # get some imaginary noise however. Also, numerically the eigenvalues
         # may be less than 1, so we need to handle that to not get negative
         # rates.
-        r = log2(max(1, real(eigvals(state.W[k]))))
+        r = log2(max(1, abs(eigvals(state.W[k]))))
 
         if ds[k] < max_d
             logdet_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
@@ -60,7 +60,7 @@ function calculate_MMSE_rates(state)
         # for cleaner code in the algorithms. Also, these matrices are typically
         # small (like 2-by-2 or 3-by-3), so the complexity isn't too bad.
         E = state.W[k]\eye(state.W[k])
-        r = log2(max(1, real(1./diag(E))))
+        r = log2(max(1, abs(1./diag(E))))
 
         if ds[k] < max_d
             MMSE_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))

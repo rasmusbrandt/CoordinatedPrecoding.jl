@@ -100,7 +100,7 @@ function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierCha
             state.U[k] = Phi\F
             Emmse = eye(ds[k]) - state.U[k]'*F
             state.W[k] = Hermitian(Emmse\eye(ds[k]))
-            state.W_diag[k] = Diagonal(max(1, real(1./diag(Emmse))))
+            state.W_diag[k] = Diagonal(max(1, abs(1./diag(Emmse))))
         end
     end
 end

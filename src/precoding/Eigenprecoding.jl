@@ -92,13 +92,13 @@ function calculate_logdet_rates(state::EigenprecodingState,
             W_intracell = eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k]
             W_uncoord = eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k]
 
-            r_intercell_logdet = (1/channel.K)*log2(max(1, real(eigvals(W_intercell))))
-            r_intracell_logdet = (1/Kc)*log2(max(1, real(eigvals(W_intracell))))
-            r_uncoord_logdet = log2(max(1, real(eigvals(W_uncoord))))
+            r_intercell_logdet = (1/channel.K)*log2(max(1, abs(eigvals(W_intercell))))
+            r_intracell_logdet = (1/Kc)*log2(max(1, abs(eigvals(W_intracell))))
+            r_uncoord_logdet = log2(max(1, abs(eigvals(W_uncoord))))
 
-            r_intercell_MMSE = (1/channel.K)*log2(max(1, real(1./diag(inv(W_intercell)))))
-            r_intracell_MMSE = (1/Kc)*log2(max(1, real(1./diag(inv(W_intracell)))))
-            r_uncoord_MMSE = log2(max(1, real(1./diag(inv(W_uncoord)))))
+            r_intercell_MMSE = (1/channel.K)*log2(max(1, abs(1./diag(inv(W_intercell)))))
+            r_intracell_MMSE = (1/Kc)*log2(max(1, abs(1./diag(inv(W_intracell)))))
+            r_uncoord_MMSE = log2(max(1, abs(1./diag(inv(W_uncoord)))))
 
             if aux_params["output_protocol"] == :all_iterations
                 for iter = 1:aux_params["max_iters"]
