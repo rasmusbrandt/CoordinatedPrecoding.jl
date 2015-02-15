@@ -12,16 +12,6 @@ served_MS_ids(BS_id::Int, cell_assignment::CellAssignment) =
 served_MS_ids_except_me(MS_id::Int, BS_id::Int, cell_assignment::CellAssignment) =
     setdiff(cell_assignment.assignment_inverse[BS_id], MS_id)
 
-function assign_cells_by_pathloss!(network::PhysicalNetwork)
-    # Cell assignment based on pathloss of physical network
-    error("Implement me")
-end
-
-function assign_cells_by_instantaneous_channels!{Channel_t <: Channel}(network::PhysicalNetwork, channel::Channel_t)
-    # Cell assignment based on instantaneous channel strength
-    error("Implement me")
-end
-
 function require_equal_no_MSs_per_cell(cell_assignment::CellAssignment)
     BS_ind_max = maximum(cell_assignment.assignment)
 

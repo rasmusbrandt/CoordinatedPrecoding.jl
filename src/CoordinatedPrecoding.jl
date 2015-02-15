@@ -36,12 +36,14 @@ export
     draw_user_drop!, draw_channel,
     plot_network_layout,
 
-# Cell assignment
+# Assignment
     CellAssignment,
     serving_BS_id, served_MS_ids, served_MS_ids_except_me,
     assign_cells_by_id, assign_cells_by_pathloss,
     assign_cells_by_instantaneous_channels,
     require_equal_no_MSs_per_cell,
+    ClusterAssignment,
+    coordinated_BS_ids, coordinated_MS_ids,
 
 # Precoding
     PrecodingResults, AuxPrecodingParams,
@@ -69,8 +71,8 @@ export
 include("channel.jl")
 # Networks
 include("network/network.jl")
-# Cell assignment
-include("cell_assignment/cell_assignment.jl")
+# Cell/cluster assignment
+include("assignment/assignment.jl")
 # Useful stuff
 include("utils.jl")
 # Precoding algorithms
