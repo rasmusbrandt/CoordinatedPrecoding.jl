@@ -8,7 +8,11 @@ immutable SinglecarrierChannel <: Channel
     Ms::Vector{Int}
     K::Int
     I::Int
+
+    large_scale_fading_factor::Matrix{Float64}
 end
+SinglecarrierChannel(H, Ns, Ms, K, I) =
+    SinglecarrierChannel(H, Ns, Ms, K, I, ones(K, I))
 
 immutable MulticarrierChannel <: Channel
     H::Array{Array{Complex128,3},2}
@@ -17,7 +21,11 @@ immutable MulticarrierChannel <: Channel
     K::Int
     I::Int
     Lc::Int
+
+    large_scale_fading_factor::Matrix{Float64}
 end
+MulticarrierChannel(H, Ns, Ms, K, I, Lc) =
+    MulticarrierChannel(H, Ns, Ms, K, I, Lc, ones(K, I))
 
 get_channel_gains_dB(channel::SinglecarrierChannel) = 
     Float64[ 20*log10(vecnorm(channel.H[k,i])) for k = 1:channel.K, i = 1:channel.I ]

@@ -128,6 +128,7 @@ function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::IndoorsNe
     Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, K, I)
+    large_scale_fading_factor = Array(Float64, K, I)
 
     distances = get_distances(network)
 
@@ -156,11 +157,12 @@ function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::IndoorsNe
             ms_antenna_gain = sqrt(10^(network.MSs[k].antenna_gain_dB/10))
 
             # Apply scale factors
-            coefs[k,i] *= pathloss_factor*shadow_factor*bs_antenna_gain*ms_antenna_gain
+            large_scale_fading_factor[k,i] = pathloss_factor*shadow_factor*bs_antenna_gain*ms_antenna_gain
+            coefs[k,i] *= large_scale_fading_factor[k,i]
         end
     end
 
-    return SinglecarrierChannel(coefs, Ns, Ms, K, I)
+    return SinglecarrierChannel(coefs, Ns, Ms, K, I, large_scale_fading_factor)
 end
 
 ##########################################################################
