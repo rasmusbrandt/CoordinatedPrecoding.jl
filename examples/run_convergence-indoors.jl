@@ -25,7 +25,7 @@ simulation_params = [
     "simulation_name" => "convergence_$(start_time)-indoors",
     "I" => 4, "Kc" => 8, "N" => 2, "M" => 2,
     "d" => 2,
-    "Ndrops" => 100, "Nsim" => 1,
+    "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,

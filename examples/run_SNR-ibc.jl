@@ -25,7 +25,7 @@ simulation_params = [
     "simulation_name" => "SNR_$(start_time)-ibc",
     "I" => 3, "Kc" => 1, "N" => 3, "M" => 3,
     "d" => 2,
-    "Ndrops" => 100, "Nsim" => 1,
+    "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
