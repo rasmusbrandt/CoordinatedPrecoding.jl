@@ -52,21 +52,24 @@ function draw_channel{System_t <: SinglecarrierSystem}(network::InterferingBroad
     Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, I*Kc, I)
+    large_scale_fading_factor = Array(Float64, I*Kc, I)
+
     for k = 1:I*Kc
         serving_id = div(k - 1, Kc) + 1
 
         for i = 1:I
             if i == serving_id
-                scale_factor = 1
+                large_scale_fading_factor[k,i] = 1
             else
-                scale_factor = sqrt(network.alpha)
+                large_scale_fading_factor[k,i] = sqrt(network.alpha)
             end
 
-            coefs[k,i] = scale_factor*(1/sqrt(2))*(randn(Ns[k], Ms[i]) + im*randn(Ns[k], Ms[i]))
+            # Apply scale factors
+            coefs[k,i] = large_scale_fading_factor[k,i]*(1/sqrt(2))*(randn(Ns[k], Ms[i]) + im*randn(Ns[k], Ms[i]))
         end
     end
 
-    return SinglecarrierChannel(coefs, Ns, Ms, I*Kc, I)
+    return SinglecarrierChannel(coefs, Ns, Ms, I*Kc, I, large_scale_fading_factor)
 end
 
 function draw_channel{System_t <: MulticarrierSystem}(network::InterferingBroadcastChannel{System_t})
