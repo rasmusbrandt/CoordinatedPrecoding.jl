@@ -78,6 +78,10 @@ function simulate(network::Network, simulation_params::SimulationParams)
 
         draw_user_drop!(network)
 
+        # Assign cells and clusters
+        haskey(simulation_params, "cell_assignment_method") ? simulation_params["cell_assignment_method"](channel, network) : assign_cells_by_id!(network)
+        haskey(simulation_params, "cluster_assignment_method") && simulation_params["cluster_assignment_method"](channel, network)
+
         for Nsim_idx = 1:Nsim
             Lumberjack.info("Looping over sim $Nsim_idx/$Nsim.")
 
@@ -97,35 +101,10 @@ function simulate(network::Network, simulation_params::SimulationParams)
                         end
                     end
 
-                    # FIXME: Both cell assignment and cluster assignment should be stored
-                    # in the network, and then obtained by the precoding methods similarly
-                    # to how all other parameters are obtained (e.g. K, Ps, aux_precoding_params, etc).
-                    # Same goes for simulate_convergence.
-                    if haskey(simulation_params, "cell_assignment_method")
-                        cell_assignment = simulation_params["cell_assignment_method"](channel, network)
-                    else
-                        cell_assignment = assign_cells_by_id(network)
-                    end
-
-                    if haskey(simulation_params, "cluster_assignment_method")
-                        cluster_assignment = simulation_params["cluster_assignment_method"](channel, network)
-                    else
-                        cluster_assignment = nothing
-                    end
-
                     # Run precoding methods
                     current_results = SingleSimulationResults()
                     for method in simulation_params["precoding_methods"]
-                        # FIXME: When cell assignment and cluster assignment are
-                        # stored in the network, this row can be simplified.
-                        # The calling convention will then be to only supply
-                        # the network (and the channel...?).
-                        # Same goes for simulate_convergence.
-                        if cluster_assignment == nothing
-                            current_results[string(method)] = method(channel, network, cell_assignment)
-                        else
-                            current_results[string(method)] = method(channel, network, cell_assignment, cluster_assignment)
-                        end
+                        current_results[string(method)] = method(channel, network)
                     end
                     raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = current_results
                 end
@@ -189,6 +168,10 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
 
         draw_user_drop!(network)
 
+        # Assign cells and clusters
+        haskey(simulation_params, "cell_assignment_method") ? simulation_params["cell_assignment_method"](channel, network) : assign_cells_by_id!(network)
+        haskey(simulation_params, "cluster_assignment_method") && simulation_params["cluster_assignment_method"](channel, network)
+
         for Nsim_idx = 1:Nsim
             Lumberjack.info("Looping over sim $Nsim_idx/$Nsim.")
 
@@ -203,26 +186,10 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                     end
                 end
 
-                if haskey(simulation_params, "cell_assignment_method")
-                    cell_assignment = simulation_params["cell_assignment_method"](channel, network)
-                else
-                    cell_assignment = assign_cells_by_id(network)
-                end
-
-                if haskey(simulation_params, "cluster_assignment_method")
-                    cluster_assignment = simulation_params["cluster_assignment_method"](channel, network)
-                else
-                    cluster_assignment = nothing
-                end
-
                 # Run precoding methods
                 current_results = SingleSimulationResults()
                 for method in simulation_params["precoding_methods"]
-                    if cluster_assignment == nothing
-                        current_results[string(method)] = method(channel, network, cell_assignment)
-                    else
-                        current_results[string(method)] = method(channel, network, cell_assignment, cluster_assignment)
-                    end
+                    current_results[string(method)] = method(channel, network)
                 end
 
                 raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = current_results

@@ -2,6 +2,7 @@ immutable CellAssignment
     assignment::Vector{Int} # length is number of MSs
     assignment_inverse::Vector{IntSet} # length is number of BSs
 end
+CellAssignment() = CellAssignment(Array(Int, 0), [IntSet()])
 CellAssignment(assignment::Vector{Int}, no_BSs::Int) =
     CellAssignment(assignment, [ IntSet(findin(assignment, BS_id)) for BS_id = 1:no_BSs ])
 

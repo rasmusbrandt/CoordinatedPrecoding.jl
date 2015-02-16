@@ -2,8 +2,8 @@ immutable EigenprecodingState
     V::Array{Matrix{Complex128},1}
 end
 
-function Eigenprecoding(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment)
+function Eigenprecoding(channel::SinglecarrierChannel, network::Network)
+    cell_assignment = get_cell_assignment(network)
 
     I = get_no_BSs(network)
     Ps = get_transmit_powers(network)

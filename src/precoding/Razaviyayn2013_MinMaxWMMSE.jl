@@ -5,7 +5,9 @@ immutable Razaviyayn2013_MinMaxWMMSEState
 end
 
 function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
-    network::Network, cell_assignment::CellAssignment)
+    network::Network)
+
+    cell_assignment = get_cell_assignment(network)
 
     # The implementation is currently limited in the respects below. This is in
     # order to simplify the Gurobi optimization variable indexing. With equal

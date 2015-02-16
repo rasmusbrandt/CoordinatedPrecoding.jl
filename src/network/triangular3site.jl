@@ -32,7 +32,15 @@ type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
     propagation_environment::PropagationEnvironment_t
     inter_site_distance::Float64
     guard_distance::Float64
+
+    cell_assignment::CellAssignment
+    cluster_assignment::ClusterAssignment
 end
+
+# Convenience constructor without assignments
+Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance) =
+    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance, CellAssignment(), ClusterAssignment())
+
 Base.show(io::IO, x::Triangular3SiteNetwork) =
     print(io, "Triangular3Site(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
 Base.showcompact(io::IO, x::Triangular3SiteNetwork) =
@@ -84,7 +92,7 @@ end
 
 ##########################################################################
 # Standard cell assignment functions
-function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
     assignment = Array(Int, I*Kc)
 
@@ -92,7 +100,7 @@ function assign_cells_by_id{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
         assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    return CellAssignment(assignment, I)
+    network.cell_assignment = CellAssignment(assignment, I)
 end
 
 ##########################################################################

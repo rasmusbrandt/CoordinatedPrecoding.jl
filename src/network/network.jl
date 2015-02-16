@@ -131,6 +131,14 @@ abstract Network
 abstract CanonicalNetwork <: Network
 abstract PhysicalNetwork <: Network
 
+get_cell_assignment (network::Network) = network.cell_assignment
+set_cell_assignment!(network::Network, cell_assignment::CellAssignment) =
+    (network.cell_assignment = cell_assignment)
+
+get_cluster_assignment (network::Network) = network.cluster_assignment
+set_cluster_assignment!(network::Network, cluster_assignment::ClusterAssignment) =
+    (network.cluster_assignment = cluster_assignment)
+
 # FIXME: Clean this up using macros
 get_aux_precoding_param (network::Network, k::ASCIIString) =
     (network.system.aux_precoding_params[k])

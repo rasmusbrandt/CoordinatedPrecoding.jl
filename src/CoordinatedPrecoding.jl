@@ -16,6 +16,9 @@ export
 
 # Networks
     Network,
+
+    get_cell_assignment, set_cell_assignment!,
+    get_cluster_assignment, set_cluster_assignment!,
     get_aux_precoding_param, set_aux_precoding_param!,
     get_aux_precoding_params, set_aux_precoding_params!,
     get_aux_cell_assignment_param, set_aux_cell_assignment_param!,
@@ -31,21 +34,25 @@ export
     get_no_streams, set_no_streams!,
     get_user_priority, get_user_priorities,
     set_user_priority, set_user_priorities,
+
     require_equal_no_MS_antennas, require_equal_no_BS_antennas,
     require_single_antenna_MSs, require_single_antenna_BSs,
     require_equal_no_streams, require_single_stream,
+
     InterferingBroadcastChannel, setup_interfering_broadcast_channel,
     Triangular3SiteNetwork, setup_triangular3site_network,
     IndoorsNetwork, setup_indoors_network,
+
     draw_user_drop!, draw_channel,
     plot_network_layout,
 
 # Assignment
-    CellAssignment,
+    CellAssignment, AuxCellAssignmentParams,
+    assign_cells_by_id!,
     serving_BS_id, served_MS_ids, served_MS_ids_except_me,
-    assign_cells_by_id,
     require_equal_no_MSs_per_cell,
-    ClusterAssignment,
+
+    ClusterAssignment, AuxClusterAssignmentParams,
     coordinated_BS_ids, coordinated_MS_ids,
 
 # Precoding
@@ -72,10 +79,10 @@ export
 ##########################################################################
 # Channels
 include("channel.jl")
-# Networks
-include("network/network.jl")
 # Cell/cluster assignment
 include("assignment/assignment.jl")
+# Networks
+include("network/network.jl")
 # Useful stuff
 include("utils.jl")
 # Precoding algorithms

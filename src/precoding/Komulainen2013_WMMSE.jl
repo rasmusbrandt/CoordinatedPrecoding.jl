@@ -5,8 +5,8 @@ immutable Komulainen2013_WMMSEState
     V::Array{Matrix{Complex128},1}
 end
 
-function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network,
-    cell_assignment::CellAssignment)
+function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
+    cell_assignment = get_cell_assignment(network)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
