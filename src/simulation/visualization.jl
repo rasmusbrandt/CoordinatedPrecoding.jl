@@ -5,7 +5,7 @@ function postprocess(raw_results::MultipleSimulationResults,
 
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
-    precoding_methods = intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
+    methods = get_methods_to_plot(simulation_params, plot_params)
 
     # Main independent variable
     idp_vals_length = length(simulation_params["independent_variable"][2])
@@ -22,9 +22,9 @@ function postprocess(raw_results::MultipleSimulationResults,
     end
 
     # Compact raw results into result matrices
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    for method_name in precoding_methods
-        for (result_param,) in plot_params["precoding_methods"][method_name]
+    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
@@ -50,10 +50,10 @@ function postprocess(raw_results::MultipleSimulationResults,
     plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 5:6)))
     plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 6), 5)))
 
-    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    for method_name in precoding_methods
-        for (result_param,) in plot_params["precoding_methods"][method_name]
+    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
@@ -79,7 +79,7 @@ function plot(processed_results, simulation_params::SimulationParams, plot_param
     fig = PyPlot.figure(;plot_params["figure"]...)
     ax = fig[:add_subplot](1, 1, 1; plot_params["axes"]...)
 
-    plot_precoding_methods(ax, results_mean, results_var, simulation_params, plot_params;
+    plot_methods(ax, results_mean, results_var, simulation_params, plot_params;
         xvals=simulation_params["independent_variable"][2])
     haskey(plot_params, "legend") && ax[:legend](;plot_params["legend"]...)
 
@@ -100,7 +100,7 @@ function postprocess_convergence(raw_results::MultipleSimulationResults,
 
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
-    precoding_methods = intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
+    methods = get_methods_to_plot(simulation_params, plot_params)
 
     # Auxiliary independent variables
     if haskey(simulation_params, "aux_independent_variables")
@@ -114,9 +114,9 @@ function postprocess_convergence(raw_results::MultipleSimulationResults,
     end
 
     # Compact raw results into result matrices
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    for method_name in precoding_methods
-        for (result_param,) in plot_params["precoding_methods"][method_name]
+    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
@@ -142,10 +142,10 @@ function postprocess_convergence(raw_results::MultipleSimulationResults,
     plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 4:5)))
     plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 5), 4)))
 
-    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in simulation_params["precoding_methods"] ]
-    for method_name in precoding_methods
-        for (result_param,) in plot_params["precoding_methods"][method_name]
+    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
@@ -166,7 +166,7 @@ end
 ##########################################################################
 # Convergence simulation plot
 function plot_convergence(processed_results, simulation_params::SimulationParams, plot_params::PlotParams)
-    precoding_methods = intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
+    methods = get_methods_to_plot(simulation_params, plot_params)
 
     results = processed_results[1]
     results_mean = processed_results[2]
@@ -176,7 +176,7 @@ function plot_convergence(processed_results, simulation_params::SimulationParams
     fig = PyPlot.figure(;plot_params["figure"]...)
     ax = fig[:add_subplot](1, 1, 1; plot_params["axes"]...)
 
-    plot_precoding_methods(ax, results_mean, results_var, simulation_params, plot_params)
+    plot_methods(ax, results_mean, results_var, simulation_params, plot_params)
     haskey(plot_params, "legend") && ax[:legend](;plot_params["legend"]...)
 
     if displayable("application/pdf")
@@ -190,14 +190,14 @@ function plot_convergence(processed_results, simulation_params::SimulationParams
 
     ### USER UTILITIES ###
     K = simulation_params["I"]*simulation_params["Kc"]
-    fig = PyPlot.figure(figsize=(6*K,3*length(precoding_methods)))
+    fig = PyPlot.figure(figsize=(6*K,3*length(methods)))
     subplot_ind = 1
 
-    for method_name in precoding_methods
+    for method_name in methods
         for k = 1:K
-            ax = fig[:add_subplot](length(precoding_methods), K, subplot_ind); subplot_ind += 1
+            ax = fig[:add_subplot](length(methods), K, subplot_ind); subplot_ind += 1
 
-            for (result_param, line_params) in plot_params["precoding_methods"][method_name]
+            for (result_param, line_params) in plot_params["methods"][method_name]
                 if isa(result_param, ASCIIString)
                     result = results[method_name][result_param]
                 else
@@ -216,7 +216,7 @@ function plot_convergence(processed_results, simulation_params::SimulationParams
             if subplot_ind-1 < K
                 ax[:set_title]("User $k")
             end
-            if subplot_ind-1 > (K-1)*length(precoding_methods)
+            if subplot_ind-1 > (K-1)*length(methods)
                 ax[:set_xlabel]("Iteration")
             end
         end
@@ -238,8 +238,8 @@ function plot_convergence(processed_results, simulation_params::SimulationParams
     for k = 1:K; for n = 1:simulation_params["d"]
         ax = fig[:add_subplot](K, simulation_params["d"], subplot_ind); subplot_ind += 1
 
-        for method_name in precoding_methods
-            for (result_param, line_params) in plot_params["precoding_methods"][method_name]
+        for method_name in methods
+            for (result_param, line_params) in plot_params["methods"][method_name]
                 if isa(result_param, ASCIIString)
                     result = results[method_name][result_param]
                 else
@@ -275,10 +275,12 @@ function plot_convergence(processed_results, simulation_params::SimulationParams
 end
 
 ##########################################################################
-# Plot lines for precoding method performance into an axes
-function plot_precoding_methods(ax, results_mean, results_var, simulation_params, plot_params; xvals=[])
-    for method_name in intersect(simulation_params["precoding_methods"], keys(plot_params["precoding_methods"]))
-        for (result_param, line_params) in plot_params["precoding_methods"][method_name]
+# Plot lines for method performance into an axes
+function plot_methods(ax, results_mean, results_var, simulation_params, plot_params; xvals=[])
+    methods = get_methods_to_plot(simulation_params, plot_params)
+
+    for method_name in methods
+        for (result_param, line_params) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
@@ -299,4 +301,12 @@ function plot_precoding_methods(ax, results_mean, results_var, simulation_params
             end
         end
     end
+end
+
+function get_methods_to_plot(simulation_params, plot_params)
+    precoding_methods = (haskey(simulation_params, "precoding_methods") ? simulation_params["precoding_methods"] : [])
+    cell_assignment_methods = (haskey(simulation_params, "cell_assignment_methods") ? simulation_params["cell_assignment_methods"] : [])
+    cluster_assignment_methods = (haskey(simulation_params, "cluster_assignment_methods") ? simulation_params["cluster_assignment_methods"] : [])
+
+    return intersect(union(precoding_methods, cell_assignment_methods, cluster_assignment_methods), keys(plot_params["methods"]))
 end

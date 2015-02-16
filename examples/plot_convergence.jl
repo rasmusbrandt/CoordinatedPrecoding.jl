@@ -48,7 +48,7 @@ plot_params = [
 
     # "confidence_interval_zalpha2" => 1.96,
 
-    "precoding_methods" => [
+    "methods" => [
         "Shi2011_WMMSE" => [
             ("logdet_rates", [ :color => "b", :linestyle => "-", :label => "WMMSE (logdet)" ]),
             ("MMSE_rates", [ :color => "b", :linestyle => "--",  :label => "WMMSE (MMSE)" ]),
