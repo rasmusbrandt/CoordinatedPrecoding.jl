@@ -17,7 +17,7 @@ get_no_MSs_per_cell(network::InterferingBroadcastChannel) = network.no_MSs_per_c
 
 function setup_interfering_broadcast_channel(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
-    system = SinglecarrierSystem(AuxPrecodingParams(), 0, 0),
+    system = SinglecarrierSystem(),
     alpha::Float64 = 1.,
     transmit_power::Float64 = 1.,
     user_priorities::Vector{Float64} = ones(Float64, no_BSs*no_MSs_per_cell),

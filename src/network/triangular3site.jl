@@ -46,7 +46,7 @@ get_no_MSs_per_cell(network::Triangular3SiteNetwork) = network.no_MSs_per_cell
 # (TR 25.814 and TR 36.814).
 function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
-    system = SinglecarrierSystem(AuxPrecodingParams(), 2., 15e3),
+    system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
     inter_site_distance::Float64 = 500.,
     guard_distance::Float64 = 35.,

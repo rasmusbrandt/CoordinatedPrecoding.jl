@@ -55,10 +55,10 @@ function simulate(network::Network, simulation_params::SimulationParams)
     Lumberjack.info("Starting simulation.",
         { :network => network, :simulation_params => simulation_params })
 
-    cell_assignment = assign_cells_by_id(network)
-
-    # Set initial aux precoding params
-    set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
+    # Set initial aux params
+    haskey(simulation_params, "aux_precoding_params") && set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
+    haskey(simulation_params, "aux_cell_assignment_params") && set_aux_cell_assignment_params!(network, simulation_params["aux_cell_assignment_params"])
+    haskey(simulation_params, "aux_cluster_assignment_params") && set_aux_cluster_assignment_params!(network, simulation_params["aux_cluster_assignment_params"])
 
     # Ensure that we are not storing all intermediate iterations.
     set_aux_precoding_param!(network, :final_iteration, "output_protocol")
@@ -97,10 +97,35 @@ function simulate(network::Network, simulation_params::SimulationParams)
                         end
                     end
 
+                    # FIXME: Both cell assignment and cluster assignment should be stored
+                    # in the network, and then obtained by the precoding methods similarly
+                    # to how all other parameters are obtained (e.g. K, Ps, aux_precoding_params, etc).
+                    # Same goes for simulate_convergence.
+                    if haskey(simulation_params, "cell_assignment_method")
+                        cell_assignment = simulation_params["cell_assignment_method"](channel, network)
+                    else
+                        cell_assignment = assign_cells_by_id(network)
+                    end
+
+                    if haskey(simulation_params, "cluster_assignment_method")
+                        cluster_assignment = simulation_params["cluster_assignment_method"](channel, network)
+                    else
+                        cluster_assignment = nothing
+                    end
+
                     # Run precoding methods
                     current_results = SingleSimulationResults()
                     for method in simulation_params["precoding_methods"]
-                        current_results[string(method)] = method(channel, network, cell_assignment)
+                        # FIXME: When cell assignment and cluster assignment are
+                        # stored in the network, this row can be simplified.
+                        # The calling convention will then be to only supply
+                        # the network (and the channel...?).
+                        # Same goes for simulate_convergence.
+                        if cluster_assignment == nothing
+                            current_results[string(method)] = method(channel, network, cell_assignment)
+                        else
+                            current_results[string(method)] = method(channel, network, cell_assignment, cluster_assignment)
+                        end
                     end
                     raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = current_results
                 end
@@ -138,10 +163,10 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     Lumberjack.info("Starting convergence simulation.",
         { :network => network, :simulation_params => simulation_params })
 
-    cell_assignment = assign_cells_by_id(network)
-
-    # Set initial aux precoding params
-    set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
+    # Set initial aux params
+    haskey(simulation_params, "aux_precoding_params") && set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
+    haskey(simulation_params, "aux_cell_assignment_params") && set_aux_cell_assignment_params!(network, simulation_params["aux_cell_assignment_params"])
+    haskey(simulation_params, "aux_cluster_assignment_params") && set_aux_cluster_assignment_params!(network, simulation_params["aux_cluster_assignment_params"])
 
     # We want to store all intermediate iterations.
     set_aux_precoding_param!(network, :all_iterations, "output_protocol")
@@ -178,10 +203,26 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                     end
                 end
 
+                if haskey(simulation_params, "cell_assignment_method")
+                    cell_assignment = simulation_params["cell_assignment_method"](channel, network)
+                else
+                    cell_assignment = assign_cells_by_id(network)
+                end
+
+                if haskey(simulation_params, "cluster_assignment_method")
+                    cluster_assignment = simulation_params["cluster_assignment_method"](channel, network)
+                else
+                    cluster_assignment = nothing
+                end
+
                 # Run precoding methods
                 current_results = SingleSimulationResults()
                 for method in simulation_params["precoding_methods"]
-                    current_results[string(method)] = method(channel, network, cell_assignment)
+                    if cluster_assignment == nothing
+                        current_results[string(method)] = method(channel, network, cell_assignment)
+                    else
+                        current_results[string(method)] = method(channel, network, cell_assignment, cluster_assignment)
+                    end
                 end
 
                 raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = current_results

@@ -33,7 +33,7 @@ get_no_MSs_per_cell(network::IndoorsNetwork) = network.no_MSs_per_cell
 # The default parameter values are taken from ITU-R M.2135-1.
 function setup_indoors_network{AntennaParams_t <: AntennaParams}(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
-    system = SinglecarrierSystem(AuxPrecodingParams(), 3.4, 15e3),
+    system = SinglecarrierSystem(3.4e9, 15e3),
     propagation_environments = [:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
                                 :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
     corridor_length::Float64 = 120.,
