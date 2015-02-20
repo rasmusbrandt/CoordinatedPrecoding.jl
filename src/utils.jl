@@ -12,22 +12,13 @@ function clean_simulation_params_for_jld(simulation_params)
         cleaned_simulation_params["precoding_methods"] = cleaned_precoding_methods
     end
 
-    # Cell assignment method function pointers
-    if haskey(simulation_params, "cell_assignment_methods")
-        cleaned_cell_assignment_methods = Array(ASCIIString, 0)
-        for method in simulation_params["cell_assignment_methods"]
-            push!(cleaned_cell_assignment_methods, string(method))
+    # Assignment method function pointers
+    if haskey(simulation_params, "assignment_methods")
+        cleaned_assignment_methods = Array(ASCIIString, 0)
+        for method in simulation_params["assignment_methods"]
+            push!(cleaned_assignment_methods, string(method))
         end
-        cleaned_simulation_params["cell_assignment_methods"] = cleaned_cell_assignment_methods
-    end
-
-    # Cluster assignment method function pointers
-    if haskey(simulation_params, "cluster_assignment_methods")
-        cleaned_cluster_assignment_methods = Array(ASCIIString, 0)
-        for method in simulation_params["cluster_assignment_methods"]
-            push!(cleaned_cluster_assignment_methods, string(method))
-        end
-        cleaned_simulation_params["cluster_assignment_methods"] = cleaned_cluster_assignment_methods
+        cleaned_simulation_params["assignment_methods"] = cleaned_assignment_methods
     end
 
     # Independent variable function pointer

@@ -3,7 +3,7 @@ immutable EigenprecodingState
 end
 
 function Eigenprecoding(channel::SinglecarrierChannel, network::Network)
-    cell_assignment = get_cell_assignment(network)
+    assignment = get_assignment(network)
 
     I = get_no_BSs(network)
     Ps = get_transmit_powers(network)
@@ -13,7 +13,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network)
     state = EigenprecodingState(Array(Matrix{Complex128}, channel.K))
 
     for i = 1:I
-        served = served_MS_ids(i, cell_assignment)
+        served = served_MS_ids(i, assignment)
         Kc = length(served)
 
         for k in served
@@ -42,12 +42,12 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network)
         end
     end
 
-    return calculate_logdet_rates(state, channel, sigma2s, cell_assignment, aux_params)
+    return calculate_logdet_rates(state, channel, sigma2s, assignment, aux_params)
 end
 
 function calculate_logdet_rates(state::EigenprecodingState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    cell_assignment::CellAssignment, aux_params::AuxPrecodingParams)
+    assignment::Assignment, aux_params::AuxPrecodingParams)
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
@@ -70,19 +70,19 @@ function calculate_logdet_rates(state::EigenprecodingState,
     end
 
     for i = 1:channel.I
-        served = served_MS_ids(i, cell_assignment)
+        served = served_MS_ids(i, assignment)
         Kc = length(served)
 
         for k in served
             Phi_intracell = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
             for j in delete!(IntSet(1:channel.I), i)
-                for l in served_MS_ids(j, cell_assignment)
+                for l in served_MS_ids(j, assignment)
                     #Phi_intracell += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
                     Base.LinAlg.BLAS.herk!(Phi_intracell.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi_intracell.S)
                 end
             end
             Phi_uncoord = copy(Phi_intracell)
-            for l in served_MS_ids_except_me(k, i, cell_assignment)
+            for l in served_MS_ids_except_me(k, i, assignment)
                 #Phi_uncoord += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
                 Base.LinAlg.BLAS.herk!(Phi_uncoord.uplo, 'N', complex(1.), channel.H[k,i]*state.V[l], complex(1.), Phi_uncoord.S)
             end

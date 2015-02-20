@@ -33,13 +33,12 @@ type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
     inter_site_distance::Float64
     guard_distance::Float64
 
-    cell_assignment::CellAssignment
-    cluster_assignment::ClusterAssignment
+    assignment::Assignment
 end
 
 # Convenience constructor without assignments
 Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance) =
-    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance, CellAssignment(), ClusterAssignment())
+    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance, Assignment())
 
 Base.show(io::IO, x::Triangular3SiteNetwork) =
     print(io, "Triangular3Site(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
@@ -94,13 +93,13 @@ end
 # Standard cell assignment functions
 function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
-    assignment = Array(Int, I*Kc)
+    cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
-        assignment[(i-1)*Kc+1:i*Kc] = i
+        cell_assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    network.cell_assignment = CellAssignment(assignment, I)
+    network.assignment = Assignment(cell_assignment, I)
 end
 
 ##########################################################################

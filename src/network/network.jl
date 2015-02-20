@@ -21,21 +21,19 @@ end
 abstract System
 
 typealias AuxPrecodingParams Dict{ASCIIString, Any} # belongs in precoding.jl
-typealias AuxCellAssignmentParams Dict{ASCIIString, Any} # belongs in cell_assignment.jl
-typealias AuxClusterAssignmentParams Dict{ASCIIString, Any} # belongs in cluster_assignment.jl
+typealias AuxAssignmentParams Dict{ASCIIString, Any} # belongs in assignment.jl
 
 type SinglecarrierSystem <: System
     carrier_frequency::Float64
     bandwidth::Float64
 
     aux_precoding_params::AuxPrecodingParams
-    aux_cell_assignment_params::AuxCellAssignmentParams
-    aux_cluster_assignment_params::AuxClusterAssignmentParams
+    aux_assignment_params::AuxAssignmentParams
 end
 SinglecarrierSystem() =
-    SinglecarrierSystem(0, 0, AuxPrecodingParams(), AuxCellAssignmentParams(), AuxClusterAssignmentParams())
+    SinglecarrierSystem(0, 0, AuxPrecodingParams(), AuxAssignmentParams())
 SinglecarrierSystem(carrier_frequency::Float64, bandwidth::Float64) =
-    SinglecarrierSystem(carrier_frequency, bandwidth, AuxPrecodingParams(), AuxCellAssignmentParams(), AuxClusterAssignmentParams())
+    SinglecarrierSystem(carrier_frequency, bandwidth, AuxPrecodingParams(), AuxAssignmentParams())
 
 type MulticarrierSystem <: System
     carrier_frequency::Float64
@@ -44,13 +42,12 @@ type MulticarrierSystem <: System
     no_subcarriers::Int
 
     aux_precoding_params::AuxPrecodingParams
-    aux_cell_assignment_params::AuxCellAssignmentParams
-    aux_cluster_assignment_params::AuxClusterAssignmentParams
+    aux_assignment_params::AuxAssignmentParams
 end
 MulticarrierSystem() =
-    MulticarrierSystem(0, 0, 1, AuxPrecodingParams(), AuxCellAssignmentParams(), AuxClusterAssignmentParams())
+    MulticarrierSystem(0, 0, 1, AuxPrecodingParams(), AuxAssignmentParams())
 MulticarrierSystem(carrier_frequency::Float64, bandwidth::Float64, no_subcarriers::Int) =
-    MulticarrierSystem(carrier_frequency, bandwidth, no_subcarriers, AuxPrecodingParams(), AuxCellAssignmentParams(), AuxClusterAssignmentParams())
+    MulticarrierSystem(carrier_frequency, bandwidth, no_subcarriers, AuxPrecodingParams(), AuxAssignmentParams())
 
 ##########################################################################
 # Antenna params
@@ -131,15 +128,10 @@ abstract Network
 abstract CanonicalNetwork <: Network
 abstract PhysicalNetwork <: Network
 
-get_cell_assignment (network::Network) = network.cell_assignment
-set_cell_assignment!(network::Network, cell_assignment::CellAssignment) =
-    (network.cell_assignment = cell_assignment)
+get_assignment (network::Network) = network.assignment
+set_assignment!(network::Network, assignment::Assignment) =
+    (network.assignment = assignment)
 
-get_cluster_assignment (network::Network) = network.cluster_assignment
-set_cluster_assignment!(network::Network, cluster_assignment::ClusterAssignment) =
-    (network.cluster_assignment = cluster_assignment)
-
-# FIXME: Clean this up using macros
 get_aux_precoding_param (network::Network, k::ASCIIString) =
     (network.system.aux_precoding_params[k])
 set_aux_precoding_param!(network::Network, v, k::ASCIIString) =
@@ -148,21 +140,13 @@ get_aux_precoding_params (network::Network) = network.system.aux_precoding_param
 set_aux_precoding_params!(network::Network, additional::AuxPrecodingParams) =
     merge!(network.system.aux_precoding_params, additional)
 
-get_aux_cell_assignment_param (network::Network, k::ASCIIString) =
-    (network.system.aux_cell_assignment_params[k])
-set_aux_cell_assignment_param!(network::Network, v, k::ASCIIString) =
-    (network.system.aux_cell_assignment_params[k] = v)
-get_aux_cell_assignment_params (network::Network) = network.system.aux_cell_assignment_params
-set_aux_cell_assignment_params!(network::Network, additional::AuxCellAssignmentParams) =
-    merge!(network.system.aux_cell_assignment_params, additional)
-
-get_aux_cluster_assignment_param (network::Network, k::ASCIIString) =
-    (network.system.aux_cluster_assignment_params[k])
-set_aux_cluster_assignment_param!(network::Network, v, k::ASCIIString) =
-    (network.system.aux_cluster_assignment_params[k] = v)
-get_aux_cluster_assignment_params (network::Network) = network.system.aux_cluster_assignment_params
-set_aux_cluster_assignment_params!(network::Network, additional::AuxClusterAssignmentParams) =
-    merge!(network.system.aux_cluster_assignment_params, additional)
+get_aux_assignment_param (network::Network, k::ASCIIString) =
+    (network.system.aux_assignment_params[k])
+set_aux_assignment_param!(network::Network, v, k::ASCIIString) =
+    (network.system.aux_assignment_params[k] = v)
+get_aux_assignment_params (network::Network) = network.system.aux_assignment_params
+set_aux_assignment_params!(network::Network, additional::AuxAssignmentParams) =
+    merge!(network.system.aux_assignment_params, additional)
 
 get_no_MSs(network::Network) = length(network.MSs)
 get_no_BSs(network::Network) = length(network.BSs)

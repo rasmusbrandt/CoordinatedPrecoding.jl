@@ -100,14 +100,14 @@ unity_MSE_weights(ds::Vector{Int}) =
     [ Hermitian(eye(ds[k])) for k = 1:length(ds) ]
 
 function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, ds::Vector{Int}, cell_assignment::CellAssignment,
+    sigma2s::Vector{Float64}, ds::Vector{Int}, assignment::Assignment,
     aux_params::AuxPrecodingParams)
 
     V = Array(Matrix{Complex128}, channel.K)
 
     if aux_params["initial_precoders"] == "dft"
         for i = 1:channel.I
-            served = served_MS_ids(i, cell_assignment)
+            served = served_MS_ids(i, assignment)
             Kc = length(served)
 
             for k in served
@@ -116,7 +116,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
         end
     elseif aux_params["initial_precoders"] == "white"
         for i = 1:channel.I
-            served = served_MS_ids(i, cell_assignment)
+            served = served_MS_ids(i, assignment)
             Kc = length(served)
 
             for k in served
@@ -125,7 +125,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
         end
     elseif aux_params["initial_precoders"] == "zeros"
         for i = 1:channel.I
-            served = served_MS_ids(i, cell_assignment)
+            served = served_MS_ids(i, assignment)
             Kc = length(served)
 
             for k in served
@@ -134,7 +134,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
         end
     elseif aux_params["initial_precoders"] == "eigendirection"
         for i = 1:channel.I
-            served = served_MS_ids(i, cell_assignment)
+            served = served_MS_ids(i, assignment)
             Kc = length(served)
 
             for k in served

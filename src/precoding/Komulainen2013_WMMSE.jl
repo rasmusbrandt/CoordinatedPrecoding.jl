@@ -6,7 +6,7 @@ immutable Komulainen2013_WMMSEState
 end
 
 function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
-    cell_assignment = get_cell_assignment(network)
+    assignment = get_assignment(network)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -23,7 +23,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
         Array(Matrix{Complex128}, K),
         unity_MSE_weights(ds),
         Array(Diagonal{Float64}, K),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, aux_params))
+        initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
     logdet_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
     MMSE_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
@@ -31,7 +31,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
 
     iters = 0; conv_crit = Inf
     while iters < aux_params["max_iters"]
-        update_MSs!(state, channel, sigma2s, cell_assignment)
+        update_MSs!(state, channel, sigma2s, assignment)
         iters += 1
 
         # Results after this iteration
@@ -54,7 +54,7 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
 
         # Begin next iteration, unless the loop will end
         if iters < aux_params["max_iters"]
-            update_BSs!(state, channel, Ps, cell_assignment, aux_params)
+            update_BSs!(state, channel, Ps, assignment, aux_params)
         end
     end
     if iters == aux_params["max_iters"]
@@ -80,16 +80,16 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
 end
 
 function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel,
-    sigma2s::Vector{Float64}, cell_assignment::CellAssignment)
+    sigma2s::Vector{Float64}, assignment::Assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i = 1:channel.I
-        for k in served_MS_ids(i, cell_assignment)
+        for k in served_MS_ids(i, assignment)
             # Received covariance
             Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
             for j = 1:channel.I
-                for l in served_MS_ids(j, cell_assignment)
+                for l in served_MS_ids(j, assignment)
                     #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
                     Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
                 end
@@ -106,24 +106,24 @@ function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierCha
 end
 
 function update_BSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel, 
-    Ps::Vector{Float64}, cell_assignment::CellAssignment,
+    Ps::Vector{Float64}, assignment::Assignment,
     aux_params::AuxPrecodingParams)
 
     for i = 1:channel.I
         # Virtual uplink covariance
         Gamma = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
         for j = 1:channel.I
-            for l in served_MS_ids(j, cell_assignment)
+            for l in served_MS_ids(j, assignment)
                 Gamma += Hermitian(channel.H[l,i]'*(state.U[l]*state.W_diag[l]*state.U[l]')*channel.H[l,i])
             end
         end
 
         # Find optimal Lagrange multiplier
         mu_star, Gamma_eigen =
-            optimal_mu(i, Gamma, state, channel, Ps, cell_assignment, aux_params)
+            optimal_mu(i, Gamma, state, channel, Ps, assignment, aux_params)
 
         # Precoders (reuse EVD)
-        for k in served_MS_ids(i, cell_assignment)
+        for k in served_MS_ids(i, assignment)
             state.V[k] = Gamma_eigen.vectors*Diagonal(1./(Gamma_eigen.values .+ mu_star))*Gamma_eigen.vectors'*channel.H[k,i]'*state.U[k]*state.W_diag[k]
         end
     end
@@ -131,11 +131,11 @@ end
 
 function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
     state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel,
-    Ps::Vector{Float64}, cell_assignment::CellAssignment, aux_params::AuxPrecodingParams)
+    Ps::Vector{Float64}, assignment::Assignment, aux_params::AuxPrecodingParams)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))
-    for k in served_MS_ids(i, cell_assignment)
+    for k in served_MS_ids(i, assignment)
         #bis_M += Hermitian(channel.H[k,i]'*(state.U[k]*(state.W_diag[k]*state.W_diag[k])*state.U[k]')*channel.H[k,i])
         Base.LinAlg.BLAS.herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k]*state.W_diag[k], complex(1.), bis_M.S)
     end

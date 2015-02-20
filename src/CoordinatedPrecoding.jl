@@ -17,14 +17,11 @@ export
 # Networks
     Network,
 
-    get_cell_assignment, set_cell_assignment!,
-    get_cluster_assignment, set_cluster_assignment!,
+    get_assignment, set_assignment!,
     get_aux_precoding_param, set_aux_precoding_param!,
     get_aux_precoding_params, set_aux_precoding_params!,
-    get_aux_cell_assignment_param, set_aux_cell_assignment_param!,
-    get_aux_cell_assignment_params, set_aux_cell_assignment_params!,
-    get_aux_cluster_assignment_param, set_aux_cluster_assignment_param!,
-    get_aux_cluster_assignment_params, set_aux_cluster_assignment_params!,
+    get_aux_assignment_param, set_aux_assignment_param!,
+    get_aux_assignment_params, set_aux_assignment_params!,
     get_no_MSs, get_no_BSs, get_no_MSs_per_cell,
     get_no_antennas, get_no_MS_antennas, get_no_BS_antennas,
     get_transmit_powers, get_receiver_noise_powers,
@@ -47,13 +44,11 @@ export
     plot_network_layout,
 
 # Assignment
-    CellAssignment, AuxCellAssignmentParams,
+    Assignment, AuxAssignmentParams,
     assign_cells_by_id!,
     serving_BS_id, served_MS_ids, served_MS_ids_except_me,
-    require_equal_no_MSs_per_cell,
-
-    ClusterAssignment, AuxClusterAssignmentParams,
     coordinated_BS_ids, coordinated_MS_ids,
+    require_equal_no_MSs_per_cell,
 
 # Precoding
     PrecodingResults, AuxPrecodingParams,
@@ -80,7 +75,7 @@ export
 # Channels
 include("channel.jl")
 # Cell/cluster assignment
-include("assignment/assignment.jl")
+include("assignment.jl")
 # Networks
 include("network/network.jl")
 # Useful stuff

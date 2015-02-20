@@ -5,7 +5,7 @@ immutable Gomadam2008_MaxSINRState
 end
 
 function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network)
-    cell_assignment = get_cell_assignment(network)
+    assignment = get_assignment(network)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -16,7 +16,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network)
     state = Gomadam2008_MaxSINRState(
         zero_receivers(channel, ds),
         unity_MSE_weights(ds),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, aux_params))
+        initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
     logdet_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
     MMSE_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
@@ -24,7 +24,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network)
 
     iters = 0; conv_crit = Inf
     while iters < aux_params["max_iters"]
-        update_MSs!(state, channel, sigma2s, cell_assignment)
+        update_MSs!(state, channel, sigma2s, assignment)
         iters += 1
 
         # Results after this iteration
@@ -47,7 +47,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network)
 
         # Begin next iteration, unless the loop will end
         if iters < aux_params["max_iters"]
-            update_BSs!(state, channel, Ps, sigma2s, cell_assignment, aux_params)
+            update_BSs!(state, channel, Ps, sigma2s, assignment, aux_params)
         end
     end
     if iters == aux_params["max_iters"]
@@ -74,15 +74,15 @@ end
 
 function update_MSs!(state::Gomadam2008_MaxSINRState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    cell_assignment::CellAssignment)
+    assignment::Assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i = 1:channel.I
-        for k in served_MS_ids(i, cell_assignment)
+        for k in served_MS_ids(i, assignment)
             Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
             for j = 1:channel.I
-                for l in served_MS_ids(j, cell_assignment)
+                for l in served_MS_ids(j, assignment)
                     #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
                     Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
                 end
@@ -107,7 +107,7 @@ end
 
 function update_BSs!(state::Gomadam2008_MaxSINRState,
     channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, cell_assignment::CellAssignment,
+    sigma2s::Vector{Float64}, assignment::Assignment,
     aux_params::AuxPrecodingParams)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
@@ -116,14 +116,14 @@ function update_BSs!(state::Gomadam2008_MaxSINRState,
         # Virtual uplink covariance
         Gamma = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
         for j = 1:channel.I
-            for l = served_MS_ids(j, cell_assignment)
+            for l = served_MS_ids(j, assignment)
                 #Gamma += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
                 Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(1.), channel.H[l,i]'*state.U[l], complex(1.), Gamma.S)
             end
         end
 
         # Per-stream precoders
-        served = served_MS_ids(i, cell_assignment)
+        served = served_MS_ids(i, assignment)
         Nserved = length(served)
         for k in served
             for n = 1:ds[k]

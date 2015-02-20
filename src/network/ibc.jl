@@ -8,13 +8,12 @@ type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
     no_MSs_per_cell::Int
     alpha::Float64
 
-    cell_assignment::CellAssignment
-    cluster_assignment::ClusterAssignment
+    assignment::Assignment
 end
 
 # Convenience constructor without assignments
 InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha) =
-    InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha, CellAssignment(), ClusterAssignment())
+    InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha, Assignment())
 
 Base.show(io::IO, x::InterferingBroadcastChannel) =
     print(io, "IBC(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), α = $(x.alpha))")
@@ -42,13 +41,13 @@ end
 # Standard cell assignment functions
 function assign_cells_by_id!{System_t <: System}(network::InterferingBroadcastChannel{System_t})
     Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
-    assignment = Array(Int, I*Kc)
+    cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
-        assignment[(i-1)*Kc+1:i*Kc] = i
+        cell_assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    network.cell_assignment = CellAssignment(assignment, I)
+    network.assignment = Assignment(cell_assignment, I)
 end
 
 ##########################################################################

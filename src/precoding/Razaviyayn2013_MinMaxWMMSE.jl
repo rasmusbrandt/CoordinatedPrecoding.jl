@@ -4,10 +4,8 @@ immutable Razaviyayn2013_MinMaxWMMSEState
     V::Array{Matrix{Complex128},1}
 end
 
-function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
-    network::Network)
-
-    cell_assignment = get_cell_assignment(network)
+function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel, network::Network)
+    assignment = get_assignment(network)
 
     # The implementation is currently limited in the respects below. This is in
     # order to simplify the Gurobi optimization variable indexing. With equal
@@ -15,7 +13,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     # offsets required. (See functions v_ind and mu_ind.)
     require_equal_no_BS_antennas(network)
     require_equal_no_streams(network)
-    require_equal_no_MSs_per_cell(cell_assignment)
+    require_equal_no_MSs_per_cell(assignment)
 
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
@@ -29,7 +27,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
     state = Razaviyayn2013_MinMaxWMMSEState(
         Array(Matrix{Complex128}, K),
         unity_MSE_weights(ds),
-        initial_precoders(channel, Ps, sigma2s, ds, cell_assignment, aux_params))
+        initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
     logdet_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
     MMSE_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
@@ -37,7 +35,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
 
     iters = 0; conv_crit = Inf
     while iters < aux_params["max_iters"]
-        update_MSs!(state, channel, sigma2s, cell_assignment)
+        update_MSs!(state, channel, sigma2s, assignment)
         iters += 1
 
         # Results after this iteration
@@ -60,7 +58,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel,
 
         # Begin next iteration, unless the loop will end
         if iters < aux_params["max_iters"]
-            update_BSs!(state, channel, Ps, sigma2s, cell_assignment, aux_params)
+            update_BSs!(state, channel, Ps, sigma2s, assignment, aux_params)
         end
     end
     if iters == aux_params["max_iters"]
@@ -87,16 +85,16 @@ end
 
 function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    cell_assignment::CellAssignment)
+    assignment::Assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i = 1:channel.I
-        for k in served_MS_ids(i, cell_assignment)
+        for k in served_MS_ids(i, assignment)
             # Received covariance
             Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
             for j = 1:channel.I
-                for l in served_MS_ids(j, cell_assignment)
+                for l in served_MS_ids(j, assignment)
                     #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
                     Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
                 end
@@ -116,7 +114,7 @@ end
 # JointPrecodingMCSSelection implementation.
 function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, cell_assignment::CellAssignment,
+    sigma2s::Vector{Float64}, assignment::Assignment,
     aux_params::AuxPrecodingParams)
 
     # The following is OK, since we have checked this at the top of
@@ -159,7 +157,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     rate_constraint_qr = Array(Int, no_quad_vars_per_rate_constraint)
     rate_constraint_qc = Array(Int, no_quad_vars_per_rate_constraint)
     rate_constraint_qv = Array(Float64, no_quad_vars_per_rate_constraint)
-    for i = 1:I; for k = served_MS_ids(i, cell_assignment)
+    for i = 1:I; for k = served_MS_ids(i, assignment)
         # Linear part
         g = (channel.H[k,i]'*state.U[k])*state.W[k]
         l_ind = 1
@@ -192,7 +190,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
             Gi = imag(G)
             get_Gi(mm1, mm2) = ( mm1 >= mm2 ? Gi[mm1,mm2] : -Gi[mm2,mm1] )
 
-            for l = served_MS_ids(j, cell_assignment)
+            for l = served_MS_ids(j, assignment)
                 for nn = 1:d
                     for mm1 = 1:M
                         real_ind1 = v_ind(l, mm1, nn, false)
@@ -249,7 +247,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     power_constraint_qv = Array(Float64, no_vars_per_power_constraint)
     for i = 1:I
         q_ind = 1
-        for k = served_MS_ids(i, cell_assignment)
+        for k = served_MS_ids(i, assignment)
             for m = 1:M; for n = 1:d
                 real_ind = v_ind(k, m, n, false)
                 power_constraint_qr[q_ind] = real_ind
@@ -288,7 +286,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
 
         # Put into state variable
         for i = 1:channel.I
-            for k in served_MS_ids(i, cell_assignment)
+            for k in served_MS_ids(i, assignment)
                 for m = 1:M
                     for n = 1:d
                         real_ind = v_ind(k, m, n, false)

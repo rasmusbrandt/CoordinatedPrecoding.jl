@@ -23,13 +23,12 @@ type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, 
     corridor_width::Float64
     guard_distance::Float64
 
-    cell_assignment::CellAssignment
-    cluster_assignment::ClusterAssignment
+    assignment::Assignment
 end
 
 # Convenience constructor without assignments
 IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance) =
-    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, CellAssignment(), ClusterAssignment())
+    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, Assignment())
 
 Base.show(io::IO, x::IndoorsNetwork) =
     print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), corridor_length = $(x.corridor_length), corridor_width = $(x.corridor_width), GD = $(x.guard_distance))")
@@ -73,13 +72,13 @@ end
 # Standard cell assignment functions
 function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
-    assignment = Array(Int, I*Kc)
+    cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
-        assignment[(i-1)*Kc+1:i*Kc] = i
+        cell_assignment[(i-1)*Kc+1:i*Kc] = i
     end
 
-    network.cell_assignment = CellAssignment(assignment, I)
+    network.assignment = Assignment(cell_assignment, I)
 end
 
 ##########################################################################

@@ -39,7 +39,7 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
     Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
 
     # Get assignment/precoding functions depending on looping mode
-    precoding_method, cell_assignment_method, cluster_assignment_method = get_other_methods(simulation_params, loop_over)
+    precoding_method, assignment_method = get_other_method(simulation_params, loop_over)
 
     println("-- simulate on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
@@ -83,8 +83,7 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
                         end
                     end
 
-                    cell_assignment_method(channels[1], network)
-                    cluster_assignment_method(channels[1], network)
+                    assignment_method(channels[1], network)
 
                     for precoding_method in simulation_params["precoding_methods"]
                         for Nsim_idx = 1:Nsim
@@ -97,7 +96,7 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
                     end
                 end
             end
-        elseif loop_over == :cell_assignment_methods
+        elseif loop_over == :assignment_methods
             # Loop over main independent variable
             for idp_vals_idx = 1:idp_vals_length
                 # Set main independent variable
@@ -112,47 +111,15 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
                         end
                     end
 
-                    cluster_assignment_method(channels[1], network)
-
-                    for cell_assignment_method in simulation_params["cell_assignment_methods"]
-                        cell_assignment_method(channels[1], network)
+                    for assignment_method in simulation_params["assignment_methods"]
+                        assignment_method(channels[1], network)
 
                         for Nsim_idx = 1:Nsim
                             # Allocate memory if this is the first method to be run
-                            if cell_assignment_method == simulation_params["cell_assignment_methods"][1]
+                            if assignment_method == simulation_params["assignment_methods"][1]
                                 raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults()
                             end
-                            raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(cell_assignment_method)] = precoding_method(channels[Nsim_idx], network)
-                        end
-                    end
-                end
-            end
-        elseif loop_over == :cluster_assignment_methods
-            # Loop over main independent variable
-            for idp_vals_idx = 1:idp_vals_length
-                # Set main independent variable
-                idp_func(network, idp_vals[idp_vals_idx])
-
-                # Loop over auxiliary variables
-                for aux_idp_vals_idx = 1:aux_idp_vals_length
-                    if Naux != 0
-                        # Set all auxiliary independent variables
-                        for Naux_idx = 1:Naux
-                            aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                        end
-                    end
-
-                    cell_assignment_method(channels[1], network)
-
-                    for cluster_assignment_method in simulation_params["cluster_assignment_methods"]
-                        cluster_assignment_method(channels[1], network)
-
-                        for Nsim_idx = 1:Nsim
-                            # Allocate memory if this is the first method to be run
-                            if cluster_assignment_method == simulation_params["cluster_assignment_methods"][1]
-                                raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults()
-                            end
-                            raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(cluster_assignment_method)] = precoding_method(channels[Nsim_idx], network)
+                            raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
                         end
                     end
                 end
@@ -175,7 +142,7 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
 
     # Get assignment/precoding functions depending on looping mode
-    precoding_method, cell_assignment_method, cluster_assignment_method = get_other_methods(simulation_params, loop_over)
+    precoding_method, assignment_method = get_other_method(simulation_params, loop_over)
 
     println("-- simulate_convergence on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
@@ -217,8 +184,7 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                     end
                 end
 
-                cell_assignment_method(channels[1], network)
-                cluster_assignment_method(channels[1], network)
+                assignment_method(channels[1], network)
 
                 for precoding_method in simulation_params["precoding_methods"]
                     for Nsim_idx = 1:Nsim
@@ -230,7 +196,7 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                     end
                 end
             end
-        elseif loop_over == :cell_assignment_methods
+        elseif loop_over == :assignment_methods
             # Loop over auxiliary variables
             for aux_idp_vals_idx = 1:aux_idp_vals_length
                 if Naux != 0
@@ -240,41 +206,15 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                     end
                 end
 
-                cluster_assignment_method(channels[1], network)
-
-                for cell_assignment_method in simulation_params["cell_assignment_methods"]
-                    cell_assignment_method(channels[1], network)
+                for assignment_method in simulation_params["assignment_methods"]
+                    assignment_method(channels[1], network)
 
                     for Nsim_idx = 1:Nsim
                         # Allocate memory if this is the first method to be run
-                        if cell_assignment_method == simulation_params["cell_assignment_methods"][1]
+                        if assignment_method == simulation_params["assignment_methods"][1]
                             raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = SingleSimulationResults()
                         end
-                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(cell_assignment_method)] = precoding_method(channels[Nsim_idx], network)
-                    end
-                end
-            end
-        elseif loop_over == :cluster_assignment_methods
-            # Loop over auxiliary variables
-            for aux_idp_vals_idx = 1:aux_idp_vals_length
-                if Naux != 0
-                    # Set all auxiliary independent variables
-                    for Naux_idx = 1:Naux
-                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                    end
-                end
-
-                cell_assignment_method(channels[1], network)
-
-                for cluster_assignment_method in simulation_params["cluster_assignment_methods"]
-                    cluster_assignment_method(channels[1], network)
-
-                    for Nsim_idx = 1:Nsim
-                        # Allocate memory if this is the first method to be run
-                        if cluster_assignment_method == simulation_params["cluster_assignment_methods"][1]
-                            raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = SingleSimulationResults()
-                        end
-                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(cluster_assignment_method)] = precoding_method(channels[Nsim_idx], network)
+                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
                     end
                 end
             end
@@ -292,7 +232,7 @@ function simulate_performance(network::Network, simulation_params::SimulationPar
     Lumberjack.info("Starting performance test.",
         { :network => network, :simulation_params => simulation_params })
 
-    cell_assignment = assign_cells_by_id(network)
+    assign_cells_by_id!(network)
 
     # Set initial aux precoding params
     set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
@@ -305,7 +245,7 @@ function simulate_performance(network::Network, simulation_params::SimulationPar
 
     # Make sure things are JITed
     for method in simulation_params["precoding_methods"]
-        method(channel, network, cell_assignment)
+        method(channel, network)
     end
     println("--- JITing @time macro")
     @time 1
@@ -313,70 +253,36 @@ function simulate_performance(network::Network, simulation_params::SimulationPar
     # Run performance test
     for method in simulation_params["precoding_methods"]
         println("--- Testing performance of ", string(method))
-        @time for i = 1:simulation_params["Ntest"]; method(channel, network, cell_assignment); end
+        @time for i = 1:simulation_params["Ntest"]; method(channel, network); end
     end
 end
 
-function get_other_methods(simulation_params, loop_over)
+function get_other_method(simulation_params, loop_over)
     # Dummies
     precoding_method() = nothing
-    cell_assignment_method() = nothing
-    cluster_assignment_method() = nothing
+    assignment_method() = nothing
 
     if loop_over == :precoding_methods
-        if haskey(simulation_params, "cell_assignment_methods")
-            if length(simulation_params["cell_assignment_methods"]) > 1
-                warn("Looping over precoding methods: will only use first cell assignment method provided.")
+        if haskey(simulation_params, "assignment_methods")
+            if length(simulation_params["assignment_methods"]) > 1
+                warn("Looping over precoding methods: will only use first assignment method provided.")
             end
-            cell_assignment_method(channel, network) = simulation_params["cell_assignment_methods"][1](channel, network)
+            assignment_method(channel, network) = simulation_params["assignment_methods"][1](channel, network)
         else
-            cell_assignment_method(channel, network) = assign_cells_by_id!(network)
+            assignment_method(channel, network) = assign_cells_by_id!(network)
         end
-        if haskey(simulation_params, "cluster_assignment_methods")
-            if length(simulation_params["cluster_assignment_methods"]) > 1
-                warn("Looping over precoding methods: will only use first cluster assignment method provided.")
-            end
-            cluster_assignment_method(channel, network) = simulation_params["cluster_assignment_methods"][1](channel, network)
-        else
-            cluster_assignment_method(channel, network) = nothing
-        end
-    elseif loop_over == :cell_assignment_methods
+    elseif loop_over == :assignment_methods
         if haskey(simulation_params, "precoding_methods")
             if length(simulation_params["precoding_methods"]) > 1
-                warn("Looping over cell assignment methods: will only use first precoding method provided.")
+                warn("Looping over assignment methods: will only use first precoding method provided.")
             end
             precoding_method(channel, network) = simulation_params["precoding_methods"][1](channel, network)
         else
-            precoding_method(channel, network) = assign_cells_by_id!(network)
-        end
-        if haskey(simulation_params, "cluster_assignment_methods")
-            if length(simulation_params["cluster_assignment_methods"]) > 1
-                warn("Looping over cell assignment methods: will only use first cluster assignment method provided.")
-            end
-            cluster_assignment_method(channel, network) = simulation_params["cluster_assignment_methods"][1](channel, network)
-        else
-            cluster_assignment_method(channel, network) = nothing
-        end
-    elseif loop_over == :cluster_assignment_methods
-        if haskey(simulation_params, "precoding_methods")
-            if length(simulation_params["precoding_methods"]) > 1
-                warn("Looping over cluster assignment methods: will only use first precoding method provided.")
-            end
-            precoding_method(channel, network) = simulation_params["precoding_methods"][1](channel, network)
-        else
-            precoding_method(channel, network) = assign_cells_by_id!(network)
-        end
-        if haskey(simulation_params, "cell_assignment_methods")
-            if length(simulation_params["cell_assignment_methods"]) > 1
-                warn("Looping over cluster assignment methods: will only use first cell assignment method provided.")
-            end
-            cell_assignment_method(channel, network) = simulation_params["cell_assignment_methods"][1](channel, network)
-        else
-            cell_assignment_method(channel, network) = assign_cells_by_id!(network)
+            error("No precoding method specified.")
         end
     end
 
-    return precoding_method, cell_assignment_method, cluster_assignment_method
+    return precoding_method, assignment_method
 end
 
 function get_aux_idp(simulation_params)
@@ -402,8 +308,7 @@ end
 
 function set_initial_aux_params!(simulation_params, network)
     haskey(simulation_params, "aux_precoding_params") && set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
-    haskey(simulation_params, "aux_cell_assignment_params") && set_aux_cell_assignment_params!(network, simulation_params["aux_cell_assignment_params"])
-    haskey(simulation_params, "aux_cluster_assignment_params") && set_aux_cluster_assignment_params!(network, simulation_params["aux_cluster_assignment_params"])
+    haskey(simulation_params, "aux_assignment_params") && set_aux_assignment_params!(network, simulation_params["aux_assignment_params"])
 end
 
 ##########################################################################
