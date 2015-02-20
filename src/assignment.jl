@@ -24,9 +24,9 @@ served_MS_ids(BS_id::Int, assignment::Assignment) =
 served_MS_ids_except_me(MS_id::Int, BS_id::Int, assignment::Assignment) =
     setdiff(assignment.cell_assignment_inverse[BS_id], MS_id)
 
-coordinated_BS_ids(MS_id::Int, cluster_assignment::Assignment) =
+coordinated_BS_ids(MS_id::Int, assignment::Assignment) =
     assignment.cluster_assignment[MS_id]
-coordinated_MS_ids(BS_id::Int, cluster_assignment::Assignment) =
+coordinated_MS_ids(BS_id::Int, assignment::Assignment) =
     assignment.cluster_assignment_inverse[BS_id]
 
 function require_equal_no_MSs_per_cell(assignment::Assignment)
