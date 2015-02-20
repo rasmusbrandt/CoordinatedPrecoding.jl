@@ -56,14 +56,8 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
     raw_results = MultipleSimulationResults(Ndrops, Nsim, idp_vals_length, aux_idp_vals_length)
 
     # Outer simulation loop
-    tic()
+    progress = ProgressMeter.Progress(Ndrops)
     for Ndrops_idx = 1:Ndrops
-        if Ndrops_idx == Ndrops
-            println(Ndrops_idx, ".")
-        else
-            print(Ndrops_idx, ", ")
-        end
-
         draw_user_drop!(network)
         channels = [ draw_channel(network) for n = 1:Nsim ]
 
@@ -125,8 +119,9 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
                 end
             end
         end
+
+        ProgressMeter.next!(progress)
     end
-    t = toq(); println("--- elapsed time: ", t/60, " minutes")
 
     return raw_results
 end
@@ -160,16 +155,12 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
         Lumberjack.warn("process_convergence will not be able to run since stop_crit is non-zero, and the algorithms may therefore use different numbers of iterations.")
     end
 
+    # Storage container for results
     raw_results = MultipleSimulationResults(Ndrops, Nsim, aux_idp_vals_length)
 
-    tic()
+    # Outer simulation loop
+    progress = ProgressMeter.Progress(Ndrops)
     for Ndrops_idx = 1:Ndrops
-        if Ndrops_idx == Ndrops
-            println(Ndrops_idx, ".")
-        else
-            print(Ndrops_idx, ", ")
-        end
-
         draw_user_drop!(network)
         channels = [ draw_channel(network) for n = 1:Nsim ]
 
@@ -219,8 +210,9 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                 end
             end
         end
+
+        ProgressMeter.next!(progress)
     end
-    t = toq(); println("--- elapsed time: ", t/60, " minutes")
 
     return raw_results
 end

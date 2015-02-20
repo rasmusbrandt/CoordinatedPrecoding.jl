@@ -6,7 +6,7 @@
 
 module CoordinatedPrecoding
 
-import Gurobi, PyPlot, Lumberjack
+import Gurobi, PyPlot, Lumberjack, ProgressMeter
 
 export
 
