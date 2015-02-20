@@ -39,19 +39,26 @@ get_no_MSs_per_cell(network::IndoorsNetwork) = network.no_MSs_per_cell
 
 # The default parameter values are taken from ITU-R M.2135-1.
 function setup_indoors_network{AntennaParams_t <: AntennaParams}(
-    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas::Int, no_BS_antennas::Int;
+    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(3.4e9, 15e3),
     propagation_environments = [:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
                                 :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
     corridor_length::Float64 = 120.,
     corridor_width::Float64 = 50.,
     guard_distance::Float64 = 3.,
-    transmit_power::Float64 = 10^(-9.8/10),
+    transmit_power = 10^(-9.8/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
     BS_antenna_gain_params::Vector{AntennaParams_t} = [ OmnidirectionalAntennaParams(0) for i = 1:no_BSs ],
-    user_priorities::Vector{Float64} = ones(Float64, no_BSs*no_MSs_per_cell),
-    no_streams::Int = 1,
-    MS_antenna_gain_dB::Float64 = 0.,
-    receiver_noise_figure::Float64 = 7.)
+    user_priority = 1., user_priorities = ones(Float64, no_BSs*no_MSs_per_cell),
+    no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
+    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
+    receiver_noise_figure = 7., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_BSs*no_MSs_per_cell))
+
+    if !isa(no_MS_antennas, Vector)
+        no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell)
+    end
+    if !isa(no_BS_antennas, Vector)
+        no_BS_antennas = no_BS_antennas*ones(Int, no_BSs)
+    end
 
     # BS positions
     y = corridor_width/2
@@ -59,10 +66,10 @@ function setup_indoors_network{AntennaParams_t <: AntennaParams}(
     BSs = Array(PhysicalBS, 0)
     for i = 1:no_BSs
         # BSs uniformly placed along corridor
-        push!(BSs, PhysicalBS(no_BS_antennas, Position((i-1)*Δ + Δ/2, y), transmit_power, BS_antenna_gain_params[i]))
+        push!(BSs, PhysicalBS(no_BS_antennas[i], Position((i-1)*Δ + Δ/2, y), transmit_powers[i], BS_antenna_gain_params[i]))
     end
 
-    MSs = [ PhysicalMS(no_MS_antennas, Position(0, 0), Velocity(0, 0), user_priorities[k], no_streams, MS_antenna_gain_dB, receiver_noise_figure, SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_BSs*no_MSs_per_cell ]
+    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_BSs*no_MSs_per_cell ]
 
     IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environments, corridor_length, corridor_width, guard_distance)
