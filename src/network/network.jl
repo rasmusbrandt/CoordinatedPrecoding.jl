@@ -181,20 +181,26 @@ get_no_MS_antennas(network) = [ get_no_antennas(network.MSs[k]) for k = 1:get_no
 get_no_BS_antennas(network) = [ get_no_antennas(network.BSs[i]) for i = 1:get_no_BSs(network) ]
 
 get_transmit_powers (network) = [ get_transmit_power(network.BSs[i]) for i = 1:get_no_BSs(network) ]
-set_transmit_powers!(network, P) = (for BS in network.BSs; set_transmit_power!(BS, P); end)
+set_transmit_powers!(network, P::Real) = (for BS in network.BSs; set_transmit_power!(BS, P); end)
+set_transmit_powers!(network, Ps::Vector) = (for i = 1:length(Ps); set_transmit_power!(network.BSs[i], Ps[i]); end)
 get_transmit_powers_dBm (network) = [ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_no_BSs(network) ]
-set_transmit_powers_dBm!(network, P_dBm) = (for BS in network.BSs; set_transmit_power_dBm!(BS, P_dBm); end)
+set_transmit_powers_dBm!(network, P_dBm::Real) = (for BS in network.BSs; set_transmit_power_dBm!(BS, P_dBm); end)
+set_transmit_powers_dBm!(network, Ps_dBm::Vector) = (for i = 1:length(Ps_dBm); set_transmit_power_dBm!(network.BSs[i], Ps_dBm[i]); end)
 
-get_receiver_noise_powers (network) =[ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
-set_receiver_noise_powers!(network, sigma2) = (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
-get_receiver_noise_powers_dBm (network) =[ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
-set_receiver_noise_powers_dBm!(network, sigma2_dBm) = (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2_dBm, network); end)
+get_receiver_noise_powers (network) = [ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+set_receiver_noise_powers!(network, sigma2::Real) = (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
+set_receiver_noise_powers!(network, sigma2s::Vector) = (for k = 1:length(sigma2s); set_receiver_noise_power!(network.MSs[k], sigma2s[k], network); end)
+get_receiver_noise_powers_dBm (network) = [ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+set_receiver_noise_powers_dBm!(network, sigma2_dBm::Real) = (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2_dBm, network); end)
+set_receiver_noise_powers_dBm!(network, sigma2s_dBm::Vector) = (for k = 1:length(sigma2s_dBm); set_receiver_noise_power_dBm!(network.MSs[k], sigma2s_dBm[k], network); end)
 
-get_user_priorities (network) =[ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
-set_user_priorities!(network, α) = (for MS in network.MSs; set_user_priority(MS.no_streams, α); end)
+get_user_priorities (network) = [ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
+set_user_priorities!(network, α::Real) = (for MS in network.MSs; set_user_priority(MS, α); end)
+set_user_priorities!(network, α::Vector) = (for k = 1:length(α); set_user_priority(network.MSs[k], α[k]); end)
 
 get_no_streams (network::Network) = [ get_no_streams(network.MSs[k]) for k = 1:get_no_MSs(network) ]
-set_no_streams!(network::Network, d) = (for MS in network.MSs; set_no_streams(MS.no_streams, d); end)
+set_no_streams!(network::Network, d::Int) = (for MS in network.MSs; set_no_streams(MS, d); end)
+set_no_streams!(network::Network, ds::Vector) = (for k = 1:length(ds); set_no_streams(network.MSs[k], ds[k]); end)
 
 require_equal_no_MS_antennas(network) = (Ns = get_no_MS_antennas(network); all(Ns .== Ns[1]) || error("MSs must all have the same number of antennas."))
 require_equal_no_BS_antennas(network) = (Ms = get_no_BS_antennas(network); all(Ms .== Ms[1]) || error("BSs must all have the same number of antennas."))
