@@ -179,7 +179,7 @@ function optimal_mu(i, Gamma, state::Komulainen2013_WMMSEState,
         end
 
         if no_iters == aux_params["Komulainen2013_WMMSE:bisection_max_iters"]
-            println("Power bisection: reached max iterations.")
+            Lumberjack.warn("Power bisection: reached max iterations.")
         end
 
         # The upper point is always feasible, therefore we use it
