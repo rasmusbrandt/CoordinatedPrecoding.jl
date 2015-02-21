@@ -7,6 +7,7 @@ end
 
 +(A::Position, B::Position) = Position(A.x + B.x, A.y + B.y)
 -(A::Position, B::Position) = Position(A.x - B.x, A.y - B.y)
+rotate(p::Position, θ) = Position(cos(θ)*p.x - sin(θ)*p.y, sin(θ)*p.x + cos(θ)*p.y)
 
 get_distance(A::Position, B::Position) = sqrt((A.x - B.x)^2 + (A.y - B.y)^2)
 get_angle(A::Position, B::Position) = atan2(A.y - B.y, A.x - B.x)
@@ -245,3 +246,6 @@ include("indoors.jl")
 
 # Triangular3SiteNetwork
 include("triangular3site.jl")
+
+# TriangularHetNetNetwork
+include("triangularhetnet.jl")
