@@ -78,7 +78,7 @@ function plot(processed_results, simulation_params, plot_params)
     ax = fig[:add_subplot](1, 1, 1; plot_params["axes"]...)
 
     plot_methods(ax, results_mean, results_var, simulation_params, plot_params;
-        xvals=simulation_params["independent_variable"][2])
+        xvals=(haskey(plot_params, "xvals") ? plot_params["xvals"] : simulation_params["independent_variable"][2]))
     haskey(plot_params, "legend") && ax[:legend](;plot_params["legend"]...)
 
     if displayable("application/pdf")
