@@ -138,7 +138,7 @@ function optimal_mu(i, Gamma, state::SumMSEMinimizationState,
     # mu lower bound
     if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < aux_params["SumMSEMinimization:bisection_Gamma_cond"]
         # Gamma is invertible
-        mu_lower = 0
+        mu_lower = 0.
     else
         mu_lower = aux_params["SumMSEMinimization:bisection_singular_Gamma_mu_lower_bound"]
     end
