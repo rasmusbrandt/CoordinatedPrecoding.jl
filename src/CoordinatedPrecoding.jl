@@ -46,7 +46,7 @@ export
 
 # Assignment
     Assignment, AuxAssignmentParams,
-    assign_cells_by_id!,
+    assign_cells_by_id!, assign_cells_by_large_scale_fading!,
     active_BSs,
     serving_BS_id, served_MS_ids, served_MS_ids_except_me,
     coordinated_BS_ids, coordinated_MS_ids,
@@ -78,10 +78,10 @@ export
 include("channel.jl")
 # Cell/cluster assignment
 include("assignment.jl")
+# General utilities
+include("utils.jl")
 # Networks
 include("network/network.jl")
-# Useful stuff
-include("utils.jl")
 # Precoding algorithms
 include("precoding/precoding.jl")
 # Simulation

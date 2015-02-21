@@ -99,6 +99,43 @@ function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     network.assignment = Assignment(cell_assignment, get_no_BSs(network))
 end
 
+function assign_cells_by_large_scale_fading!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+    no_MSs_per_cell = network.no_MSs_per_cell; no_MSs = 3*no_MSs_per_cell
+    no_picos_per_cell = network.no_picos_per_cell; no_BSs = 3 + 3*no_picos_per_cell
+
+    aux_params = get_aux_assignment_params(network)
+    @defaultize_param! aux_params "TriangularHetNetAssignment:max_MSs_per_BS" 1
+
+    # Scheduling matrix
+    cell_assignment_matrix = zeros(Int, no_MSs, no_BSs)
+
+    # User selection metric
+    F = (channel.large_scale_fading_factor.^2)*Diagonal(get_transmit_powers(network))
+    Fsize = size(F)
+
+    # Do not schedule users in the wrong cell
+    for cell = 1:3
+        BS_ids = vcat(cell, 3 .+ [(cell-1)*no_picos_per_cell+1:cell*no_picos_per_cell])
+        other_cell_MS_ids = setdiff(1:no_MSs, [(cell-1)*no_MSs_per_cell+1:cell*no_MSs_per_cell])
+        F[other_cell_MS_ids, BS_ids] = 0.
+    end
+
+    # Do greedy scheduling
+    while !all(F .== 0.)
+        _, idx = findmax(F)
+        k, l = ind2sub(Fsize, idx)
+
+        if sum(cell_assignment_matrix[:,l]) < aux_params["TriangularHetNetAssignment:max_MSs_per_BS"]
+            cell_assignment_matrix[k,l] = 1
+            F[k,:] = 0.
+        else
+            F[:,l] = 0.
+        end
+    end
+
+    network.assignment = Assignment(cell_assignment_matrix)
+end
+
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::TriangularHetNetNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})

@@ -10,12 +10,15 @@ Assignment() = Assignment(Array(Int, 0), [IntSet()], [IntSet()], [IntSet()])
 Assignment(cell_assignment::Vector{Int}, no_BSs::Int) =
     Assignment(cell_assignment, ones(length(cell_assignment), no_BSs))
 
+Assignment(cell_assignment::Matrix) =
+    Assignment([ (findin(cell_assignment[k,:], [1]))[1] for k = 1:size(cell_assignment, 1) ],
+               ones(length(cell_assignment), size(cell_assignment, 2)))
+
 Assignment(cell_assignment::Vector{Int}, cluster_assignment::Matrix) =
     Assignment(cell_assignment,
                [ IntSet(findin(cell_assignment, i)) for i = 1:size(cluster_assignment, 2) ],
                [ IntSet(findin(cluster_assignment[k,:], [1])) for k = 1:size(cluster_assignment, 1) ],
-               [ IntSet(findin(cluster_assignment[:,i], [1])) for i = 1:size(cluster_assignment, 2) ]
-    )
+               [ IntSet(findin(cluster_assignment[:,i], [1])) for i = 1:size(cluster_assignment, 2) ])
 
 active_BSs(assignment) = unique(assignment.cell_assignment)
 
