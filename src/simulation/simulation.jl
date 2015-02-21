@@ -56,7 +56,11 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
     raw_results = MultipleSimulationResults(Ndrops, Nsim, idp_vals_length, aux_idp_vals_length)
 
     # Outer simulation loop
-    progress = ProgressMeter.Progress(Ndrops)
+    if loop_over == :precoding_methods
+        progress = ProgressMeter.Progress(Ndrops*idp_vals_length*aux_idp_vals_length*length(simulation_params["precoding_methods"])*Nsim)
+    else
+        progress = ProgressMeter.Progress(Ndrops*idp_vals_length*aux_idp_vals_length*length(simulation_params["assignment_methods"])*Nsim)
+    end
     for Ndrops_idx = 1:Ndrops
         draw_user_drop!(network)
         channels = [ draw_channel(network) for n = 1:Nsim ]
@@ -86,6 +90,8 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
                                 raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults()
                             end
                             raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+
+                            ProgressMeter.next!(progress)
                         end
                     end
                 end
@@ -114,13 +120,13 @@ function simulate(network::Network, simulation_params::SimulationParams; loop_ov
                                 raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults()
                             end
                             raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
+
+                            ProgressMeter.next!(progress)
                         end
                     end
                 end
             end
         end
-
-        ProgressMeter.next!(progress)
     end
 
     return raw_results
@@ -159,7 +165,7 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
     raw_results = MultipleSimulationResults(Ndrops, Nsim, aux_idp_vals_length)
 
     # Outer simulation loop
-    progress = ProgressMeter.Progress(Ndrops)
+    progress = ProgressMeter.Progress(Ndrops*aux_idp_vals_length*length(simulation_params["precoding_methods"])*Nsim)
     for Ndrops_idx = 1:Ndrops
         draw_user_drop!(network)
         channels = [ draw_channel(network) for n = 1:Nsim ]
@@ -184,6 +190,8 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                             raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = SingleSimulationResults()
                         end
                         raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+
+                        ProgressMeter.next!(progress)
                     end
                 end
             end
@@ -206,12 +214,12 @@ function simulate_convergence(network::Network, simulation_params::SimulationPar
                             raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = SingleSimulationResults()
                         end
                         raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
+
+                        ProgressMeter.next!(progress)
                     end
                 end
             end
         end
-
-        ProgressMeter.next!(progress)
     end
 
     return raw_results
