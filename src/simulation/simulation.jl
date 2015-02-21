@@ -8,9 +8,9 @@ type SingleSimulationResults
 end
 SingleSimulationResults() =
     SingleSimulationResults(Dict{ASCIIString, PrecodingResults}())
-Base.getindex(s::SingleSimulationResults, k::ASCIIString) =
+Base.getindex(s::SingleSimulationResults, k) =
     getindex(s.precoding_results, k)
-Base.setindex!(s::SingleSimulationResults, v, k::ASCIIString) =
+Base.setindex!(s::SingleSimulationResults, v, k) =
     setindex!(s.precoding_results, v, k)
 
 type MultipleSimulationResults{N}
@@ -20,12 +20,12 @@ MultipleSimulationResults(dims...) =
     MultipleSimulationResults(Array(SingleSimulationResults, dims...))
 Base.getindex(m::MultipleSimulationResults, inds...) =
     getindex(m.simulation_results, inds...)
-Base.setindex!(m::MultipleSimulationResults, v::SingleSimulationResults, inds...) =
+Base.setindex!(m::MultipleSimulationResults, v, inds...) =
     setindex!(m.simulation_results, v, inds...)
 
 ##########################################################################
 # General simulation functions
-function simulate(network::Network, simulation_params::SimulationParams; loop_over = :precoding_methods)
+function simulate(network, simulation_params; loop_over = :precoding_methods)
     # Number of drops and small scale fading realizations
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
@@ -134,7 +134,7 @@ end
 
 ##########################################################################
 # Convergence simulation functions
-function simulate_convergence(network::Network, simulation_params::SimulationParams; loop_over = :precoding_methods)
+function simulate_convergence(network, simulation_params; loop_over = :precoding_methods)
     # Number of drops and small scale fading realizations
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
@@ -227,7 +227,7 @@ end
 
 ##########################################################################
 # Performance test
-function simulate_performance(network::Network, simulation_params::SimulationParams)
+function simulate_performance(network, simulation_params)
     println("-- performance test on $network.")
     Lumberjack.info("Starting performance test.",
         { :network => network, :simulation_params => simulation_params })

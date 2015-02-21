@@ -1,8 +1,6 @@
 ##########################################################################
 # General postprocess
-function postprocess(raw_results::MultipleSimulationResults,
-    simulation_params::SimulationParams, plot_params::PlotParams)
-
+function postprocess(raw_results, simulation_params, plot_params)
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
     methods = get_methods_to_plot(simulation_params, plot_params)
@@ -73,7 +71,7 @@ end
 
 ##########################################################################
 # General plot
-function plot(processed_results, simulation_params::SimulationParams, plot_params::PlotParams)
+function plot(processed_results, simulation_params, plot_params)
     results_mean = processed_results[2]; results_var = processed_results[3]
 
     fig = PyPlot.figure(;plot_params["figure"]...)
@@ -95,9 +93,7 @@ end
 
 ##########################################################################
 # Convergence postprocess
-function postprocess_convergence(raw_results::MultipleSimulationResults,
-    simulation_params::SimulationParams, plot_params::PlotParams)
-
+function postprocess_convergence(raw_results, simulation_params, plot_params)
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
     methods = get_methods_to_plot(simulation_params, plot_params)
@@ -165,7 +161,7 @@ end
 
 ##########################################################################
 # Convergence simulation plot
-function plot_convergence(processed_results, simulation_params::SimulationParams, plot_params::PlotParams)
+function plot_convergence(processed_results, simulation_params, plot_params)
     methods = get_methods_to_plot(simulation_params, plot_params)
 
     results = processed_results[1]

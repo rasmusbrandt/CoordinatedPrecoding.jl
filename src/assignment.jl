@@ -17,19 +17,19 @@ Assignment(cell_assignment::Vector{Int}, cluster_assignment::Matrix) =
                [ IntSet(findin(cluster_assignment[:,i], [1])) for i = 1:size(cluster_assignment, 2) ]
     )
 
-serving_BS_id(MS_id::Int, assignment::Assignment) =
+serving_BS_id(MS_id, assignment) =
     assignment.cell_assignment[MS_id]
-served_MS_ids(BS_id::Int, assignment::Assignment) =
+served_MS_ids(BS_id, assignment) =
     assignment.cell_assignment_inverse[BS_id]
-served_MS_ids_except_me(MS_id::Int, BS_id::Int, assignment::Assignment) =
+served_MS_ids_except_me(MS_id, BS_id, assignment) =
     setdiff(assignment.cell_assignment_inverse[BS_id], MS_id)
 
-coordinated_BS_ids(MS_id::Int, assignment::Assignment) =
+coordinated_BS_ids(MS_id, assignment) =
     assignment.cluster_assignment[MS_id]
-coordinated_MS_ids(BS_id::Int, assignment::Assignment) =
+coordinated_MS_ids(BS_id, assignment) =
     assignment.cluster_assignment_inverse[BS_id]
 
-function require_equal_no_MSs_per_cell(assignment::Assignment)
+function require_equal_no_MSs_per_cell(assignment)
     BS_ind_max = maximum(cell_assignment.cell_assignment)
 
     Kc_test = length(served_MS_ids(1, cell_assignment))
