@@ -22,7 +22,7 @@ export
     get_aux_precoding_params, set_aux_precoding_params!,
     get_aux_assignment_param, set_aux_assignment_param!,
     get_aux_assignment_params, set_aux_assignment_params!,
-    get_no_MSs, get_no_BSs, get_no_MSs_per_cell,
+    get_no_MSs, get_no_BSs,
     get_no_antennas, get_no_MS_antennas, get_no_BS_antennas,
     get_transmit_powers, get_receiver_noise_powers,
     set_transmit_powers!, set_receiver_noise_powers!,

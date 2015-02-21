@@ -20,8 +20,6 @@ Base.show(io::IO, x::InterferingBroadcastChannel) =
 Base.showcompact(io::IO, x::InterferingBroadcastChannel) =
     print(io, "IBC($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.alpha))")
 
-get_no_MSs_per_cell(network::InterferingBroadcastChannel) = network.no_MSs_per_cell
-
 function setup_interfering_broadcast_channel(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(),
@@ -47,7 +45,7 @@ end
 ##########################################################################
 # Standard cell assignment functions
 function assign_cells_by_id!{System_t <: System}(network::InterferingBroadcastChannel{System_t})
-    Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
+    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -62,7 +60,7 @@ end
 draw_user_drop!(network::InterferingBroadcastChannel) = nothing
 
 function draw_channel{System_t <: SinglecarrierSystem}(network::InterferingBroadcastChannel{System_t})
-    I = get_no_BSs(network); Kc = get_no_MSs_per_cell(network)
+    I = get_no_BSs(network); Kc = network.no_MSs_per_cell
     Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, I*Kc, I)
@@ -87,7 +85,7 @@ function draw_channel{System_t <: SinglecarrierSystem}(network::InterferingBroad
 end
 
 function draw_channel{System_t <: MulticarrierSystem}(network::InterferingBroadcastChannel{System_t})
-    I = get_no_BSs(network); Kc = get_no_MSs_per_cell(network); Lc = system.no_subcarriers
+    I = get_no_BSs(network); Kc = network.no_MSs_per_cell; Lc = system.no_subcarriers
     Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
 
     coefs = Array(Array{Complex128, 3}, I*Kc, I)

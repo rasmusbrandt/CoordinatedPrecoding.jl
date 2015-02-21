@@ -35,8 +35,6 @@ Base.show(io::IO, x::IndoorsNetwork) =
 Base.showcompact(io::IO, x::IndoorsNetwork) =
     print(io, "Indoors($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.corridor_length), $(x.corridor_width), $(x.guard_distance))")
 
-get_no_MSs_per_cell(network::IndoorsNetwork) = network.no_MSs_per_cell
-
 # The default parameter values are taken from ITU-R M.2135-1.
 function setup_indoors_network{AntennaParams_t <: AntennaParams}(
     no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
@@ -78,7 +76,7 @@ end
 ##########################################################################
 # Standard cell assignment functions
 function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
-    Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
+    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -106,7 +104,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
     end
 
     for k = 1:K
-        i = div(k - 1, get_no_MSs_per_cell(network)) + 1 # serving BS id
+        i = div(k - 1, network.no_MSs_per_cell) + 1 # serving BS id
 
         # MS position
         while true

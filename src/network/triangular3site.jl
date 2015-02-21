@@ -37,17 +37,13 @@ type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
 end
 
 # Convenience constructor without assignments
-Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance) =
-    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, inter_site_distance, guard_distance, Assignment())
+Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance) =
+    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, Assignment())
 
 Base.show(io::IO, x::Triangular3SiteNetwork) =
     print(io, "Triangular3Site(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
 Base.showcompact(io::IO, x::Triangular3SiteNetwork) =
     print(io, "Triangular3Site($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
-
-get_no_MSs(network::Triangular3SiteNetwork) = 3*network.no_MSs_per_cell
-get_no_BSs(network::Triangular3SiteNetwork) = 3
-get_no_MSs_per_cell(network::Triangular3SiteNetwork) = network.no_MSs_per_cell
 
 # The default parameter values are taken from 3GPP Case 1
 # (TR 25.814 and TR 36.814).
@@ -99,7 +95,7 @@ end
 ##########################################################################
 # Standard cell assignment functions
 function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
-    Kc = get_no_MSs_per_cell(network); I = get_no_BSs(network)
+    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -134,11 +130,11 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
         end
 
         # Generate rotation angle
-        i = div(k - 1, get_no_MSs_per_cell(network)) + 1 # serving BS id
+        i = div(k - 1, network.no_MSs_per_cell) + 1 # serving BS id
         if i == 1
             theta = 240*pi/180
         elseif i == 2
-            theta = 0
+            theta = 0.
         elseif i == 3
             theta = 120*pi/180
         end
