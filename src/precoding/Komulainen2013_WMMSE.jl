@@ -121,7 +121,7 @@ function update_BSs!(state::Komulainen2013_WMMSEState,
 
         # Precoders (reuse EVD)
         for k in served_MS_ids(i, assignment)
-            state.V[k] = Gamma_eigen.vectors*Diagonal(1./(Gamma_eigen.values .+ mu_star))*Gamma_eigen.vectors'*channel.H[k,i]'*state.U[k]*state.W_diag[k]
+            state.V[k] = Gamma_eigen.vectors*Diagonal(1./(abs(Gamma_eigen.values) .+ mu_star))*Gamma_eigen.vectors'*channel.H[k,i]'*state.U[k]*state.W_diag[k]
         end
     end
 end
@@ -135,12 +135,12 @@ function optimal_mu(i, Gamma, state::Komulainen2013_WMMSEState,
         #bis_M += Hermitian(channel.H[k,i]'*(state.U[k]*(state.W_diag[k]*state.W_diag[k])*state.U[k]')*channel.H[k,i])
         Base.LinAlg.BLAS.herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k]*state.W_diag[k], complex(1.), bis_M.S)
     end
-    Gamma_eigen = eigfact(Gamma)
+    Gamma_eigen = eigfact(Gamma); Gamma_eigen_values = abs(Gamma_eigen.values)
     bis_JMJ_diag = abs(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
-    f(mu) = sum(bis_JMJ_diag./((Gamma_eigen.values .+ mu).*(Gamma_eigen.values .+ mu)))
+    f(mu) = sum(bis_JMJ_diag./((Gamma_eigen_values .+ mu).*(Gamma_eigen_values .+ mu)))
 
     # mu lower bound
-    if abs(maximum(Gamma_eigen.values))/abs(minimum(Gamma_eigen.values)) < aux_params["Komulainen2013_WMMSE:bisection_Gamma_cond"]
+    if maximum(Gamma_eigen_values)/minimum(Gamma_eigen_values) < aux_params["Komulainen2013_WMMSE:bisection_Gamma_cond"]
         # Gamma is invertible
         mu_lower = 0.
     else
@@ -152,7 +152,7 @@ function optimal_mu(i, Gamma, state::Komulainen2013_WMMSEState,
         return mu_lower, Gamma_eigen
     else
         # mu upper bound
-        mu_upper = sqrt(channel.Ms[i]/Ps[i]*maximum(bis_JMJ_diag)) - abs(minimum(Gamma_eigen.values))
+        mu_upper = sqrt(channel.Ms[i]/Ps[i]*maximum(bis_JMJ_diag)) - minimum(Gamma_eigen_values)
         if f(mu_upper) > Ps[i]
             Lumberjack.error("Power bisection: infeasible mu upper bound.")
         end
