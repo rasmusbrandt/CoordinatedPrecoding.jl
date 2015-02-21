@@ -232,8 +232,6 @@ function simulate_performance(network, simulation_params)
     Lumberjack.info("Starting performance test.",
         [ :network => network, :simulation_params => simulation_params ])
 
-    assign_cells_by_id!(network)
-
     # Set initial aux precoding params
     set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
 
@@ -242,6 +240,7 @@ function simulate_performance(network, simulation_params)
 
     draw_user_drop!(network)
     channel = draw_channel(network)
+    assign_cells_by_id!(channel, network)
 
     # Make sure things are JITed
     for method in simulation_params["precoding_methods"]
@@ -269,7 +268,7 @@ function get_other_method(simulation_params, loop_over)
             end
             assignment_method(channel, network) = simulation_params["assignment_methods"][1](channel, network)
         else
-            assignment_method(channel, network) = assign_cells_by_id!(network)
+            assignment_method(channel, network) = assign_cells_by_id!(channel, network)
         end
     elseif loop_over == :assignment_methods
         if haskey(simulation_params, "precoding_methods")

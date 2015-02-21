@@ -88,7 +88,7 @@ end
 ##########################################################################
 # The standard cell assignment function only assigns to macrocells.
 # Implement some other assignment function to use the picos.
-function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = network.no_MSs_per_cell
     cell_assignment = Array(Int, 3*Kc)
 

@@ -44,7 +44,7 @@ end
 
 ##########################################################################
 # Standard cell assignment functions
-function assign_cells_by_id!{System_t <: System}(network::InterferingBroadcastChannel{System_t})
+function assign_cells_by_id!{System_t <: System}(channel, network::InterferingBroadcastChannel{System_t})
     Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
