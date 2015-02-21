@@ -4,7 +4,7 @@ immutable Shi2011_WMMSEState
     V::Array{Matrix{Complex128},1}
 end
 
-function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network)
+function Shi2011_WMMSE(channel, network)
     assignment = get_assignment(network)
 
     K = get_no_MSs(network)
@@ -78,7 +78,7 @@ function Shi2011_WMMSE(channel::SinglecarrierChannel, network::Network)
 end
 
 function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
-    sigma2s::Vector{Float64}, assignment::Assignment)
+    sigma2s, assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
@@ -102,7 +102,7 @@ function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
 end
 
 function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel, 
-    Ps::Vector{Float64}, assignment::Assignment, aux_params)
+    Ps, assignment, aux_params)
 
     for i = 1:channel.I
         # Virtual uplink covariance
@@ -124,9 +124,8 @@ function update_BSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
     end
 end
 
-function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
-    state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
-    Ps::Vector{Float64}, assignment::Assignment, aux_params)
+function optimal_mu(i, Gamma, state::Shi2011_WMMSEState,
+    channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))

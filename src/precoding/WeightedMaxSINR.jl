@@ -4,7 +4,7 @@ immutable WeightedMaxSINRState
     V::Array{Matrix{Complex128},1}
 end
 
-function WeightedMaxSINR(channel::SinglecarrierChannel, network::Network)
+function WeightedMaxSINR(channel, network)
     assignment = get_assignment(network)
 
     K = get_no_MSs(network)
@@ -72,9 +72,8 @@ function WeightedMaxSINR(channel::SinglecarrierChannel, network::Network)
     return results
 end
 
-function update_MSs!(state::WeightedMaxSINRState,
-    channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    assignment::Assignment)
+function update_MSs!(state::WeightedMaxSINRState, channel::SinglecarrierChannel,
+    sigma2s, assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
@@ -109,10 +108,8 @@ function update_MSs!(state::WeightedMaxSINRState,
     end
 end
 
-function update_BSs!(state::WeightedMaxSINRState,
-    channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+function update_BSs!(state::WeightedMaxSINRState, channel::SinglecarrierChannel,
+    Ps, sigma2s, assignment, aux_params)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 

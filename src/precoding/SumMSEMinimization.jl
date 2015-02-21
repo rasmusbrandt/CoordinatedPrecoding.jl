@@ -4,7 +4,7 @@ immutable SumMSEMinimizationState
     V::Array{Matrix{Complex128},1}
 end
 
-function SumMSEMinimization(channel::SinglecarrierChannel, network::Network)
+function SumMSEMinimization(channel, network)
     assignment = get_assignment(network)
 
     K = get_no_MSs(network)
@@ -77,8 +77,8 @@ function SumMSEMinimization(channel::SinglecarrierChannel, network::Network)
     return results
 end
 
-function update_MSs!(state::SumMSEMinimizationState, channel::SinglecarrierChannel,
-    sigma2s::Vector{Float64}, assignment::Assignment)
+function update_MSs!(state::SumMSEMinimizationState,
+    channel::SinglecarrierChannel, sigma2s, assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
@@ -101,9 +101,8 @@ function update_MSs!(state::SumMSEMinimizationState, channel::SinglecarrierChann
     end
 end
 
-function update_BSs!(state::SumMSEMinimizationState, channel::SinglecarrierChannel, 
-    Ps::Vector{Float64}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+function update_BSs!(state::SumMSEMinimizationState,
+    channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     for i = 1:channel.I
         # Virtual uplink covariance
@@ -125,10 +124,8 @@ function update_BSs!(state::SumMSEMinimizationState, channel::SinglecarrierChann
     end
 end
 
-function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
-    state::SumMSEMinimizationState, channel::SinglecarrierChannel,
-    Ps::Vector{Float64}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+function optimal_mu(i, Gamma, state::SumMSEMinimizationState,
+    channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))

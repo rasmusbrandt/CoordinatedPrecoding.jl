@@ -5,7 +5,7 @@ immutable Komulainen2013_WMMSEState
     V::Array{Matrix{Complex128},1}
 end
 
-function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
+function Komulainen2013_WMMSE(channel, network)
     assignment = get_assignment(network)
 
     K = get_no_MSs(network)
@@ -79,8 +79,8 @@ function Komulainen2013_WMMSE(channel::SinglecarrierChannel, network::Network)
     return results
 end
 
-function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel,
-    sigma2s::Vector{Float64}, assignment::Assignment)
+function update_MSs!(state::Komulainen2013_WMMSEState,
+    channel::SinglecarrierChannel, sigma2s, assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
@@ -105,9 +105,8 @@ function update_MSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierCha
     end
 end
 
-function update_BSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel, 
-    Ps::Vector{Float64}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+function update_BSs!(state::Komulainen2013_WMMSEState,
+    channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     for i = 1:channel.I
         # Virtual uplink covariance
@@ -129,9 +128,8 @@ function update_BSs!(state::Komulainen2013_WMMSEState, channel::SinglecarrierCha
     end
 end
 
-function optimal_mu(i::Int, Gamma::Hermitian{Complex128},
-    state::Komulainen2013_WMMSEState, channel::SinglecarrierChannel,
-    Ps::Vector{Float64}, assignment::Assignment, aux_params::AuxPrecodingParams)
+function optimal_mu(i, Gamma, state::Komulainen2013_WMMSEState,
+    channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     # Build bisector function
     bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))

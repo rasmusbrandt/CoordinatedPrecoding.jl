@@ -4,7 +4,7 @@ immutable Razaviyayn2013_MinMaxWMMSEState
     V::Array{Matrix{Complex128},1}
 end
 
-function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel, network::Network)
+function Razaviyayn2013_MinMaxWMMSE(channel, network)
     assignment = get_assignment(network)
 
     # The implementation is currently limited in the respects below. This is in
@@ -84,8 +84,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel::SinglecarrierChannel, network::Netw
 end
 
 function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,
-    channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    assignment::Assignment)
+    channel::SinglecarrierChannel, sigma2s, assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
@@ -113,9 +112,7 @@ end
 # boost would come from that though, based on experience with the
 # JointPrecodingMCSSelection implementation.
 function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
-    channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+    channel::SinglecarrierChannel, Ps, sigma2s, assignment, aux_params)
 
     # The following is OK, since we have checked this at the top of
     # the outer function.

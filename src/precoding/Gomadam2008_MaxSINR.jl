@@ -4,7 +4,7 @@ immutable Gomadam2008_MaxSINRState
     V::Array{Matrix{Complex128},1}
 end
 
-function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network)
+function Gomadam2008_MaxSINR(channel, network)
     assignment = get_assignment(network)
 
     K = get_no_MSs(network)
@@ -73,8 +73,7 @@ function Gomadam2008_MaxSINR(channel::SinglecarrierChannel, network::Network)
 end
 
 function update_MSs!(state::Gomadam2008_MaxSINRState,
-    channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    assignment::Assignment)
+    channel::SinglecarrierChannel, sigma2s, assignment)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
@@ -106,9 +105,7 @@ function update_MSs!(state::Gomadam2008_MaxSINRState,
 end
 
 function update_BSs!(state::Gomadam2008_MaxSINRState,
-    channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+    channel::SinglecarrierChannel, Ps, sigma2s, assignment, aux_params)
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 

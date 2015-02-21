@@ -2,7 +2,7 @@ immutable EigenprecodingState
     V::Array{Matrix{Complex128},1}
 end
 
-function Eigenprecoding(channel::SinglecarrierChannel, network::Network)
+function Eigenprecoding(channel::SinglecarrierChannel, network)
     assignment = get_assignment(network)
 
     I = get_no_BSs(network)
@@ -46,8 +46,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network::Network)
 end
 
 function calculate_logdet_rates(state::EigenprecodingState,
-    channel::SinglecarrierChannel, sigma2s::Vector{Float64},
-    assignment::Assignment, aux_params::AuxPrecodingParams)
+    channel::SinglecarrierChannel, sigma2s, assignment, aux_params)
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
