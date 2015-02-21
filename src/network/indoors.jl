@@ -36,16 +36,16 @@ Base.showcompact(io::IO, x::IndoorsNetwork) =
     print(io, "Indoors($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.corridor_length), $(x.corridor_width), $(x.guard_distance))")
 
 # The default parameter values are taken from ITU-R M.2135-1.
-function setup_indoors_network{AntennaParams_t <: AntennaParams}(
-    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
+function setup_indoors_network(
+    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(3.4e9, 15e3),
     propagation_environments = [:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
                                 :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
-    corridor_length::Float64 = 120.,
-    corridor_width::Float64 = 50.,
-    guard_distance::Float64 = 3.,
+    corridor_length = 120.,
+    corridor_width = 50.,
+    guard_distance = 3.,
     transmit_power = 10^(-9.8/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
-    BS_antenna_gain_params::Vector{AntennaParams_t} = [ OmnidirectionalAntennaParams(0) for i = 1:no_BSs ],
+    BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for i = 1:no_BSs ],
     user_priority = 1., user_priorities = ones(Float64, no_BSs*no_MSs_per_cell),
     no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
     MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
@@ -58,7 +58,7 @@ function setup_indoors_network{AntennaParams_t <: AntennaParams}(
         no_BS_antennas = no_BS_antennas*ones(Int, no_BSs)
     end
 
-    # BS positions
+    # Place BSs
     y = corridor_width/2
     Δ = corridor_length/no_BSs
     BSs = Array(PhysicalBS, 0)

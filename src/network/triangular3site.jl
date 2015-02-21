@@ -18,7 +18,7 @@ immutable SixSector3gppAntennaParams <: AntennaParams
     min_antenna_gain_dB::Float64
 end
 
-get_antenna_gain(antenna_params::SixSector3gppAntennaParams, angle::Float64) =
+get_antenna_gain(antenna_params::SixSector3gppAntennaParams, angle) =
     10^(-min(12*(angle/antenna_params.angle_with_3dB_gain)^2, antenna_params.min_antenna_gain_dB)/10)
 
 get_angle{AntennaParams_t <: SixSector3gppAntennaParams}(MS, BS::PhysicalBS{AntennaParams_t}) =
@@ -50,14 +50,14 @@ Base.showcompact(io::IO, x::Triangular3SiteNetwork) =
 
 # The default parameter values are taken from 3GPP Case 1
 # (TR 25.814 and TR 36.814).
-function setup_triangular3site_network{AntennaParams_t <: AntennaParams}(
-    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
+function setup_triangular3site_network(
+    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
-    inter_site_distance::Float64 = 500.,
-    guard_distance::Float64 = 35.,
+    inter_site_distance = 500.,
+    guard_distance = 35.,
     transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
-    BS_antenna_gain_params::Vector{AntennaParams_t} = 
+    BS_antenna_gain_params =
         [SixSector3gppAntennaParams(-90/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams( 30/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams(150/180*pi, 35/180*pi, 23)],

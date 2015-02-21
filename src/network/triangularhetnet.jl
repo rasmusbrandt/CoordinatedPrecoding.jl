@@ -38,15 +38,15 @@ Base.showcompact(io::IO, x::TriangularHetNetNetwork) =
 
 # The default parameter values are taken from 3GPP Case 1
 # (TR 25.814 and TR 36.814).
-function setup_triangularhetnet_network{AntennaParams_t <: AntennaParams}(
-    no_picos_per_cell::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
+function setup_triangularhetnet_network(
+    no_picos_per_cell, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
     inter_site_distance = 500.,
     pico_centre_distance = 100.,
     guard_distance = 35.,
     transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, 3 + 3*no_picos_per_cell),
-    BS_antenna_gain_params::Vector{AntennaParams_t} = 
+    BS_antenna_gain_params =
         vcat([SixSector3gppAntennaParams(-deg2rad(90),  deg2rad(35), 23),
               SixSector3gppAntennaParams( deg2rad(30),  deg2rad(35), 23),
               SixSector3gppAntennaParams( deg2rad(150), deg2rad(35), 23)],
