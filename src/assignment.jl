@@ -17,6 +17,8 @@ Assignment(cell_assignment::Vector{Int}, cluster_assignment::Matrix) =
                [ IntSet(findin(cluster_assignment[:,i], [1])) for i = 1:size(cluster_assignment, 2) ]
     )
 
+active_BSs(assignment) = unique(assignment.cell_assignment)
+
 serving_BS_id(MS_id, assignment) =
     assignment.cell_assignment[MS_id]
 served_MS_ids(BS_id, assignment) =

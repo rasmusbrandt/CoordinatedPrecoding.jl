@@ -77,35 +77,33 @@ function update_MSs!(state::WeightedMaxSINRState, channel::SinglecarrierChannel,
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
-    for i = 1:channel.I
-        for k in served_MS_ids(i, assignment)
-            Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-            for j = 1:channel.I
-                for l in served_MS_ids(j, assignment)
-                    #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                    Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
-                end
+    for i = 1:channel.I; for k in served_MS_ids(i, assignment)
+        Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+        for j = 1:channel.I
+            for l in served_MS_ids(j, assignment)
+                #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+                Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
             end
-
-            # Per-stream receivers
-            for n = 1:ds[k]
-                Phi_i_plus_n = Hermitian(
-                    Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(-1.), channel.H[k,i]*state.V[k][:,n], complex(1.), copy(Phi.S)),
-                    Phi.uplo)
-                u = Phi_i_plus_n\channel.H[k,i]*state.V[k][:,n]
-                state.U[k][:,n] = u/norm(u,2)
-            end
-
-            # Optimal MSE weights
-            F = channel.H[k,i]*state.V[k]
-            Ummse = Phi\F
-            state.W[k] = Hermitian((eye(ds[k]) - Ummse'*F)\eye(ds[k]))
-
-            # Weighting
-            state.U[k] = state.U[k]*sqrtm(state.W[k])
-            state.U[k] = state.U[k]/vecnorm(state.U[k])
         end
-    end
+
+        # Per-stream receivers
+        for n = 1:ds[k]
+            Phi_i_plus_n = Hermitian(
+                Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(-1.), channel.H[k,i]*state.V[k][:,n], complex(1.), copy(Phi.S)),
+                Phi.uplo)
+            u = Phi_i_plus_n\channel.H[k,i]*state.V[k][:,n]
+            state.U[k][:,n] = u/norm(u,2)
+        end
+
+        # Optimal MSE weights
+        F = channel.H[k,i]*state.V[k]
+        Ummse = Phi\F
+        state.W[k] = Hermitian((eye(ds[k]) - Ummse'*F)\eye(ds[k]))
+
+        # Weighting
+        state.U[k] = state.U[k]*sqrtm(state.W[k])
+        state.U[k] = state.U[k]/vecnorm(state.U[k])
+    end; end
 end
 
 function update_BSs!(state::WeightedMaxSINRState, channel::SinglecarrierChannel,
@@ -113,7 +111,7 @@ function update_BSs!(state::WeightedMaxSINRState, channel::SinglecarrierChannel,
 
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
-    for i = 1:channel.I
+    for i in active_BSs(assignment)
         # Virtual uplink covariance
         Gamma = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
         for j = 1:channel.I

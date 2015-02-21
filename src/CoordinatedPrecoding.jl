@@ -47,6 +47,7 @@ export
 # Assignment
     Assignment, AuxAssignmentParams,
     assign_cells_by_id!,
+    active_BSs,
     serving_BS_id, served_MS_ids, served_MS_ids_except_me,
     coordinated_BS_ids, coordinated_MS_ids,
     require_equal_no_MSs_per_cell,
