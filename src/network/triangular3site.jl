@@ -68,7 +68,7 @@ function setup_triangular3site_network(
 
     # Consistency check
     if no_BSs != 3
-        error("Triangular3SiteNetwork only allows for I = 3.")
+        Lumberjack.error("Triangular3SiteNetwork only allows for I = 3.")
     end
 
     if !isa(no_MS_antennas, Vector)

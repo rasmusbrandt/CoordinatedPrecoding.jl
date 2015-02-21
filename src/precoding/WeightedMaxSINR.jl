@@ -38,9 +38,9 @@ function WeightedMaxSINR(channel, network)
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
             if conv_crit < aux_params["stop_crit"]
                 Lumberjack.debug("WeightedMaxSINR converged.",
-                    { :no_iters => iters, :final_objective => objective[end],
+                    [ :no_iters => iters, :final_objective => objective[end],
                       :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-                      :max_iters => aux_params["max_iters"] })
+                      :max_iters => aux_params["max_iters"] ])
                 break
             end
         end
@@ -52,9 +52,9 @@ function WeightedMaxSINR(channel, network)
     end
     if iters == aux_params["max_iters"]
         Lumberjack.debug("WeightedMaxSINR did NOT converge.",
-            { :no_iters => iters, :final_objective => objective[end],
+            [ :no_iters => iters, :final_objective => objective[end],
               :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-              :max_iters => aux_params["max_iters"] })
+              :max_iters => aux_params["max_iters"] ])
     end
 
     results = PrecodingResults()

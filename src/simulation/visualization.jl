@@ -13,7 +13,7 @@ function postprocess(raw_results, simulation_params, plot_params)
         Naux = length(simulation_params["aux_independent_variables"])
         aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
         for n = 2:Naux
-            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : Lumberjack.error("Auxiliary independent variable vectors must have equal length.")
         end
     else
         Naux = 0; aux_idp_vals_length = 1
@@ -103,7 +103,7 @@ function postprocess_convergence(raw_results, simulation_params, plot_params)
         Naux = length(simulation_params["aux_independent_variables"])
         aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
         for n = 2:Naux
-            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : Lumberjack.error("Auxiliary independent variable vectors must have equal length.")
         end
     else
         Naux = 0; aux_idp_vals_length = 1

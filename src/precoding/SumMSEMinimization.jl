@@ -43,9 +43,9 @@ function SumMSEMinimization(channel, network)
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
             if conv_crit < aux_params["stop_crit"]
                 Lumberjack.debug("SumMSEMinimization converged.",
-                    { :no_iters => iters, :final_objective => objective[end],
+                    [ :no_iters => iters, :final_objective => objective[end],
                       :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-                      :max_iters => aux_params["max_iters"] })
+                      :max_iters => aux_params["max_iters"] ])
                 break
             end
         end
@@ -57,9 +57,9 @@ function SumMSEMinimization(channel, network)
     end
     if iters == aux_params["max_iters"]
         Lumberjack.debug("SumMSEMinimization did NOT converge.",
-            { :no_iters => iters, :final_objective => objective[end],
+            [ :no_iters => iters, :final_objective => objective[end],
               :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-              :max_iters => aux_params["max_iters"] })
+              :max_iters => aux_params["max_iters"] ])
     end
 
     results = PrecodingResults()
@@ -150,7 +150,7 @@ function optimal_mu(i, Gamma, state::SumMSEMinimizationState,
         # mu upper bound
         mu_upper = sqrt(channel.Ms[i]/Ps[i]*maximum(bis_JMJ_diag)) - abs(minimum(Gamma_eigen.values))
         if f(mu_upper) > Ps[i]
-            error("Power bisection: infeasible mu upper bound.")
+            Lumberjack.error("Power bisection: infeasible mu upper bound.")
         end
 
         no_iters = 0

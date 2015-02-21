@@ -202,12 +202,12 @@ get_no_streams (network::Network) = [ get_no_streams(network.MSs[k]) for k = 1:g
 set_no_streams!(network::Network, d::Int) = (for MS in network.MSs; set_no_streams(MS, d); end)
 set_no_streams!(network::Network, ds::Vector) = (for k = 1:length(ds); set_no_streams(network.MSs[k], ds[k]); end)
 
-require_equal_no_MS_antennas(network) = (Ns = get_no_MS_antennas(network); all(Ns .== Ns[1]) || error("MSs must all have the same number of antennas."))
-require_equal_no_BS_antennas(network) = (Ms = get_no_BS_antennas(network); all(Ms .== Ms[1]) || error("BSs must all have the same number of antennas."))
-require_single_antenna_MSs(network) = (Ns = get_no_MS_antennas(network); all(Ns .== 1) || error("MSs must not have multiple antennas."))
-require_single_antenna_BSs(network) = (Ms = get_no_BS_antennas(network); all(Ms .== 1) || error("BSs must not have multiple antennas."))
-require_equal_no_streams(network) = (ds = get_no_streams(network); all(ds .== ds[1]) || error("MSs must all have the same number of streams."))
-require_single_stream(network) = (ds = get_no_streams(network); all(ds .== 1) || error("MSs must not have multiple streams."))
+require_equal_no_MS_antennas(network) = (Ns = get_no_MS_antennas(network); all(Ns .== Ns[1]) || Lumberjack.error("MSs must all have the same number of antennas."))
+require_equal_no_BS_antennas(network) = (Ms = get_no_BS_antennas(network); all(Ms .== Ms[1]) || Lumberjack.error("BSs must all have the same number of antennas."))
+require_single_antenna_MSs(network) = (Ns = get_no_MS_antennas(network); all(Ns .== 1) || Lumberjack.error("MSs must not have multiple antennas."))
+require_single_antenna_BSs(network) = (Ms = get_no_BS_antennas(network); all(Ms .== 1) || Lumberjack.error("BSs must not have multiple antennas."))
+require_equal_no_streams(network) = (ds = get_no_streams(network); all(ds .== ds[1]) || Lumberjack.error("MSs must all have the same number of streams."))
+require_single_stream(network) = (ds = get_no_streams(network); all(ds .== 1) || Lumberjack.error("MSs must not have multiple streams."))
 
 get_distances(network::PhysicalNetwork) = [ get_distance(network.MSs[k], network.BSs[i]) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
 get_angles(network::PhysicalNetwork) = [ get_angle(network.MSs[k], network.BSs[i]) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]

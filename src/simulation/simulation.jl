@@ -44,7 +44,7 @@ function simulate(network, simulation_params; loop_over = :precoding_methods)
     println("-- simulate on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
     Lumberjack.info("Starting simulation.",
-        { :network => network, :simulation_params => simulation_params })
+        [ :network => network, :simulation_params => simulation_params ])
 
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)
@@ -148,7 +148,7 @@ function simulate_convergence(network, simulation_params; loop_over = :precoding
     println("-- simulate_convergence on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
     Lumberjack.info("Starting convergence simulation.",
-        { :network => network, :simulation_params => simulation_params })
+        [ :network => network, :simulation_params => simulation_params ])
 
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)
@@ -230,7 +230,7 @@ end
 function simulate_performance(network, simulation_params)
     println("-- performance test on $network.")
     Lumberjack.info("Starting performance test.",
-        { :network => network, :simulation_params => simulation_params })
+        [ :network => network, :simulation_params => simulation_params ])
 
     assign_cells_by_id!(network)
 
@@ -265,7 +265,7 @@ function get_other_method(simulation_params, loop_over)
     if loop_over == :precoding_methods
         if haskey(simulation_params, "assignment_methods")
             if length(simulation_params["assignment_methods"]) > 1
-                warn("Looping over precoding methods: will only use first assignment method provided.")
+                Lumberjack.warn("Looping over precoding methods: will only use first assignment method provided.")
             end
             assignment_method(channel, network) = simulation_params["assignment_methods"][1](channel, network)
         else
@@ -274,11 +274,11 @@ function get_other_method(simulation_params, loop_over)
     elseif loop_over == :assignment_methods
         if haskey(simulation_params, "precoding_methods")
             if length(simulation_params["precoding_methods"]) > 1
-                warn("Looping over assignment methods: will only use first precoding method provided.")
+                Lumberjack.warn("Looping over assignment methods: will only use first precoding method provided.")
             end
             precoding_method(channel, network) = simulation_params["precoding_methods"][1](channel, network)
         else
-            error("No precoding method specified.")
+            Lumberjack.error("No precoding method specified.")
         end
     end
 
@@ -294,7 +294,7 @@ function get_aux_idp(simulation_params)
         # Check that all independent variable vectors are the same length
         aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
         for n = 2:Naux
-            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : error("Auxiliary independent variable vectors must have equal length.")
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : Lumberjack.error("Auxiliary independent variable vectors must have equal length.")
         end
     else
         Naux = 0

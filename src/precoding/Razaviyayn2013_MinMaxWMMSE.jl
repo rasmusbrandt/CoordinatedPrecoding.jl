@@ -49,9 +49,9 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
             if conv_crit < aux_params["stop_crit"]
                 Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE converged.",
-                    { :no_iters => iters, :final_objective => objective[end],
+                    [ :no_iters => iters, :final_objective => objective[end],
                       :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-                      :max_iters => aux_params["max_iters"] })
+                      :max_iters => aux_params["max_iters"] ])
                 break
             end
         end
@@ -63,9 +63,9 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
     end
     if iters == aux_params["max_iters"]
         Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE did NOT converge.",
-            { :no_iters => iters, :final_objective => objective[end],
+            [ :no_iters => iters, :final_objective => objective[end],
               :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-              :max_iters => aux_params["max_iters"] })
+              :max_iters => aux_params["max_iters"] ])
     end
 
     results = PrecodingResults()
@@ -274,7 +274,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
 
     if Gurobi.get_status(model) == :optimal || Gurobi.get_status(model) == :suboptimal
         if Gurobi.get_status(model) == :suboptimal
-            warn("Suboptimal precoder solution found in Razaviyayn2013_MinMaxWMMSE")
+            Lumberjack.warn("Suboptimal precoder solution found in Razaviyayn2013_MinMaxWMMSE")
         end
 
         sol = Gurobi.get_solution(model)
@@ -292,7 +292,6 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
             end
         end
     else
-        warn("Numerical problems with Gurobi in Razaviyayn2013_MinMaxWMMSE")
-        println("Solver returned ", string(Gurobi.get_status(model)))
+        Lumberjack.warn("Numerical problems with Gurobi in Razaviyayn2013_MinMaxWMMSE", [ :gurobi_output => string(Gurobi.get_status(model)) ])
     end
 end
