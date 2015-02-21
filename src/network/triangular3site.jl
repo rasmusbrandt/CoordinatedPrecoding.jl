@@ -21,6 +21,9 @@ end
 get_antenna_gain(antenna_params::SixSector3gppAntennaParams, angle::Float64) =
     10^(-min(12*(angle/antenna_params.angle_with_3dB_gain)^2, antenna_params.min_antenna_gain_dB)/10)
 
+get_angle{AntennaParams_t <: SixSector3gppAntennaParams}(MS, BS::PhysicalBS{AntennaParams_t}) =
+    get_angle(MS.position, BS.position) - BS.antenna_params.bore_sight_angle
+
 ##########################################################################
 # Network definition
 type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork

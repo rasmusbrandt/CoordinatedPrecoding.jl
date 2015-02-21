@@ -54,13 +54,6 @@ MulticarrierSystem(carrier_frequency::Float64, bandwidth::Float64, no_subcarrier
 # Antenna params
 abstract AntennaParams
 
-immutable OmnidirectionalAntennaParams <: AntennaParams
-    antenna_gain_dB::Float64
-end
-
-get_antenna_gain(antenna_params::OmnidirectionalAntennaParams) = 10^(antenna_params.antenna_gain_dB/10)
-get_antenna_gain(antenna_params::OmnidirectionalAntennaParams, angle::Float64) = get_antenna_gain(antenna_params)
-
 ##########################################################################
 # Propagation environments
 abstract PropagationEnvironment
@@ -124,6 +117,18 @@ type PhysicalMS{PropagationEnvironmentState_t <: PropagationEnvironmentState} <:
 end
 
 ##########################################################################
+# OmnidirectionalAntennaParams (not angle dependent)
+immutable OmnidirectionalAntennaParams <: AntennaParams
+    antenna_gain_dB::Float64
+end
+
+get_antenna_gain(antenna_params::OmnidirectionalAntennaParams) = 10^(antenna_params.antenna_gain_dB/10)
+get_antenna_gain(antenna_params::OmnidirectionalAntennaParams, angle::Float64) = get_antenna_gain(antenna_params)
+
+get_angle{AntennaParams_t <: OmnidirectionalAntennaParams}(MS, BS::PhysicalBS{AntennaParams_t}) =
+    get_angle(MS.position, BS.position)
+
+##########################################################################
 # Networks
 abstract Network
 abstract CanonicalNetwork <: Network
@@ -162,7 +167,7 @@ get_no_BS_antennas(network::Network) =
 get_transmit_power (BS::BS) = BS.transmit_power
 set_transmit_power!(BS::BS, P::Float64) = (BS.transmit_power = P)
 get_transmit_power_dBm (BS::BS) = 10*log10(get_transmit_power(BS))
-set_transmit_power_dBm!(BS::BS, PdBm) = set_transmit_power!(BS, 10^(PdBm/10))
+set_transmit_power_dBm!(BS::BS, P_dBm) = set_transmit_power!(BS, 10^(P_dBm/10))
 
 get_transmit_powers (network::Network) =
     Float64[ get_transmit_power(network.BSs[i]) for i = 1:get_no_BSs(network) ]
@@ -170,8 +175,8 @@ set_transmit_powers!(network::Network, P) =
     (for BS in network.BSs; set_transmit_power!(BS, P); end)
 get_transmit_powers_dBm (network::Network) =
     Float64[ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_no_BSs(network) ]
-set_transmit_powers_dBm!(network::Network, PdBm) =
-    (for BS in network.BSs; set_transmit_power_dBm!(BS, PdBm); end)
+set_transmit_powers_dBm!(network::Network, P_dBm) =
+    (for BS in network.BSs; set_transmit_power_dBm!(BS, P_dBm); end)
 
 get_receiver_noise_power (MS::CanonicalMS, network::Network) =
     MS.receiver_noise_power
@@ -179,8 +184,8 @@ set_receiver_noise_power!(MS::CanonicalMS, sigma2, network::Network) =
     (MS.receiver_noise_power = sigma2)
 get_receiver_noise_power_dBm (MS::CanonicalMS, network::Network) =
     10*log10(get_receiver_noise_power(MS, network))
-set_receiver_noise_power_dBm!(MS::CanonicalMS, sigma2dBm, network::Network) =
-    set_receiver_noise_power(MS, 10^(sigma2dBm/10), network)
+set_receiver_noise_power_dBm!(MS::CanonicalMS, sigma2_dBm, network::Network) =
+    set_receiver_noise_power(MS, 10^(sigma2_dBm/10), network)
 
 get_receiver_noise_power (MS::PhysicalMS, network::PhysicalNetwork) =
     10^(get_receiver_noise_power_dBm(MS, network)/10)
@@ -188,8 +193,8 @@ set_receiver_noise_power!(MS::PhysicalMS, sigma2, network::PhysicalNetwork) =
     (MS.noise_figure = 174. + 10*log10(sigma2) - 10*log10(network.system.bandwidth))
 get_receiver_noise_power_dBm (MS::PhysicalMS, network::PhysicalNetwork) =
     (-174. + 10*log10(network.system.bandwidth) + MS.noise_figure)
-set_receiver_noise_power_dBm!(MS::PhysicalMS, sigma2dBm, network::PhysicalNetwork) =
-    (MS.noise_figure = 174. + sigma2dBm - 10*log10(network.system.bandwidth))
+set_receiver_noise_power_dBm!(MS::PhysicalMS, sigma2_dBm, network::PhysicalNetwork) =
+    (MS.noise_figure = 174. + sigma2_dBm - 10*log10(network.system.bandwidth))
 
 get_receiver_noise_powers (network::Network) =
     Float64[ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
@@ -197,8 +202,8 @@ set_receiver_noise_powers!(network::Network, sigma2) =
     (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
 get_receiver_noise_powers_dBm (network::Network) =
     Float64[ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
-set_receiver_noise_powers_dBm!(network::Network, sigma2dBm) =
-    (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2dBm, network); end)
+set_receiver_noise_powers_dBm!(network::Network, sigma2_dBm) =
+    (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2_dBm, network); end)
 
 get_user_priority (MS::MS) = MS.user_priority
 set_user_priority!(MS::MS, α) = (MS.user_priority = α)
@@ -236,7 +241,7 @@ get_distances(network::PhysicalNetwork) =
     Float64[ get_distance(network.MSs[k].position, network.BSs[i].position) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
 
 get_angles(network::PhysicalNetwork) = 
-    Float64[ (get_angle(network.MSs[k].position, network.BSs[i].position) - network.BSs[i].antenna_params.bore_sight_angle) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
+    Float64[ get_angle(network.MSs[k], network.BSs[i]) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
 
 # Interfering broadcast channel
 include("ibc.jl")
