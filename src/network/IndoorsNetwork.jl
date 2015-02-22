@@ -75,7 +75,7 @@ end
 
 ##########################################################################
 # Standard cell assignment functions
-function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 

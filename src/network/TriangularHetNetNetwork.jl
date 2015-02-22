@@ -88,7 +88,7 @@ end
 ##########################################################################
 # The standard cell assignment function only assigns to macrocells.
 # Implement some other assignment function to use the picos.
-function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = network.no_MSs_per_cell
     cell_assignment = Array(Int, 3*Kc)
 
@@ -99,7 +99,7 @@ function assign_cells_by_id!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     network.assignment = Assignment(cell_assignment, get_no_BSs(network))
 end
 
-function assign_cells_by_large_scale_fading!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     no_MSs_per_cell = network.no_MSs_per_cell; no_MSs = 3*no_MSs_per_cell
     no_picos_per_cell = network.no_picos_per_cell; no_BSs = 3 + 3*no_picos_per_cell
 

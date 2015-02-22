@@ -214,7 +214,7 @@ get_angles(network::PhysicalNetwork) = [ get_angle(network.MSs[k], network.BSs[i
 
 ##########################################################################
 # Include network implementations
-include("ibc.jl")
-include("indoors.jl")
-include("triangular3site.jl")
-include("triangularhetnet.jl")
+include("IntereringBroadcastChannel.jl")
+include("IndoorsNetwork.jl")
+include("Triangular3SiteNetwork.jl")
+include("TriangularHetNetNetwork.jl")
