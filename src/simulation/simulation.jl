@@ -165,7 +165,11 @@ function simulate_convergence(network, simulation_params; loop_over = :precoding
     raw_results = MultipleSimulationResults(Ndrops, Nsim, aux_idp_vals_length)
 
     # Outer simulation loop
-    progress = ProgressMeter.Progress(Ndrops*aux_idp_vals_length*length(simulation_params["precoding_methods"])*Nsim)
+    if loop_over == :precoding_methods
+        progress = ProgressMeter.Progress(Ndrops*aux_idp_vals_length*length(simulation_params["precoding_methods"])*Nsim)
+    else
+        progress = ProgressMeter.Progress(Ndrops*aux_idp_vals_length*length(simulation_params["assignment_methods"])*Nsim)
+    end
     for Ndrops_idx = 1:Ndrops
         draw_user_drop!(network)
         channels = [ draw_channel(network) for n = 1:Nsim ]
