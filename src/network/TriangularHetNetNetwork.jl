@@ -86,8 +86,10 @@ function setup_triangularhetnet_network(
 end
 
 ##########################################################################
-# The standard cell assignment function only assigns to macrocells.
-# Implement some other assignment function to use the picos.
+# Cell assignment
+
+# The ID cell assignment only assigns MSs to the macro BSs. This network
+# is then identical to the Triangular3SiteNetwork.
 function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = network.no_MSs_per_cell
     cell_assignment = Array(Int, 3*Kc)
@@ -99,12 +101,13 @@ function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: S
     network.assignment = Assignment(cell_assignment, get_no_BSs(network))
 end
 
+# This is a greedy schedular based on the large scale fading realizations.
 function LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     no_MSs_per_cell = network.no_MSs_per_cell; no_MSs = 3*no_MSs_per_cell
     no_picos_per_cell = network.no_picos_per_cell; no_BSs = 3 + 3*no_picos_per_cell
 
     aux_params = get_aux_assignment_params(network)
-    @defaultize_param! aux_params "TriangularHetNetAssignment:max_MSs_per_BS" 1
+    @defaultize_param! aux_params "max_MSs_per_BS" 1
 
     # Scheduling matrix
     cell_assignment_matrix = zeros(Int, no_MSs, no_BSs)
@@ -125,7 +128,7 @@ function LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS,
         _, idx = findmax(F)
         k, l = ind2sub(Fsize, idx)
 
-        if sum(cell_assignment_matrix[:,l]) < aux_params["TriangularHetNetAssignment:max_MSs_per_BS"]
+        if sum(cell_assignment_matrix[:,l]) < aux_params["max_MSs_per_BS"]
             cell_assignment_matrix[k,l] = 1
             F[k,:] = 0.
         else

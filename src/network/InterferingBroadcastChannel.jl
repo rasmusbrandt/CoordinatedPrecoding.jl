@@ -55,6 +55,10 @@ function IDCellAssignment!{System_t <: System}(channel, network::InterferingBroa
     network.assignment = Assignment(cell_assignment, I)
 end
 
+# We don't have large scale fading in this network.
+LargeScaleFadingCellAssignment!{System_t <: System}(channel, network::InterferingBroadcastChannel{System_t}) =
+    IDCellAssignment!(channel, network)
+
 ##########################################################################
 # Simulation functions
 draw_user_drop!(network::InterferingBroadcastChannel) = nothing

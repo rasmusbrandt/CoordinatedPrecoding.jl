@@ -86,6 +86,11 @@ function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: S
     network.assignment = Assignment(cell_assignment, I)
 end
 
+# Do this for now, even though the shadowing might actually give a certain MS
+# better connection to a BS in another cell.
+LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t}) =
+    IDCellAssignment!(channel, network)
+
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::IndoorsNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})

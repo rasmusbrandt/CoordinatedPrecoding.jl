@@ -61,6 +61,7 @@ export
     AuxAssignmentParams,
 
     active_BSs,
+    no_served_MSs,
     serving_BS_id,
     served_MS_ids,
     served_MS_ids_except_me,

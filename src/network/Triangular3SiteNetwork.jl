@@ -96,7 +96,7 @@ function setup_triangular3site_network(
 end
 
 ##########################################################################
-# Standard cell assignment functions
+# Cell assignment
 function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
     Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
@@ -107,6 +107,11 @@ function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: S
 
     network.assignment = Assignment(cell_assignment, I)
 end
+
+# Do this for now, even though the shadowing might actually give a certain MS
+# better connection to a BS in another cell.
+LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::Triangular3SiteNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t}) =
+    IDCellAssignment!(channel, network)
 
 ##########################################################################
 # Simulation functions
