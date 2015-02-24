@@ -36,10 +36,10 @@ coordinated_MS_ids(BS_id, assignment) =
     assignment.cluster_assignment_inverse[BS_id]
 
 function require_equal_no_MSs_per_cell(assignment)
-    BS_ind_max = maximum(cell_assignment.cell_assignment)
+    BS_ind_max = maximum(assignment.cell_assignment)
 
-    Kc_test = length(served_MS_ids(1, cell_assignment))
+    Kc_test = length(served_MS_ids(1, assignment))
     for BS_ind = 2:BS_ind_max
-        (length(served_MS_ids(BS_ind, cell_assignment)) == Kc_test) || Lumberjack.error("BSs must all serve equal number of MSs.")
+        (length(served_MS_ids(BS_ind, assignment)) == Kc_test) || Lumberjack.error("BSs must all serve equal number of MSs.")
     end
 end
