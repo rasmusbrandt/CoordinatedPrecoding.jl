@@ -172,7 +172,12 @@ function plot_convergence(processed_results, simulation_params, plot_params)
     fig = PyPlot.figure(;plot_params["figure"]...)
     ax = fig[:add_subplot](1, 1, 1; plot_params["axes"]...)
 
-    plot_methods(ax, results_mean, results_var, simulation_params, plot_params)
+    if haskey(plot_params, "xvals")
+        plot_methods(ax, results_mean, results_var, simulation_params, plot_params;
+            xvals=plot_params["xvals"])
+    else
+        plot_methods(ax, results_mean, results_var, simulation_params, plot_params)
+    end
     haskey(plot_params, "legend") && ax[:legend](;plot_params["legend"]...)
 
     if displayable("application/pdf")
