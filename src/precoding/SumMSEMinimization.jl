@@ -104,7 +104,7 @@ function update_BSs!(state::SumMSEMinimizationState,
 
     for i in active_BSs(assignment)
         # Virtual uplink covariance
-        Gamma = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
+        Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
         for j = 1:channel.I
             for l in served_MS_ids(j, assignment)
                 Gamma += Hermitian(channel.H[l,i]'*(state.U[l]*state.U[l]')*channel.H[l,i])
@@ -126,7 +126,7 @@ function optimal_mu(i, Gamma, state::SumMSEMinimizationState,
     channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     # Build bisector function
-    bis_M = Hermitian(complex(zeros(channel.Ms[i], channel.Ms[i])))
+    bis_M = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
     for k in served_MS_ids(i, assignment)
         #bis_M += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
         Base.LinAlg.BLAS.herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k], complex(1.), bis_M.S)

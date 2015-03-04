@@ -88,10 +88,10 @@ function update_MSs!(state::Gomadam2008_MaxSINRState,
 
         # Per-stream receivers
         for n = 1:ds[k]
-            Phi_i_plus_n = Hermitian(
+            Psi_plus_n = Hermitian(
                 Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(-1.), channel.H[k,i]*state.V[k][:,n], complex(1.), copy(Phi.S)),
                 Phi.uplo)
-            u = Phi_i_plus_n\channel.H[k,i]*state.V[k][:,n]
+            u = Psi_plus_n\channel.H[k,i]*state.V[k][:,n]
             state.U[k][:,n] = u/norm(u,2)
         end
 
@@ -109,7 +109,7 @@ function update_BSs!(state::Gomadam2008_MaxSINRState,
 
     for i in active_BSs(assignment)
         # Virtual uplink covariance
-        Gamma = Hermitian(complex(zeros(channel.Ms[i],channel.Ms[i])))
+        Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
         for j = 1:channel.I
             for l = served_MS_ids(j, assignment)
                 #Gamma += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
