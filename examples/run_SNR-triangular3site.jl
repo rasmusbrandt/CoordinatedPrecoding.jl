@@ -29,7 +29,6 @@ simulation_params = [
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
-        WeightedMaxSINR,
         Komulainen2013_WMMSE,
         # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding

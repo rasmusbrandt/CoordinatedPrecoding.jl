@@ -78,7 +78,6 @@ export
     Razaviyayn2013_MinMaxWMMSE,
     Shi2011_WMMSE,
     SumMSEMinimization,
-    WeightedMaxSINR,
 
     PrecodingResults,
     AuxPrecodingParams,
