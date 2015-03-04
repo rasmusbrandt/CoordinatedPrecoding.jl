@@ -5,20 +5,27 @@ immutable Assignment
     cluster_assignment::Vector{IntSet} # cluster_assignment[k] is the IntSet of BSs coordinating to MS k
     cluster_assignment_inverse::Vector{IntSet} # cluster_assignment_inverse[i] is the IntSet of MSs that BS i is coordinating to
 end
+
 Assignment() = Assignment(Array(Int, 0), [IntSet()], [IntSet()], [IntSet()])
 
 Assignment(cell_assignment::Vector{Int}, no_BSs::Int) =
     Assignment(cell_assignment, ones(length(cell_assignment), no_BSs))
 
 Assignment(cell_assignment::Matrix) =
-    Assignment([ (findin(cell_assignment[k,:], [1]))[1] for k = 1:size(cell_assignment, 1) ],
+    Assignment([ (findin(cell_assignment[k,:], [true]))[1] for k = 1:size(cell_assignment, 1) ],
                ones(length(cell_assignment), size(cell_assignment, 2)))
 
 Assignment(cell_assignment::Vector{Int}, cluster_assignment::Matrix) =
     Assignment(cell_assignment,
                [ IntSet(findin(cell_assignment, i)) for i = 1:size(cluster_assignment, 2) ],
-               [ IntSet(findin(cluster_assignment[k,:], [1])) for k = 1:size(cluster_assignment, 1) ],
-               [ IntSet(findin(cluster_assignment[:,i], [1])) for i = 1:size(cluster_assignment, 2) ])
+               [ IntSet(findin(cluster_assignment[k,:], [true])) for k = 1:size(cluster_assignment, 1) ],
+               [ IntSet(findin(cluster_assignment[:,i], [true])) for i = 1:size(cluster_assignment, 2) ])
+
+Assignment(cell_assignment::Matrix, cluster_assignment::Matrix) =
+    Assignment([ findin(cell_assignment[k,:], [true])[1] for k = 1:size(cell_assignment, 1) ],
+               [ IntSet(findin(cell_assignment[:,i], [true])) for i = 1:size(cell_assignment, 2) ],
+               [ IntSet(findin(cluster_assignment[k,:], [true])) for k = 1:size(cluster_assignment, 1) ],
+               [ IntSet(findin(cluster_assignment[:,i], [true])) for i = 1:size(cluster_assignment, 2) ])
 
 active_BSs(assignment) = unique(assignment.cell_assignment)
 no_served_MSs(BS_id, assignment) = length(assignment.cell_assignment_inverse[BS_id])
