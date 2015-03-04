@@ -92,15 +92,14 @@ end
 
 ##########################################################################
 # Initialization functions
-zero_receivers(channel::SinglecarrierChannel, ds::Vector{Int}) = 
+zero_receivers(channel::SinglecarrierChannel, ds) =
     [ zeros(Complex128, channel.Ns[k], ds[k]) for k = 1:channel.K ]
 
-unity_MSE_weights(ds::Vector{Int}) =
+unity_MSE_weights(ds) =
     [ Hermitian(eye(ds[k])) for k = 1:length(ds) ]
 
-function initial_precoders(channel::SinglecarrierChannel, Ps::Vector{Float64},
-    sigma2s::Vector{Float64}, ds::Vector{Int}, assignment::Assignment,
-    aux_params::AuxPrecodingParams)
+function initial_precoders(channel::SinglecarrierChannel, Ps, sigma2s, ds,
+    assignment, aux_params)
 
     V = Array(Matrix{Complex128}, channel.K)
 
