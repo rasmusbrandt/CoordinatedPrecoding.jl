@@ -89,14 +89,11 @@ function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-        # Received covariance
         Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, assignment)
-                #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
-            end
-        end
+        for j = 1:channel.I; for l in served_MS_ids(j, assignment)
+            #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+            Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
+        end; end
 
         # MMSE receiver and optimal MSE weight
         F = channel.H[k,i]*state.V[k]

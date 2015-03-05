@@ -79,12 +79,10 @@ function update_MSs!(state::Gomadam2008_MaxSINRState,
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
         Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, assignment)
-                #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
-            end
-        end
+        for j = 1:channel.I; for l in served_MS_ids(j, assignment)
+            #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+            Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
+        end; end
 
         # Per-stream receivers
         for n = 1:ds[k]
@@ -108,14 +106,11 @@ function update_BSs!(state::Gomadam2008_MaxSINRState,
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i in active_BSs(assignment)
-        # Virtual uplink covariance
         Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
-        for j = 1:channel.I
-            for l = served_MS_ids(j, assignment)
-                #Gamma += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
-                Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(1.), channel.H[l,i]'*state.U[l], complex(1.), Gamma.S)
-            end
-        end
+        for j = 1:channel.I; for l = served_MS_ids(j, assignment)
+            #Gamma += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
+            Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(1.), channel.H[l,i]'*state.U[l], complex(1.), Gamma.S)
+        end; end
 
         # Per-stream precoders
         served = served_MS_ids(i, assignment)

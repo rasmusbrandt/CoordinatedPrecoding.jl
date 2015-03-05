@@ -85,14 +85,11 @@ function update_MSs!(state::Komulainen2013_WMMSEState,
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-        # Received covariance
         Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, assignment)
-                #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
-            end
-        end
+        for j = 1:channel.I; for l in served_MS_ids(j, assignment)
+            #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
+            Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
+        end; end
 
         # MMSE receiver, optimal MSE weight, and actually used (diagonal) MSE weight
         F = channel.H[k,i]*state.V[k]
@@ -107,13 +104,10 @@ function update_BSs!(state::Komulainen2013_WMMSEState,
     channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     for i in active_BSs(assignment)
-        # Virtual uplink covariance
         Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
-        for j = 1:channel.I
-            for l in served_MS_ids(j, assignment)
-                Gamma += Hermitian(channel.H[l,i]'*(state.U[l]*state.W_diag[l]*state.U[l]')*channel.H[l,i])
-            end
-        end
+        for j = 1:channel.I; for l in served_MS_ids(j, assignment)
+            Gamma += Hermitian(channel.H[l,i]'*(state.U[l]*state.W_diag[l]*state.U[l]')*channel.H[l,i])
+        end; end
 
         # Find optimal Lagrange multiplier
         mu_star, Gamma_eigen =
