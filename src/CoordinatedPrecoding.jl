@@ -74,6 +74,7 @@ export
 # Precoding
     Eigenprecoding,
     Gomadam2008_MaxSINR,
+    Gomadam2008_MinWLI,
     Komulainen2013_WMMSE,
     Razaviyayn2013_MinMaxWMMSE,
     Shi2011_WMMSE,

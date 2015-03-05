@@ -17,6 +17,7 @@ Base.setindex!(p::PrecodingResults, v, k::ASCIIString) =
 # Reference implementation of standard coordinated precoding algorithms
 include("Eigenprecoding.jl")
 include("Gomadam2008_MaxSINR.jl")
+include("Gomadam2008_MinWLI.jl")
 include("Komulainen2013_WMMSE.jl")
 include("Razaviyayn2013_MinMaxWMMSE.jl")
 include("Shi2011_WMMSE.jl")

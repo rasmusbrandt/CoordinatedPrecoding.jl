@@ -59,6 +59,11 @@ plot_params = [
             ("MMSE_rates", [ :color => "r", :linestyle => "--",  :label => "MaxSINR (MMSE)" ]),
         ],
 
+        "Gomadam2008_MinWLI" => [
+            ("logdet_rates", [ :color => "gray", :linestyle => "-", :label => "MinWLI (logdet)" ]),
+            ("MMSE_rates", [ :color => "gray", :linestyle => "--",  :label => "MinWLI (MMSE)" ]),
+        ],
+
         "Komulainen2013_WMMSE" => [
             ("logdet_rates", [ :color => "y", :linestyle => "-", :label => "DiagWMMSE (logdet)" ]),
             ("MMSE_rates", [ :color => "y", :linestyle => "--",  :label => "DiagWMMSE (MMSE)" ]),
