@@ -23,6 +23,7 @@ export
 
     InterferingBroadcastChannel, setup_interfering_broadcast_channel,
     IndoorsNetwork, setup_indoors_network,
+    RandomLargeScaleNetwork, setup_random_large_scale_network,
     Triangular3SiteNetwork, setup_triangular3site_network,
     TriangularHetNetNetwork, setup_triangularhetnet_network,
 
