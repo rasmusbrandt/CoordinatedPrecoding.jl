@@ -21,9 +21,9 @@ Base.showcompact(io::IO, x::InterferingBroadcastChannel) =
     print(io, "IBC($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.alpha))")
 
 function setup_interfering_broadcast_channel(
-    no_BSs::Int, no_MSs_per_cell::Int, no_MS_antennas, no_BS_antennas;
+    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(),
-    alpha::Float64 = 1.,
+    alpha = 1.,
     transmit_power = 1., transmit_powers = transmit_power*ones(Float64, no_BSs),
     user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
     no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
@@ -44,7 +44,7 @@ end
 
 ##########################################################################
 # Standard cell assignment functions
-function IDCellAssignment!{System_t <: System}(channel, network::InterferingBroadcastChannel{System_t})
+function IDCellAssignment!(channel, network::InterferingBroadcastChannel)
     Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
@@ -56,7 +56,7 @@ function IDCellAssignment!{System_t <: System}(channel, network::InterferingBroa
 end
 
 # We don't have large scale fading in this network.
-LargeScaleFadingCellAssignment!{System_t <: System}(channel, network::InterferingBroadcastChannel{System_t}) =
+LargeScaleFadingCellAssignment!(channel, network::InterferingBroadcastChannel) =
     IDCellAssignment!(channel, network)
 
 ##########################################################################

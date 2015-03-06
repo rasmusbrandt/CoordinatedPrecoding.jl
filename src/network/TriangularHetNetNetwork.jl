@@ -90,7 +90,7 @@ end
 
 # The ID cell assignment only assigns MSs to the macro BSs. This network
 # is then identical to the Triangular3SiteNetwork.
-function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function IDCellAssignment!(channel, network::TriangularHetNetNetwork)
     Kc = network.no_MSs_per_cell
     cell_assignment = Array(Int, 3*Kc)
 
@@ -102,7 +102,7 @@ function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: S
 end
 
 # This is a greedy schedular based on the large scale fading realizations.
-function LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::TriangularHetNetNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function LargeScaleFadingCellAssignment!(channel, network::TriangularHetNetNetwork)
     no_MSs_per_cell = network.no_MSs_per_cell; no_MSs = 3*no_MSs_per_cell
     no_picos_per_cell = network.no_picos_per_cell; no_BSs = 3 + 3*no_picos_per_cell
 

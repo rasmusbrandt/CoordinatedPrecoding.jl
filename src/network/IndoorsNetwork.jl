@@ -75,7 +75,7 @@ end
 
 ##########################################################################
 # Standard cell assignment functions
-function IDCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t})
+function IDCellAssignment!(channel, network::IndoorsNetwork)
     Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
@@ -88,7 +88,7 @@ end
 
 # Do this for now, even though the shadowing might actually give a certain MS
 # better connection to a BS in another cell.
-LargeScaleFadingCellAssignment!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment}(channel, network::IndoorsNetwork{MS_t,BS_t,System_t,PropagationEnvironment_t}) =
+LargeScaleFadingCellAssignment!(channel, network::IndoorsNetwork) =
     IDCellAssignment!(channel, network)
 
 ##########################################################################
