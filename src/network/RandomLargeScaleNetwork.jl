@@ -31,10 +31,10 @@ Base.showcompact(io::IO, x::RandomLargeScaleNetwork) =
 
 function setup_random_large_scale_network(
     no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
-    system = SinglecarrierSystem(),
+    system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 0, 8),
-    geography_width = 1000.,
-    geography_height = 1000.,
+    geography_width = 500.,
+    geography_height = 500.,
     MS_serving_BS_distance = 50.,
     transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
     BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for idx = 1:no_BSs ],
