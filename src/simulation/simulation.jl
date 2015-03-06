@@ -229,37 +229,6 @@ function simulate_convergence(network, simulation_params; loop_over = :precoding
     return raw_results
 end
 
-##########################################################################
-# Performance test
-function simulate_performance(network, simulation_params)
-    println("-- performance test on $network.")
-    Lumberjack.info("Starting performance test.",
-        [ :network => network, :simulation_params => simulation_params ])
-
-    # Set initial aux precoding params
-    set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
-
-    # No point storing all intermediate iterations.
-    set_aux_precoding_param!(network, :final_iteration, "output_protocol")
-
-    draw_user_drop!(network)
-    channel = draw_channel(network)
-    IDCellAssignment!(channel, network)
-
-    # Make sure things are JITed
-    for method in simulation_params["precoding_methods"]
-        method(channel, network)
-    end
-    println("--- JITing @time macro")
-    @time 1
-
-    # Run performance test
-    for method in simulation_params["precoding_methods"]
-        println("--- Testing performance of ", string(method))
-        @time for i = 1:simulation_params["Ntest"]; method(channel, network); end
-    end
-end
-
 function get_other_method(simulation_params, loop_over)
     # Dummies
     precoding_method() = nothing
@@ -316,4 +285,5 @@ end
 
 ##########################################################################
 # Other functions
+include("timing.jl")
 include("visualization.jl")

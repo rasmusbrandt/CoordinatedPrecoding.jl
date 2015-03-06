@@ -100,7 +100,7 @@ export
     postprocess_convergence,
     plot_convergence,
 
-    simulate_performance,
+    timing,
 
 # Utilities
     @defaultize_param!,
