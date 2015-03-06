@@ -23,7 +23,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Triangular3Site network
 simulation_params = [
     "simulation_name" => "SNR_$(start_time)-triangular3site",
-    "I" => 3, "Kc" => 2, "N" => 2, "M" => 4,
+    "Kc" => 2, "N" => 2, "M" => 4,
     "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
@@ -44,8 +44,8 @@ simulation_params = [
     # ]
 ]
 network =
-    setup_triangular3site_network(simulation_params["I"],
-        simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
+    setup_triangular3site_network(simulation_params["Kc"],
+        simulation_params["N"], simulation_params["M"],
         no_streams=simulation_params["d"])
 raw_results = simulate(network, simulation_params)
 

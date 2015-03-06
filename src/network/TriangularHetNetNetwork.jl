@@ -57,12 +57,8 @@ function setup_triangularhetnet_network(
     receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, 3*no_MSs_per_cell))
 
     # Consistency check
-    if !isa(no_MS_antennas, Vector)
-        no_MS_antennas = no_MS_antennas*ones(Int, 3*no_MSs_per_cell)
-    end
-    if !isa(no_BS_antennas, Vector)
-        no_BS_antennas = no_BS_antennas*ones(Int, 3 + 3*no_picos_per_cell)
-    end
+    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, 3*no_MSs_per_cell))
+    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, 3 + 3*no_picos_per_cell))
 
     BSs = PhysicalBS[]
 

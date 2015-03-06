@@ -23,7 +23,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Triangular3Site network
 simulation_params = [
     "simulation_name" => "SNR_$(start_time)-triangularhetnet",
-    "I" => 1, "Kc" => 2, "N" => 2, "M" => 2,
+    "Ic" => 1, "Kc" => 2, "N" => 2, "M" => 2,
     "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
     "assignment_methods" => [
@@ -47,7 +47,7 @@ simulation_params = [
     # ]
 ]
 network =
-    setup_triangularhetnet_network(simulation_params["I"],
+    setup_triangularhetnet_network(simulation_params["Ic"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
         no_streams=simulation_params["d"])
 raw_results = simulate(network, simulation_params)

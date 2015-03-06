@@ -51,12 +51,8 @@ function setup_indoors_network(
     MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
     receiver_noise_figure = 7., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_BSs*no_MSs_per_cell))
 
-    if !isa(no_MS_antennas, Vector)
-        no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell)
-    end
-    if !isa(no_BS_antennas, Vector)
-        no_BS_antennas = no_BS_antennas*ones(Int, no_BSs)
-    end
+    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell))
+    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, no_BSs))
 
     # Place BSs
     y = corridor_width/2

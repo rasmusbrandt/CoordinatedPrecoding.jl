@@ -190,7 +190,10 @@ function plot_convergence(processed_results, simulation_params, plot_params)
     PyPlot.close(fig)
 
     ### USER UTILITIES ###
-    K = simulation_params["I"]*simulation_params["Kc"]
+    K_method_name = collect(keys(results))[1]
+    K_result_name = collect(keys(results[K_method_name]))[1]
+    K = size(results[K_method_name][K_result_name], 4) # ugly shit. This is really not stable.
+
     fig = PyPlot.figure(figsize=(6*K,3*length(methods)))
     subplot_ind = 1
 
@@ -214,7 +217,7 @@ function plot_convergence(processed_results, simulation_params, plot_params)
             if k == 1
                 ax[:set_ylabel](method_name)
             end
-            if subplot_ind-1 < K
+            if subplot_ind-1 <= K
                 ax[:set_title]("User $k")
             end
             if subplot_ind-1 > (K-1)*length(methods)

@@ -51,32 +51,23 @@ Base.showcompact(io::IO, x::Triangular3SiteNetwork) =
 # The default parameter values are taken from 3GPP Case 1
 # (TR 25.814 and TR 36.814).
 function setup_triangular3site_network(
-    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
+    no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
     inter_site_distance = 500.,
     guard_distance = 35.,
-    transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
+    transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, 3),
     BS_antenna_gain_params =
         [SixSector3gppAntennaParams(-90/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams( 30/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams(150/180*pi, 35/180*pi, 23)],
-    user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
-    no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
-    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
-    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_BSs*no_MSs_per_cell))
+    user_priority = 1., user_priorities = user_priority*ones(Float64, 3*no_MSs_per_cell),
+    no_streams = 1, no_streamss = no_streams*ones(Int, 3*no_MSs_per_cell),
+    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, 3*no_MSs_per_cell),
+    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, 3*no_MSs_per_cell))
 
-    # Consistency check
-    if no_BSs != 3
-        Lumberjack.error("Triangular3SiteNetwork only allows for I = 3.")
-    end
-
-    if !isa(no_MS_antennas, Vector)
-        no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell)
-    end
-    if !isa(no_BS_antennas, Vector)
-        no_BS_antennas = no_BS_antennas*ones(Int, no_BSs)
-    end
+    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, 3*no_MSs_per_cell))
+    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, 3))
 
     BSs = [
         PhysicalBS(no_BS_antennas[1],
@@ -89,7 +80,7 @@ function setup_triangular3site_network(
             Position(+inter_site_distance/2, -inter_site_distance/(2*sqrt(3))),
             transmit_powers[3], BS_antenna_gain_params[3])
     ]
-    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:3*no_MSs_per_cell ]
+    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, 3), falses(3))) for k = 1:3*no_MSs_per_cell ]
 
     Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environment, inter_site_distance, guard_distance)

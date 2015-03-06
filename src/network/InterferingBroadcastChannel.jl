@@ -29,12 +29,8 @@ function setup_interfering_broadcast_channel(
     no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
     receiver_noise_power = 1., receiver_noise_powers = receiver_noise_power*ones(Float64, no_BSs*no_MSs_per_cell))
 
-    if !isa(no_MS_antennas, Vector)
-        no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell)
-    end
-    if !isa(no_BS_antennas, Vector)
-        no_BS_antennas = no_BS_antennas*ones(Int, no_BSs)
-    end
+    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell))
+    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, no_BSs))
 
     BSs = [ CanonicalBS(no_BS_antennas[i], transmit_powers[i]) for i = 1:no_BSs ]
     MSs = [ CanonicalMS(no_MS_antennas[k], user_priorities[k], no_streamss[k], receiver_noise_powers[k]) for k = 1:no_BSs*no_MSs_per_cell ]

@@ -158,7 +158,7 @@ function simulate_convergence(network, simulation_params; loop_over = :precoding
 
     # Warn if we are not using a fixed number of iterations.
     if get_aux_precoding_param(network, "stop_crit") > 0.
-        Lumberjack.warn("process_convergence will not be able to run since stop_crit is non-zero, and the algorithms may therefore use different numbers of iterations.")
+        Lumberjack.warn("postprocess_convergence will not be able to run since stop_crit is non-zero, and the algorithms may therefore use different numbers of iterations.")
     end
 
     # Storage container for results
