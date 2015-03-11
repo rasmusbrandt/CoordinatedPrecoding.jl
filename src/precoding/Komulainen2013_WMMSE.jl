@@ -21,7 +21,7 @@ function Komulainen2013_WMMSE(channel, network)
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, K),
-        initial_MSE_weights(channel, Ps, sigma2s, ds, assignment, aux_params),
+        Array(Hermitian{Complex128}, K),
         Array(Diagonal{Float64}, K),
         initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
@@ -82,7 +82,7 @@ end
 function update_MSs!(state::Komulainen2013_WMMSEState,
     channel::SinglecarrierChannel, sigma2s, assignment)
 
-    ds = [ size(state.W[k], 1) for k = 1:channel.K ]
+    ds = [ size(state.V[k], 2) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
         Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
