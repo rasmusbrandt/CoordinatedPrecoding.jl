@@ -93,53 +93,99 @@ end
 
 ##########################################################################
 # Initialization functions
-zero_receivers(channel::SinglecarrierChannel, ds) =
-    [ zeros(Complex128, channel.Ns[k], ds[k]) for k = 1:channel.K ]
+function initial_receivers(channel::SinglecarrierChannel, Ps, sigma2s, ds,
+    assignment, aux_params)
 
-unity_MSE_weights(ds) =
-    [ Hermitian(eye(ds[k])) for k = 1:length(ds) ]
+    U = Array(Matrix{Complex128}, channel.K)
+
+    if haskey(aux_params, "initial_receivers")
+        if aux_params["initial_receivers"] == "eigendirection"
+            for i = 1:channel.I; for k in served_MS_ids(i, assignment)
+                Utmp, _, _ = svd(channel.H[k,i])
+                U[k] = Utmp[:, 1:ds[k]]
+            end; end
+
+            return U
+        elseif aux_params["initial_receivers"] == "white"
+            for i = 1:channel.I; for k in served_MS_ids(i, assignment)
+                U[k] = eye(channel.Ns[k], ds[k])
+            end; end
+
+            return U
+        elseif aux_params["initial_receivers"] == "zeros"
+            for i = 1:channel.I; for k in served_MS_ids(i, assignment)
+                U[k] = zeros(channel.Ns[k], ds[k])
+            end; end
+
+            return U
+        end
+    end
+
+    # Default: dft precoders
+    for i = 1:channel.I; for k in served_MS_ids(i, assignment)
+        U[k] = fft(eye(channel.Ns[k], ds[k]), 1)
+    end; end
+
+    return U
+end
+
+function initial_MSE_weights(channel::SinglecarrierChannel, Ps, sigma2s, ds,
+    assignment, aux_params)
+
+    # So far only the trivial initial point available
+    return [ Hermitian(eye(ds[k])) for k = 1:channel.K ]
+end
 
 function initial_precoders(channel::SinglecarrierChannel, Ps, sigma2s, ds,
     assignment, aux_params)
 
     V = Array(Matrix{Complex128}, channel.K)
 
-    if aux_params["initial_precoders"] == "dft"
-        for i = 1:channel.I
-            served = served_MS_ids(i, assignment)
-            Kc = length(served)
+    if haskey(aux_params, "initial_precoders")
+        if aux_params["initial_precoders"] == "eigendirection"
+            for i = 1:channel.I
+                served = served_MS_ids(i, assignment)
+                Kc = length(served)
 
-            for k in served
-                V[k] = sqrt(Ps[i]/(channel.Ms[i]*ds[k]*Kc))*fft(eye(channel.Ms[i], ds[k]), 1)
+                for k in served
+                    _, _, Vtmp = svd(channel.H[k,i])
+                    V[k] = sqrt(Ps[i]/Kc)*Vtmp[:, 1:ds[k]]/vecnorm(Vtmp[:, 1:ds[k]])
+                end
             end
+
+            return V
+        elseif aux_params["initial_precoders"] == "white"
+            for i = 1:channel.I
+                served = served_MS_ids(i, assignment)
+                Kc = length(served)
+
+                for k in served
+                    V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(channel.Ms[i], ds[k])
+                end
+            end
+
+            return V
+        elseif aux_params["initial_precoders"] == "zeros"
+            for i = 1:channel.I
+                served = served_MS_ids(i, assignment)
+                Kc = length(served)
+
+                for k in served
+                    V[k] = zeros(channel.Ms[i], ds[k])
+                end
+            end
+
+            return V
         end
-    elseif aux_params["initial_precoders"] == "white"
-        for i = 1:channel.I
-            served = served_MS_ids(i, assignment)
-            Kc = length(served)
+    end
 
-            for k in served
-                V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(channel.Ms[i], ds[k])
-            end
-        end
-    elseif aux_params["initial_precoders"] == "zeros"
-        for i = 1:channel.I
-            served = served_MS_ids(i, assignment)
-            Kc = length(served)
+    # Default: dft precoders
+    for i = 1:channel.I
+        served = served_MS_ids(i, assignment)
+        Kc = length(served)
 
-            for k in served
-                V[k] = zeros(channel.Ms[i], ds[k])
-            end
-        end
-    elseif aux_params["initial_precoders"] == "eigendirection"
-        for i = 1:channel.I
-            served = served_MS_ids(i, assignment)
-            Kc = length(served)
-
-            for k in served
-                _, _, Vtmp = svd(channel.H[k,i])
-                V[k] = sqrt(Ps[i]/Kc)*Vtmp[:, 1:ds[k]]/vecnorm(Vtmp[:, 1:ds[k]])
-            end
+        for k in served
+            V[k] = sqrt(Ps[i]/(channel.Ms[i]*ds[k]*Kc))*fft(eye(channel.Ms[i], ds[k]), 1)
         end
     end
 

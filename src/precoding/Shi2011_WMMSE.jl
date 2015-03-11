@@ -20,7 +20,7 @@ function Shi2011_WMMSE(channel, network)
 
     state = Shi2011_WMMSEState(
         Array(Matrix{Complex128}, K),
-        unity_MSE_weights(ds),
+        initial_MSE_weights(channel, Ps, sigma2s, ds, assignment, aux_params),
         initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
     logdet_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])

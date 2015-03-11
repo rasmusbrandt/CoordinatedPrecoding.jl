@@ -84,9 +84,9 @@ export
     PrecodingResults,
     AuxPrecodingParams,
 
-    zero_receivers,
+    initial_receivers,
+    initial_MSE_weights,
     initial_precoders,
-    unity_MSE_weights,
 
     calculate_logdet_rates,
     calculate_MMSE_rates,

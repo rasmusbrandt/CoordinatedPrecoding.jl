@@ -21,7 +21,7 @@ function Komulainen2013_WMMSE(channel, network)
 
     state = Komulainen2013_WMMSEState(
         Array(Matrix{Complex128}, K),
-        unity_MSE_weights(ds),
+        initial_MSE_weights(channel, Ps, sigma2s, ds, assignment, aux_params),
         Array(Diagonal{Float64}, K),
         initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]

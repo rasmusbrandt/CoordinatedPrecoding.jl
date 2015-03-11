@@ -14,8 +14,8 @@ function Gomadam2008_MaxSINR(channel, network)
     aux_params = get_aux_precoding_params(network)
 
     state = Gomadam2008_MaxSINRState(
-        zero_receivers(channel, ds),
-        unity_MSE_weights(ds),
+        initial_receivers(channel, Ps, sigma2s, ds, assignment, aux_params),
+        initial_MSE_weights(channel, Ps, sigma2s, ds, assignment, aux_params),
         initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
     logdet_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
