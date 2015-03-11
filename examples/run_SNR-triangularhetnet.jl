@@ -25,9 +25,6 @@ simulation_params = [
     "Ic" => 1, "Kc" => 2, "N" => 2, "M" => 2,
     "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
-    "assignment_methods" => [
-        assign_cells_by_large_scale_fading!,
-    ],
     "precoding_methods" => [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
