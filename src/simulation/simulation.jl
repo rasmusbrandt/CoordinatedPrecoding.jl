@@ -84,11 +84,9 @@ function simulate(network, simulation_params; loop_over::Symbol=:precoding_metho
 
                 # Loop over auxiliary variables
                 for aux_idp_vals_idx = 1:aux_idp_vals_length
-                    if Naux != 0
-                        # Set all auxiliary independent variables
-                        for Naux_idx = 1:Naux
-                            aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                        end
+                    # Set all auxiliary independent variables
+                    for Naux_idx = 1:Naux
+                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                     end
 
                     assignment_method(channels[1], network)
@@ -114,11 +112,9 @@ function simulate(network, simulation_params; loop_over::Symbol=:precoding_metho
 
                 # Loop over auxiliary variables
                 for aux_idp_vals_idx = 1:aux_idp_vals_length
-                    if Naux != 0
-                        # Set all auxiliary independent variables
-                        for Naux_idx = 1:Naux
-                            aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                        end
+                    # Set all auxiliary independent variables
+                    for Naux_idx = 1:Naux
+                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                     end
 
                     for assignment_method in simulation_params["assignment_methods"]
@@ -189,11 +185,9 @@ function simulate_precoding_convergence(network, simulation_params; loop_over::S
         if loop_over == :precoding_methods
             # Loop over auxiliary variables
             for aux_idp_vals_idx = 1:aux_idp_vals_length
-                if Naux != 0
-                    # Set all auxiliary independent variables
-                    for Naux_idx = 1:Naux
-                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                    end
+                # Set all auxiliary independent variables
+                for Naux_idx = 1:Naux
+                    aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                 end
 
                 assignment_method(channels[1], network)
@@ -213,11 +207,9 @@ function simulate_precoding_convergence(network, simulation_params; loop_over::S
         elseif loop_over == :assignment_methods
             # Loop over auxiliary variables
             for aux_idp_vals_idx = 1:aux_idp_vals_length
-                if Naux != 0
-                    # Set all auxiliary independent variables
-                    for Naux_idx = 1:Naux
-                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                    end
+                # Set all auxiliary independent variables
+                for Naux_idx = 1:Naux
+                    aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                 end
 
                 for assignment_method in simulation_params["assignment_methods"]
@@ -281,11 +273,9 @@ function simulate_assignment(network, simulation_params)
 
             # Loop over auxiliary variables
             for aux_idp_vals_idx = 1:aux_idp_vals_length
-                if Naux != 0
-                    # Set all auxiliary independent variables
-                    for Naux_idx = 1:Naux
-                        aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
-                    end
+                # Set all auxiliary independent variables
+                for Naux_idx = 1:Naux
+                    aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                 end
 
                 raw_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
