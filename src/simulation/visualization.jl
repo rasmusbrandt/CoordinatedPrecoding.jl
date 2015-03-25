@@ -279,6 +279,83 @@ function plot_convergence(processed_results, simulation_params, plot_params)
 end
 
 ##########################################################################
+# Postprocess results from the simulate_assignment function.
+function postprocess_assignment(raw_results, simulation_params, plot_params)
+    Ndrops = simulation_params["Ndrops"]
+    methods = get_methods_to_plot(simulation_params, plot_params)
+
+    # Main independent variable
+    idp_vals_length = length(simulation_params["independent_variable"][2])
+
+    # Auxiliary independent variables
+    if haskey(simulation_params, "aux_independent_variables")
+        Naux = length(simulation_params["aux_independent_variables"])
+        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
+        for n = 2:Naux
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : Lumberjack.error("Auxiliary independent variable vectors must have equal length.")
+        end
+    else
+        Naux = 0; aux_idp_vals_length = 1
+    end
+
+    # Compact raw results into result matrices
+    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
+            if isa(result_param, ASCIIString)
+                result_name = result_param
+            else
+                (calculator, calculate_from) = result_param
+                result_name = string(string(calculator), "_", calculate_from)
+            end
+
+            result_dimensions = size(raw_results[1, 1, 1, 1][method_name][result_name])
+            result_ranges = [ 1:s for s in result_dimensions ]
+            results[method_name][result_name] = Array(Float64, Ndrops, 1, idp_vals_length, aux_idp_vals_length, result_dimensions...)
+            for Ndrops_idx = 1:Ndrops; for idp_vals_idx = 1:idp_vals_length; for aux_idp_vals_idx = 1:aux_idp_vals_length
+                if isa(result_param, ASCIIString)
+                    result = raw_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][method_name][result_name]
+                else
+                    result = calculator(raw_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][method_name][calculate_from])
+                end
+                results[method_name][result_name][Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx, result_ranges...] = result
+            end; end; end
+        end
+    end
+
+    # Calculate statistics on result matrices
+    plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 5:6)))
+    plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 6), 5)))
+
+    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
+            if isa(result_param, ASCIIString)
+                result_name = result_param
+            else
+                result_name = string(string(calculator), "_", calculate_from)
+            end
+
+            # mean: average over drops and sims
+            results_mean[method_name][result_name] = squeeze(mean(objective(results[method_name][result_name]), 1:2), [1,2,5,6])
+
+            # var: average over sims, estimate var over drops
+            results_var[method_name][result_name] = squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), [1,2,5,6])
+        end
+    end
+
+    return results, results_mean, results_var
+end
+
+##########################################################################
+# Plot results from the postprocess_assignment function.
+plot_assignment(processed_results, simulation_params, plot_params) =
+    plot(processed_results, simulation_params, plot_params)
+
+##########################################################################
+# Helper methods
+
 # Plot lines for all methods into an axes
 function plot_methods(ax, results_mean, results_var, simulation_params, plot_params; xvals=[])
     methods = get_methods_to_plot(simulation_params, plot_params)

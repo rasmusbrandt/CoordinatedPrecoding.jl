@@ -1,6 +1,6 @@
 ##########################################################################
 # Precoding types
-type PrecodingResults
+type PrecodingResults <: Results
     results::Dict{ASCIIString, Any}
 end
 PrecodingResults() =

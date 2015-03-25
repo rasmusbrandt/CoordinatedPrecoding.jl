@@ -1,3 +1,15 @@
+##########################################################################
+# Assignment types
+type AssignmentResults <: Results
+    results::Dict{ASCIIString, Any}
+end
+AssignmentResults() =
+    AssignmentResults(Dict{ASCIIString, Any}())
+Base.getindex(p::AssignmentResults, k::ASCIIString) =
+    getindex(p.results, k)
+Base.setindex!(p::AssignmentResults, v, k::ASCIIString) =
+    setindex!(p.results, v, k)
+
 immutable Assignment
     cell_assignment::Vector{Int} # cell_assignment[k] is the BS serving MS k
     cell_assignment_inverse::Vector{IntSet} # cell_assignment_inverse[i] is the IntSet of MSs that BS i is serving
@@ -27,6 +39,7 @@ Assignment(cell_assignment::Matrix, cluster_assignment::Matrix) =
                [ IntSet(findin(cluster_assignment[k,:], [true])) for k = 1:size(cluster_assignment, 1) ],
                [ IntSet(findin(cluster_assignment[:,i], [true])) for i = 1:size(cluster_assignment, 2) ])
 
+# Helper functions to get lists of BSs or MSs
 active_BSs(assignment) = unique(assignment.cell_assignment)
 no_served_MSs(BS_id, assignment) = length(assignment.cell_assignment_inverse[BS_id])
 
