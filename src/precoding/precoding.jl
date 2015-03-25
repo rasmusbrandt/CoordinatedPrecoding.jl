@@ -14,16 +14,6 @@ Base.setindex!(p::PrecodingResults, v, k::ASCIIString) =
 # between files.
 
 ##########################################################################
-# Reference implementation of standard coordinated precoding algorithms
-include("Eigenprecoding.jl")
-include("Gomadam2008_MaxSINR.jl")
-include("Gomadam2008_MinWLI.jl")
-include("Komulainen2013_WMMSE.jl")
-include("Razaviyayn2013_MinMaxWMMSE.jl")
-include("Shi2011_WMMSE.jl")
-include("SumMSEMinimization.jl")
-
-##########################################################################
 # Standard functions to calculate rates from optimal MSE weights
 function calculate_logdet_rates(state)
     K = length(state.W)

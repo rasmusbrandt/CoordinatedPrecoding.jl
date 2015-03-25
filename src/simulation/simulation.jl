@@ -295,8 +295,3 @@ function set_initial_aux_params!(simulation_params, network)
     haskey(simulation_params, "aux_precoding_params") && set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
     haskey(simulation_params, "aux_assignment_params") && set_aux_assignment_params!(network, simulation_params["aux_assignment_params"])
 end
-
-##########################################################################
-# Other functions
-include("timing.jl")
-include("visualization.jl")

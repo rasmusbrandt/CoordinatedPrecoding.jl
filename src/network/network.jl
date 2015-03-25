@@ -142,20 +142,6 @@ set_transmit_power_dBm!(BS, P_dBm) = set_transmit_power!(BS, 10^(P_dBm/10))
 get_distance(MS, BS) = get_distance(MS.position, BS.position)
 
 ##########################################################################
-# OmnidirectionalAntennaParams (not angle dependent)
-immutable OmnidirectionalAntennaParams <: AntennaParams
-    antenna_gain_dB::Float64
-end
-
-get_antenna_gain(antenna_params::OmnidirectionalAntennaParams) =
-    10^(antenna_params.antenna_gain_dB/10)
-get_antenna_gain(antenna_params::OmnidirectionalAntennaParams, angle) =
-    get_antenna_gain(antenna_params)
-
-get_angle{AntennaParams_t <: OmnidirectionalAntennaParams}(MS, BS::PhysicalBS{AntennaParams_t}) =
-    get_angle(MS.position, BS.position)
-
-##########################################################################
 # Networks
 abstract Network
 abstract CanonicalNetwork <: Network
@@ -220,9 +206,15 @@ get_distances(network::PhysicalNetwork) = [ get_distance(network.MSs[k], network
 get_angles(network::PhysicalNetwork) = [ get_angle(network.MSs[k], network.BSs[i]) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
 
 ##########################################################################
-# Include network implementations
-include("InterferingBroadcastChannel.jl")
-include("IndoorsNetwork.jl")
-include("RandomLargeScaleNetwork.jl")
-include("Triangular3SiteNetwork.jl")
-include("TriangularHetNetNetwork.jl")
+# OmnidirectionalAntennaParams (not angle dependent)
+immutable OmnidirectionalAntennaParams <: AntennaParams
+    antenna_gain_dB::Float64
+end
+
+get_antenna_gain(antenna_params::OmnidirectionalAntennaParams) =
+    10^(antenna_params.antenna_gain_dB/10)
+get_antenna_gain(antenna_params::OmnidirectionalAntennaParams, angle) =
+    get_antenna_gain(antenna_params)
+
+get_angle{AntennaParams_t <: OmnidirectionalAntennaParams}(MS, BS::PhysicalBS{AntennaParams_t}) =
+    get_angle(MS.position, BS.position)

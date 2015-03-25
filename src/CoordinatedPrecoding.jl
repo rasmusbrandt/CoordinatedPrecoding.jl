@@ -61,6 +61,7 @@ export
     IDCellAssignment!,
     LargeScaleFadingCellAssignment!,
 
+    AssignmentResults,
     AuxAssignmentParams,
 
     active_BSs,
@@ -110,18 +111,47 @@ export
     clean_simulation_params_for_jld
 
 ##########################################################################
-# Channels
-include("channel.jl")
-# Cell/cluster assignment
-include("assignment.jl")
-# General utilities
-include("utils.jl")
+# General includes
+
 # Networks
 include("network/network.jl")
-# Precoding algorithms
-include("precoding/precoding.jl")
+
+# Channels
+include("channel.jl")
+
 # Simulation
 include("simulation/simulation.jl")
+
+# Cell/cluster assignment
+include("assignment.jl")
+
+# Precoding algorithms
+include("precoding/precoding.jl")
+
+# Miscellaneous utilities
+include("utils.jl")
+
 ##########################################################################
+# Specific includes
+
+# Networks
+include("network/InterferingBroadcastChannel.jl")
+include("network/IndoorsNetwork.jl")
+include("network/RandomLargeScaleNetwork.jl")
+include("network/Triangular3SiteNetwork.jl")
+include("network/TriangularHetNetNetwork.jl")
+
+# Precoding methods
+include("precoding/Eigenprecoding.jl")
+include("precoding/Gomadam2008_MaxSINR.jl")
+include("precoding/Gomadam2008_MinWLI.jl")
+include("precoding/Komulainen2013_WMMSE.jl")
+include("precoding/Razaviyayn2013_MinMaxWMMSE.jl")
+include("precoding/Shi2011_WMMSE.jl")
+include("precoding/SumMSEMinimization.jl")
+
+# Simulation utilities
+include("simulation/timing.jl")
+include("simulation/visualization.jl")
 
 end
