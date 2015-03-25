@@ -30,7 +30,7 @@ function postprocess(raw_results, simulation_params, plot_params)
                 result_name = string(string(calculator), "_", calculate_from)
             end
 
-            result_dimensions = size(raw_results[1, 1, 1][method_name][result_name])
+            result_dimensions = size(raw_results[1, 1, 1, 1][method_name][result_name])
             result_ranges = [ 1:s for s in result_dimensions ]
             results[method_name][result_name] = Array(Float64, Ndrops, Nsim, idp_vals_length, aux_idp_vals_length, result_dimensions...)
             for Ndrops_idx = 1:Ndrops; for Nsim_idx = 1:Nsim; for idp_vals_idx = 1:idp_vals_length; for aux_idp_vals_idx = 1:aux_idp_vals_length
