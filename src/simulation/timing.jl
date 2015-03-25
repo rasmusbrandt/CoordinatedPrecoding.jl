@@ -1,6 +1,6 @@
 ##########################################################################
-# Timing
-function timing(network, simulation_params; loop_over = :precoding_methods)
+# Timing for list of methods. loop_over works like in simulate.
+function timing(network, simulation_params; loop_over::Symbol=:precoding_methods)
     println("-- timing on $network.")
     Lumberjack.info("Starting timing.",
         [ :network => network, :simulation_params => simulation_params ])

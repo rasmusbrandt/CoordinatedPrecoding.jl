@@ -99,9 +99,9 @@ export
     postprocess,
     plot,
 
-    simulate_convergence,
-    postprocess_convergence,
-    plot_convergence,
+    simulate_precoding_convergence,
+    postprocess_precoding_convergence,
+    plot_precoding_convergence,
 
     timing,
 

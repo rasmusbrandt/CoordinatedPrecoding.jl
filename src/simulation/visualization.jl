@@ -1,5 +1,5 @@
 ##########################################################################
-# General postprocess
+# Postprocess results from the simulate function.
 function postprocess(raw_results, simulation_params, plot_params)
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
@@ -70,7 +70,7 @@ function postprocess(raw_results, simulation_params, plot_params)
 end
 
 ##########################################################################
-# General plot
+# Plot results from the postprocess function.
 function plot(processed_results, simulation_params, plot_params)
     results_mean = processed_results[2]; results_var = processed_results[3]
 
@@ -92,8 +92,8 @@ function plot(processed_results, simulation_params, plot_params)
 end
 
 ##########################################################################
-# Convergence postprocess
-function postprocess_convergence(raw_results, simulation_params, plot_params)
+# Post-process results from the simulate_precoding_convergence function.
+function postprocess_precoding_convergence(raw_results, simulation_params, plot_params)
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
     methods = get_methods_to_plot(simulation_params, plot_params)
@@ -160,7 +160,7 @@ function postprocess_convergence(raw_results, simulation_params, plot_params)
 end
 
 ##########################################################################
-# Convergence simulation plot
+# Plots results from the postprocess_precoding_convergence function.
 function plot_convergence(processed_results, simulation_params, plot_params)
     methods = get_methods_to_plot(simulation_params, plot_params)
 
@@ -279,7 +279,7 @@ function plot_convergence(processed_results, simulation_params, plot_params)
 end
 
 ##########################################################################
-# Plot lines for method performance into an axes
+# Plot lines for all methods into an axes
 function plot_methods(ax, results_mean, results_var, simulation_params, plot_params; xvals=[])
     methods = get_methods_to_plot(simulation_params, plot_params)
 
@@ -307,6 +307,9 @@ function plot_methods(ax, results_mean, results_var, simulation_params, plot_par
     end
 end
 
+# We can only plot the methods that have been simulated (and thus specified
+# in simulation_params), and those we have plotting parameters for (and
+# thus specified in plot_params).
 function get_methods_to_plot(simulation_params, plot_params)
     precoding_methods = (haskey(simulation_params, "precoding_methods") ? simulation_params["precoding_methods"] : [])
     assignment_methods = (haskey(simulation_params, "assignment_methods") ? simulation_params["assignment_methods"] : [])

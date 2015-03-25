@@ -24,8 +24,14 @@ Base.setindex!(m::MultipleSimulationResults, v, inds...) =
     setindex!(m.simulation_results, v, inds...)
 
 ##########################################################################
-# General simulation functions
-function simulate(network, simulation_params; loop_over = :precoding_methods)
+# Simulate the entire system, including assignment and precoding.
+# If loop_over == :precoding_methods, we run the first assignment method
+# provided and then loop over all precoding methods.
+# If loop_over == :assignment_methods, we loop over all assignment methods
+# and run the first provided precoding method.
+# If there are several methods of the type not looped over specified,
+# a warning is given.
+function simulate(network, simulation_params; loop_over::Symbol=:precoding_methods)
     # Number of drops and small scale fading realizations
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
@@ -133,8 +139,9 @@ function simulate(network, simulation_params; loop_over = :precoding_methods)
 end
 
 ##########################################################################
-# Convergence simulation functions
-function simulate_convergence(network, simulation_params; loop_over = :precoding_methods)
+# Simulate precoding methods and store their convergence behaviour.
+# The loop_over parameter has the same behaviour as in the simulate function.
+function simulate_precoding_convergence(network, simulation_params; loop_over::Symbol=:precoding_methods)
     # Number of drops and small scale fading realizations
     Ndrops = simulation_params["Ndrops"]
     Nsim = simulation_params["Nsim"]
@@ -145,7 +152,7 @@ function simulate_convergence(network, simulation_params; loop_over = :precoding
     # Get assignment/precoding functions depending on looping mode
     precoding_method, assignment_method = get_other_method(simulation_params, loop_over)
 
-    println("-- simulate_convergence on $network.")
+    println("-- simulate_precoding_convergence on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
     Lumberjack.info("Starting convergence simulation.",
         [ :network => network, :simulation_params => simulation_params ])
@@ -229,6 +236,9 @@ function simulate_convergence(network, simulation_params; loop_over = :precoding
     return raw_results
 end
 
+# Given the type of methods that we are looping over, provide the other
+# method to be run before/after. If there are several of those methods
+# provided in the simulation_params, present warning.
 function get_other_method(simulation_params, loop_over)
     # Dummies
     precoding_method() = nothing
@@ -257,6 +267,7 @@ function get_other_method(simulation_params, loop_over)
     return precoding_method, assignment_method
 end
 
+# Get all auxiliary independent variable values
 function get_aux_idp(simulation_params)
     if haskey(simulation_params, "aux_independent_variables")
         Naux = length(simulation_params["aux_independent_variables"])
@@ -278,6 +289,7 @@ function get_aux_idp(simulation_params)
     return Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length
 end
 
+# Set all initial auxiliary parameters based on provided simulation_params
 function set_initial_aux_params!(simulation_params, network)
     haskey(simulation_params, "aux_network_params") && set_aux_network_params!(network, simulation_params["aux_network_params"])
     haskey(simulation_params, "aux_precoding_params") && set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
