@@ -35,13 +35,14 @@ type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
     propagation_environment::PropagationEnvironment_t
     inter_site_distance::Float64
     guard_distance::Float64
+    aux_network_params::AuxNetworkParams
 
     assignment::Assignment
 end
 
 # Convenience constructor without assignments
 Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance) =
-    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, Assignment())
+    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::Triangular3SiteNetwork) =
     print(io, "Triangular3Site(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")

@@ -7,13 +7,14 @@ type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
     system::System_t
     no_MSs_per_cell::Int
     alpha::Float64
+    aux_network_params::AuxNetworkParams
 
     assignment::Assignment
 end
 
 # Convenience constructor without assignments
 InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha) =
-    InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha, Assignment())
+    InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::InterferingBroadcastChannel) =
     print(io, "IBC(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), α = $(x.alpha))")

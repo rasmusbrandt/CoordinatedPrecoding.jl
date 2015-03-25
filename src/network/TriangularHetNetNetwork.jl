@@ -23,13 +23,14 @@ type TriangularHetNetNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     inter_site_distance::Float64
     pico_centre_distance::Float64
     guard_distance::Float64
+    aux_network_params::AuxNetworkParams
 
     assignment::Assignment
 end
 
 # Convenience constructor without assignments
 TriangularHetNetNetwork(MSs, BSs, system, no_picos_per_cell, no_MSs_per_cell, propagation_environment, inter_site_distance, pico_centre_distance, guard_distance) =
-    TriangularHetNetNetwork(MSs, BSs, system, no_picos_per_cell, no_MSs_per_cell, propagation_environment, inter_site_distance, pico_centre_distance, guard_distance, Assignment())
+    TriangularHetNetNetwork(MSs, BSs, system, no_picos_per_cell, no_MSs_per_cell, propagation_environment, inter_site_distance, pico_centre_distance, guard_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::TriangularHetNetNetwork) =
     print(io, "TriangularHetNet(I = $(length(x.BSs)), no_MSs_per_cell = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")

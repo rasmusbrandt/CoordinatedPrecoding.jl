@@ -32,6 +32,8 @@ export
     get_no_MSs, get_no_BSs,
 
     get_assignment, set_assignment!,
+    get_aux_network_param, set_aux_network_param!,
+    get_aux_network_params, set_aux_network_params!,
     get_aux_precoding_param, set_aux_precoding_param!,
     get_aux_precoding_params, set_aux_precoding_params!,
     get_aux_assignment_param, set_aux_assignment_param!,

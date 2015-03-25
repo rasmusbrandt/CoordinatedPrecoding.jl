@@ -279,6 +279,7 @@ function get_aux_idp(simulation_params)
 end
 
 function set_initial_aux_params!(simulation_params, network)
+    haskey(simulation_params, "aux_network_params") && set_aux_network_params!(network, simulation_params["aux_network_params"])
     haskey(simulation_params, "aux_precoding_params") && set_aux_precoding_params!(network, simulation_params["aux_precoding_params"])
     haskey(simulation_params, "aux_assignment_params") && set_aux_assignment_params!(network, simulation_params["aux_assignment_params"])
 end

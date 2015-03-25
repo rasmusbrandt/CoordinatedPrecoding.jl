@@ -22,13 +22,14 @@ type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, 
     corridor_length::Float64
     corridor_width::Float64
     guard_distance::Float64
+    aux_network_params::AuxNetworkParams
 
     assignment::Assignment
 end
 
 # Convenience constructor without assignments
 IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance) =
-    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, Assignment())
+    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::IndoorsNetwork) =
     print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), corridor_length = $(x.corridor_length), corridor_width = $(x.corridor_width), GD = $(x.guard_distance))")

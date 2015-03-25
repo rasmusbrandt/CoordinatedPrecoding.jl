@@ -161,11 +161,18 @@ abstract Network
 abstract CanonicalNetwork <: Network
 abstract PhysicalNetwork <: Network
 
+typealias AuxNetworkParams Dict{ASCIIString, Any}
+
 get_no_MSs(network) = length(network.MSs)
 get_no_BSs(network) = length(network.BSs)
 
 get_assignment (network) = network.assignment
 set_assignment!(network, assignment) = (network.assignment = assignment)
+
+get_aux_network_param (network, k) = (network.aux_network_params[k])
+set_aux_network_param!(network, v, k) = (network.aux_network_params[k] = v)
+get_aux_network_params (network) = network.aux_network_params
+set_aux_network_params!(network, additional) = merge!(network.aux_network_params, additional)
 
 get_aux_precoding_param (network, k) = (network.system.aux_precoding_params[k])
 set_aux_precoding_param!(network, v, k) = (network.system.aux_precoding_params[k] = v)

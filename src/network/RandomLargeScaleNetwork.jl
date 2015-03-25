@@ -16,13 +16,14 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     geography_width::Float64
     geography_height::Float64
     MS_serving_BS_distance::Float64
+    aux_network_params::AuxNetworkParams
 
     assignment::Assignment
 end
 
 # Convenience constructor without assignments
 RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance) =
-    RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance, Assignment())
+    RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::RandomLargeScaleNetwork) =
     print(io, "RandomLargeScaleNetwork(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), w = $(x.geography_width), h = $(x.geography_height), d = $(x.MS_serving_BS_distance))")
