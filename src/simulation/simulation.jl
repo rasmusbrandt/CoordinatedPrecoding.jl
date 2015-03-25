@@ -254,11 +254,8 @@ function simulate_assignment(network, simulation_params)
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)
 
-    # Ensure that we are not storing all intermediate iterations.
-    set_aux_precoding_param!(network, :final_iteration, "output_protocol")
-
-    # Storage container for results (Nsim = 1)
-    raw_results = MultipleSimulationResults(Ndrops, 1, idp_vals_length, aux_idp_vals_length)
+    # Storage container for results
+    raw_results = MultipleSimulationResults(Ndrops, idp_vals_length, aux_idp_vals_length)
 
     # Outer simulation loop
     progress = ProgressMeter.Progress(Ndrops*idp_vals_length*aux_idp_vals_length*length(simulation_params["assignment_methods"]))
@@ -278,9 +275,9 @@ function simulate_assignment(network, simulation_params)
                     aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                 end
 
-                raw_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
+                raw_results[Ndrops_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
                 for assignment_method in simulation_params["assignment_methods"]
-                    raw_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channel, network)
+                    raw_results[Ndrops_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channel, network)
                     ProgressMeter.next!(progress)
                 end
             end
