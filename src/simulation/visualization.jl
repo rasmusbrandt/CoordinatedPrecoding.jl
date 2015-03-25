@@ -161,7 +161,7 @@ end
 
 ##########################################################################
 # Plots results from the postprocess_precoding_convergence function.
-function plot_convergence(processed_results, simulation_params, plot_params)
+function plot_precoding_convergence(processed_results, simulation_params, plot_params)
     methods = get_methods_to_plot(simulation_params, plot_params)
 
     results = processed_results[1]
