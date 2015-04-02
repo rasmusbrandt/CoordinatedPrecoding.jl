@@ -36,19 +36,11 @@ Base.setindex!(m::MultipleSimulationResults, v, inds...) =
 # If there are several methods of the type not looped over specified,
 # a warning is given.
 function simulate(network, simulation_params;
-    loop_over::Symbol=:precoding_methods,
-    assignment_loop_run_precoding::Bool=true)
+    loop_over::Symbol=:precoding_methods)
 
     # Number of drops and small scale fading realizations
     Ndrops = haskey(simulation_params, "Ndrops") ? simulation_params["Ndrops"] : 1
     Nsim = haskey(simulation_params, "Nsim") ? simulation_params["Nsim"] : 1
-
-    # Check that we have precoding_methods specified if needed
-    if loop_over == :precoding_methods || (loop_over == :assignment_method && assignment_loop_run_precoding)
-        if !haskey(simulation_params, "precoding_methods")
-            Lumberjack.error("simulate: No precoding_methods supplied.")
-        end
-    end
 
     # Main independent variable
     idp_func = simulation_params["independent_variable"][1]
@@ -73,7 +65,8 @@ function simulate(network, simulation_params;
     set_aux_precoding_param!(network, :final_iteration, "output_protocol")
 
     # Storage container for results
-    raw_results = MultipleSimulationResults(Ndrops, Nsim, idp_vals_length, aux_idp_vals_length)
+    raw_precoding_results = MultipleSimulationResults(Ndrops, Nsim, idp_vals_length, aux_idp_vals_length)
+    raw_assignment_results = MultipleSimulationResults(Ndrops, 1, idp_vals_length, aux_idp_vals_length)
 
     # Outer simulation loop
     if loop_over == :precoding_methods
@@ -99,15 +92,17 @@ function simulate(network, simulation_params;
                         aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
                     end
 
-                    assignment_method(channels[1], network)
+                    # Allocate memory for assignment method, and run it
+                    raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
+                    raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channels[1], network)
 
                     for precoding_method in simulation_params["precoding_methods"]
                         for Nsim_idx = 1:Nsim
                             # Allocate memory if this is the first method to be run
                             if precoding_method == simulation_params["precoding_methods"][1]
-                                raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
+                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                             end
-                            raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+                            raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
 
                             ProgressMeter.next!(progress)
                         end
@@ -128,24 +123,18 @@ function simulate(network, simulation_params;
                     end
 
                     for assignment_method in simulation_params["assignment_methods"]
-                        assignment_results = assignment_method(channels[1], network)
+                        # Allocate memory if this is the first method to be run
+                        if assignment_method == simulation_params["assignment_methods"][1]
+                            raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
+                        end
+                        raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channels[1], network)
 
                         for Nsim_idx = 1:Nsim
                             # Allocate memory if this is the first method to be run
                             if assignment_method == simulation_params["assignment_methods"][1]
-                                if assignment_loop_run_precoding
-                                    raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
-                                else
-                                    raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
-                                end
+                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                             end
-
-                            # Store the results from the assignment method, or run the specified precoding method
-                            if assignment_loop_run_precoding
-                                raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
-                            else
-                                raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_results
-                            end
+                            raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
 
                             ProgressMeter.next!(progress)
                         end
@@ -155,7 +144,7 @@ function simulate(network, simulation_params;
         end
     end
 
-    return raw_results
+    return raw_precoding_results, raw_assignment_results
 end
 
 ##########################################################################
@@ -275,13 +264,13 @@ function get_other_method(simulation_params, loop_over)
             assignment_method(channel, network) = IDCellAssignment!(channel, network)
         end
     elseif loop_over == :assignment_methods
-        # If there are no precoding_methods specified, and we need them,
-        # we will have errored out already in simulate.
         if haskey(simulation_params, "precoding_methods")
             if length(simulation_params["precoding_methods"]) > 1
                 Lumberjack.warn("Looping over assignment methods: will only use first precoding method provided.")
             end
             precoding_method(channel, network) = simulation_params["precoding_methods"][1](channel, network)
+        else
+            Lumberjack.error("No precoding method specified.")
         end
     end
 
