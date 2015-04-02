@@ -64,6 +64,8 @@ function IDCellAssignment!(channel, network::RandomLargeScaleNetwork)
     end
 
     network.assignment = Assignment(cell_assignment, I)
+
+    return AssignmentResults()
 end
 
 # Due to construction, we should actually do cell assignment only based on ID.

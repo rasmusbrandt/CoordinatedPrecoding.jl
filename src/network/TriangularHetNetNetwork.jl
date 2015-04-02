@@ -96,6 +96,8 @@ function IDCellAssignment!(channel, network::TriangularHetNetNetwork)
     end
 
     network.assignment = Assignment(cell_assignment, get_no_BSs(network))
+
+    return AssignmentResults()
 end
 
 # This is a greedy schedular based on the large scale fading realizations.
@@ -134,6 +136,8 @@ function LargeScaleFadingCellAssignment!(channel, network::TriangularHetNetNetwo
     end
 
     network.assignment = Assignment(cell_assignment_matrix)
+
+    return AssignmentResults()
 end
 
 ##########################################################################

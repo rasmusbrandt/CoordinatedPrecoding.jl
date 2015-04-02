@@ -98,6 +98,8 @@ function IDCellAssignment!(channel, network::Triangular3SiteNetwork)
     end
 
     network.assignment = Assignment(cell_assignment, I)
+
+    return AssignmentResults()
 end
 
 # Do this for now, even though the shadowing might actually give a certain MS

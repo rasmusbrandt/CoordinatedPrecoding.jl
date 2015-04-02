@@ -50,6 +50,8 @@ function IDCellAssignment!(channel, network::InterferingBroadcastChannel)
     end
 
     network.assignment = Assignment(cell_assignment, I)
+
+    return AssignmentResults()
 end
 
 # We don't have large scale fading in this network.
