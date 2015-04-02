@@ -47,6 +47,7 @@ function postprocess(raw_results, simulation_params, plot_params)
     # Calculate statistics on result matrices
     plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 5:6)))
     plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 6), 5)))
+    plot_params["objective"] == :none && (objective = (r -> r))
 
     results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
