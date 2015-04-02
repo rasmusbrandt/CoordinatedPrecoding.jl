@@ -5,8 +5,18 @@ function timing(network, simulation_params; loop_over::Symbol=:precoding_methods
     Lumberjack.info("Starting timing.",
         [ :network => network, :simulation_params => simulation_params ])
 
-    # Get assignment functions if needed
-    _, assignment_method = get_other_method(simulation_params, loop_over)
+    # Get assignment method if needed
+    assignment_method() = nothing
+    if loop_over == :precoding_methods
+        if haskey(simulation_params, "assignment_methods")
+            if length(simulation_params["assignment_methods"]) > 1
+                Lumberjack.warn("Looping over precoding methods: will only use first assignment method provided.")
+            end
+            assignment_method(channel, network) = simulation_params["assignment_methods"][1](channel, network)
+        else
+            assignment_method(channel, network) = IDCellAssignment!(channel, network)
+        end
+    end
 
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)
