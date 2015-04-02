@@ -1,8 +1,6 @@
 ##########################################################################
 # Postprocess results from the simulate function.
 function postprocess(raw_results, simulation_params, plot_params)
-    Ndrops = haskey(simulation_params, "Ndrops") ? simulation_params["Ndrops"] : 1
-    Nsim = haskey(simulation_params, "Nsim") ? simulation_params["Nsim"] : 1
     methods = get_methods_to_plot(simulation_params, plot_params)
 
     # Main independent variable
@@ -20,6 +18,7 @@ function postprocess(raw_results, simulation_params, plot_params)
     end
 
     # Compact raw results into result matrices
+    Ndrops = size(raw_results.simulation_results, 1); Nsim = size(raw_results.simulation_results, 2)
     results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
@@ -95,8 +94,6 @@ end
 ##########################################################################
 # Post-process results from the simulate_precoding_convergence function.
 function postprocess_precoding_convergence(raw_results, simulation_params, plot_params)
-    Ndrops = simulation_params["Ndrops"]
-    Nsim = simulation_params["Nsim"]
     methods = get_methods_to_plot(simulation_params, plot_params)
 
     # Auxiliary independent variables
@@ -111,6 +108,7 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
     end
 
     # Compact raw results into result matrices
+    Ndrops = size(raw_results.simulation_results, 1); Nsim = size(raw_results.simulation_results, 2)
     results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
