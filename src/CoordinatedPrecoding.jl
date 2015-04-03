@@ -82,7 +82,6 @@ export
     Komulainen2013_WMMSE,
     Razaviyayn2013_MinMaxWMMSE,
     Shi2011_WMMSE,
-    SumMSEMinimization,
 
     PrecodingResults,
     AuxPrecodingParams,
@@ -148,7 +147,6 @@ include("precoding/Gomadam2008_MinWLI.jl")
 include("precoding/Komulainen2013_WMMSE.jl")
 include("precoding/Razaviyayn2013_MinMaxWMMSE.jl")
 include("precoding/Shi2011_WMMSE.jl")
-include("precoding/SumMSEMinimization.jl")
 
 # Simulation utilities
 include("simulation/timing.jl")
