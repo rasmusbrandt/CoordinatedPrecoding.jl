@@ -92,6 +92,8 @@ export
 
     calculate_logdet_rates,
     calculate_MMSE_rates,
+    calculate_weighted_logdet_rates,
+    calculate_weighted_MMSE_rates,
     calculate_allocated_power,
 
 # Simulation

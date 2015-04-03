@@ -10,7 +10,8 @@ function Shi2011_WMMSE(channel, network)
     K = get_no_MSs(network)
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
-    ds = get_no_streams(network)
+    ds = get_no_streams(network); max_d = maximum(ds)
+    alphas = get_user_priorities(network)
 
     aux_params = get_aux_precoding_params(network)
     @defaultize_param! aux_params "Shi2011_WMMSE:bisection_Gamma_cond" 1e10
@@ -23,9 +24,11 @@ function Shi2011_WMMSE(channel, network)
         Array(Hermitian{Complex128}, K),
         initial_precoders(channel, Ps, sigma2s, ds, assignment, aux_params))
     objective = Float64[]
-    logdet_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
-    MMSE_rates = Array(Float64, K, maximum(ds), aux_params["max_iters"])
-    allocated_power = Array(Float64, K, maximum(ds), aux_params["max_iters"])
+    logdet_rates = Array(Float64, K, max_d, aux_params["max_iters"])
+    MMSE_rates = Array(Float64, K, max_d, aux_params["max_iters"])
+    weighted_logdet_rates = Array(Float64, K, max_d, aux_params["max_iters"])
+    weighted_MMSE_rates = Array(Float64, K, max_d, aux_params["max_iters"])
+    allocated_power = Array(Float64, K, max_d, aux_params["max_iters"])
 
     iters = 0; conv_crit = Inf
     while iters < aux_params["max_iters"]
@@ -36,6 +39,8 @@ function Shi2011_WMMSE(channel, network)
         logdet_rates[:,:,iters] = calculate_logdet_rates(state)
         push!(objective, sum(logdet_rates[:,:,iters]))
         MMSE_rates[:,:,iters] = calculate_MMSE_rates(state)
+        weighted_logdet_rates[:,:,iters] = calculate_weighted_logdet_rates(state, alphas)
+        weighted_MMSE_rates[:,:,iters] = calculate_weighted_MMSE_rates(state, alphas)
         allocated_power[:,:,iters] = calculate_allocated_power(state)
 
         # Check convergence
@@ -43,9 +48,12 @@ function Shi2011_WMMSE(channel, network)
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
             if conv_crit < aux_params["stop_crit"]
                 Lumberjack.debug("Shi2011_WMMSE converged.",
-                    [ :no_iters => iters, :final_objective => objective[end],
-                      :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-                      :max_iters => aux_params["max_iters"] ])
+                    [ :no_iters => iters,
+                      :final_objective => objective[end],
+                      :conv_crit => conv_crit,
+                      :stop_crit => aux_params["stop_crit"],
+                      :max_iters => aux_params["max_iters"] ]
+                )
                 break
             end
         end
@@ -57,9 +65,12 @@ function Shi2011_WMMSE(channel, network)
     end
     if iters == aux_params["max_iters"]
         Lumberjack.debug("Shi2011_WMMSE did NOT converge.",
-            [ :no_iters => iters, :final_objective => objective[end],
-              :conv_crit => conv_crit, :stop_crit => aux_params["stop_crit"],
-              :max_iters => aux_params["max_iters"] ])
+            [ :no_iters => iters,
+              :final_objective => objective[end],
+              :conv_crit => conv_crit,
+              :stop_crit => aux_params["stop_crit"],
+              :max_iters => aux_params["max_iters"] ]
+        )
     end
 
     results = PrecodingResults()
@@ -67,11 +78,15 @@ function Shi2011_WMMSE(channel, network)
         results["objective"] = objective
         results["logdet_rates"] = logdet_rates
         results["MMSE_rates"] = MMSE_rates
+        results["weighted_logdet_rates"] = weighted_logdet_rates
+        results["weighted_MMSE_rates"] = weighted_MMSE_rates
         results["allocated_power"] = allocated_power
     elseif aux_params["output_protocol"] == :final_iteration
         results["objective"] = objective[iters]
         results["logdet_rates"] = logdet_rates[:,:,iters]
         results["MMSE_rates"] = MMSE_rates[:,:,iters]
+        results["weighted_logdet_rates"] = weighted_logdet_rates[:,:,iters]
+        results["weighted_MMSE_rates"] = weighted_MMSE_rates[:,:,iters]
         results["allocated_power"] = allocated_power[:,:,iters]
     end
     return results

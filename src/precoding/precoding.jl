@@ -14,36 +14,39 @@ Base.setindex!(p::PrecodingResults, v, k::ASCIIString) =
 # between files.
 
 ##########################################################################
-# Standard functions to calculate rates from optimal MSE weights. Note
-# that any weighting, e.g. to get a weighted sum rate, should be performed
-# in the specialized `calculate_utilities` functions for each precoding
-# method.
+# Standard functions to calculate rates from optimal MSE weights.
 
 # logdet rates assume an ML decoder with perfect CSI-R
-function calculate_logdet_rates(state)
-    K = length(state.W)
-    ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
+calculate_logdet_rates(state) =
+    calculate_weighted_logdet_rates(state, ones(length(state.W)))
 
-    logdet_rates = zeros(Float64, K, max_d)
+function calculate_weighted_logdet_rates(state, alphas)
+    K = length(state.V)
+    ds = Int[ size(state.V[k], 2) for k = 1:K ]; max_d = maximum(ds)
+
+    utilities = zeros(Float64, K, max_d)
     for k = 1:K; if ds[k] > 0
         # W is p.d., so we should only get abs eigenvalues. Numerically we may
         # get some imaginary noise however. Also, numerically the eigenvalues
         # may be less than 1, so we need to handle that to not get negative
         # rates.
-        r = log2(max(1, abs(eigvals(state.W[k]))))
+        r = alphas[k]*log2(max(1, abs(eigvals(state.W[k]))))
 
         if ds[k] < max_d
-            logdet_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
+            utilities[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))
         else
-            logdet_rates[k,:] = r
+            utilities[k,:] = r
         end
     end; end
 
-    return logdet_rates
+    return utilities
 end
 
 # MMSE rates assume an MMSE decoder with perfect CSI-R
-function calculate_MMSE_rates(state)
+calculate_MMSE_rates(state) =
+    calculate_weighted_MMSE_rates(state, ones(length(state.W)))
+
+function calculate_weighted_MMSE_rates(state, alphas)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
 
@@ -56,7 +59,7 @@ function calculate_MMSE_rates(state)
         # for cleaner code in the algorithms. Also, these matrices are typically
         # small (like 2-by-2 or 3-by-3), so the complexity isn't too bad.
         E = state.W[k]\eye(state.W[k])
-        r = log2(max(1, abs(1./diag(E))))
+        r = alphas[k]*log2(max(1, abs(1./diag(E))))
 
         if ds[k] < max_d
             MMSE_rates[k,:] = cat(1, r, zeros(Float64, max_d - ds[k]))

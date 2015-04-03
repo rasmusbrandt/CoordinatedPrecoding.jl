@@ -8,6 +8,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network)
     I = get_no_BSs(network)
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
+    alphas = get_user_priorities(network)
     aux_params = get_aux_precoding_params(network)
 
     state = EigenprecodingState(Array(Matrix{Complex128}, channel.K))
@@ -42,11 +43,11 @@ function Eigenprecoding(channel::SinglecarrierChannel, network)
         end
     end
 
-    return calculate_logdet_rates(state, channel, sigma2s, assignment, aux_params)
+    return calculate_logdet_rates(state, channel, sigma2s, alphas, assignment, aux_params)
 end
 
 function calculate_logdet_rates(state::EigenprecodingState,
-    channel::SinglecarrierChannel, sigma2s, assignment, aux_params)
+    channel::SinglecarrierChannel, sigma2s, alphas, assignment, aux_params)
 
     max_d = min(maximum(channel.Ns), maximum(channel.Ms)) # might not be tight..
 
@@ -58,6 +59,14 @@ function calculate_logdet_rates(state::EigenprecodingState,
         intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
         intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
         uncoord_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
+
+        intercell_tdma_weighted_logdet_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
+        intracell_tdma_weighted_logdet_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
+        uncoord_weighted_logdet_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
+
+        intercell_tdma_weighted_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
+        intracell_tdma_weighted_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
+        uncoord_weighted_MMSE_rates = Array(Float64, channel.K, max_d, aux_params["max_iters"])
     elseif aux_params["output_protocol"] == :final_iteration
         intercell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
         intracell_tdma_logdet_rates = Array(Float64, channel.K, max_d)
@@ -66,6 +75,14 @@ function calculate_logdet_rates(state::EigenprecodingState,
         intercell_tdma_MMSE_rates = Array(Float64, channel.K, max_d)
         intracell_tdma_MMSE_rates = Array(Float64, channel.K, max_d)
         uncoord_MMSE_rates = Array(Float64, channel.K, max_d)
+
+        intercell_tdma_weighted_logdet_rates = Array(Float64, channel.K, max_d)
+        intracell_tdma_weighted_logdet_rates = Array(Float64, channel.K, max_d)
+        uncoord_weighted_logdet_rates = Array(Float64, channel.K, max_d)
+
+        intercell_tdma_weighted_MMSE_rates = Array(Float64, channel.K, max_d)
+        intracell_tdma_weighted_MMSE_rates = Array(Float64, channel.K, max_d)
+        uncoord_weighted_MMSE_rates = Array(Float64, channel.K, max_d)
     end
 
     for i = 1:channel.I
@@ -99,6 +116,14 @@ function calculate_logdet_rates(state::EigenprecodingState,
             r_intracell_MMSE = (1/Kc)*log2(max(1, abs(1./diag(inv(W_intracell)))))
             r_uncoord_MMSE = log2(max(1, abs(1./diag(inv(W_uncoord)))))
 
+            r_intercell_weighted_logdet = alphas[k]*r_intercell_logdet
+            r_intracell_weighted_logdet = alphas[k]*(1/Kc)*r_intracell_logdet
+            r_uncoord_weighted_logdet = alphas[k]*r_uncoord_logdet
+
+            r_intercell_weighted_MMSE = alphas[k]*r_intercell_MMSE
+            r_intracell_weighted_MMSE = alphas[k]*r_intracell_MMSE
+            r_uncoord_weighted_MMSE = alphas[k]*r_uncoord_MMSE
+
             if aux_params["output_protocol"] == :all_iterations
                 for iter = 1:aux_params["max_iters"]
                     intercell_tdma_logdet_rates[k,:,iter] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
@@ -108,6 +133,14 @@ function calculate_logdet_rates(state::EigenprecodingState,
                     intercell_tdma_MMSE_rates[k,:,iter] = cat(1, r_intercell_MMSE, zeros(Float64, max_d - d))
                     intracell_tdma_MMSE_rates[k,:,iter] = cat(1, r_intracell_MMSE, zeros(Float64, max_d - d))
                     uncoord_MMSE_rates[k,:,iter] = cat(1, r_uncoord_MMSE, zeros(Float64, max_d - d))
+
+                    intercell_tdma_weighted_logdet_rates[k,:,iter] = cat(1, r_intercell_weighted_logdet, zeros(Float64, max_d - d))
+                    intracell_tdma_weighted_logdet_rates[k,:,iter] = cat(1, r_intracell_weighted_logdet, zeros(Float64, max_d - d))
+                    uncoord_weighted_logdet_rates[k,:,iter] = cat(1, r_uncoord_weighted_logdet, zeros(Float64, max_d - d))
+
+                    intercell_tdma_weighted_MMSE_rates[k,:,iter] = cat(1, r_intercell_weighted_MMSE, zeros(Float64, max_d - d))
+                    intracell_tdma_weighted_MMSE_rates[k,:,iter] = cat(1, r_intracell_weighted_MMSE, zeros(Float64, max_d - d))
+                    uncoord_weighted_MMSE_rates[k,:,iter] = cat(1, r_uncoord_weighted_MMSE, zeros(Float64, max_d - d))
                 end
             elseif aux_params["output_protocol"] == :final_iteration
                 intercell_tdma_logdet_rates[k,:] = cat(1, r_intercell_logdet, zeros(Float64, max_d - d))
@@ -117,6 +150,14 @@ function calculate_logdet_rates(state::EigenprecodingState,
                 intercell_tdma_MMSE_rates[k,:] = cat(1, r_intercell_MMSE, zeros(Float64, max_d - d))
                 intracell_tdma_MMSE_rates[k,:] = cat(1, r_intracell_MMSE, zeros(Float64, max_d - d))
                 uncoord_MMSE_rates[k,:] = cat(1, r_uncoord_MMSE, zeros(Float64, max_d - d))
+
+                intercell_tdma_weighted_logdet_rates[k,:] = cat(1, r_intercell_weighted_logdet, zeros(Float64, max_d - d))
+                intracell_tdma_weighted_logdet_rates[k,:] = cat(1, r_intracell_weighted_logdet, zeros(Float64, max_d - d))
+                uncoord_weighted_logdet_rates[k,:] = cat(1, r_uncoord_weighted_logdet, zeros(Float64, max_d - d))
+
+                intercell_tdma_weighted_MMSE_rates[k,:] = cat(1, r_intercell_weighted_MMSE, zeros(Float64, max_d - d))
+                intracell_tdma_weighted_MMSE_rates[k,:] = cat(1, r_intracell_weighted_MMSE, zeros(Float64, max_d - d))
+                uncoord_weighted_MMSE_rates[k,:] = cat(1, r_uncoord_weighted_MMSE, zeros(Float64, max_d - d))
             end
         end
     end
@@ -128,5 +169,11 @@ function calculate_logdet_rates(state::EigenprecodingState,
     results["intercell_tdma_MMSE_rates"] = intercell_tdma_MMSE_rates
     results["intracell_tdma_MMSE_rates"] = intracell_tdma_MMSE_rates
     results["uncoord_MMSE_rates"] = uncoord_MMSE_rates
+    results["intercell_tdma_weighted_logdet_rates"] = intercell_tdma_weighted_logdet_rates
+    results["intracell_tdma_weighted_logdet_rates"] = intracell_tdma_weighted_logdet_rates
+    results["uncoord_weighted_logdet_rates"] = uncoord_weighted_logdet_rates
+    results["intercell_tdma_weighted_MMSE_rates"] = intercell_tdma_weighted_MMSE_rates
+    results["intracell_tdma_weighted_MMSE_rates"] = intracell_tdma_weighted_MMSE_rates
+    results["uncoord_weighted_MMSE_rates"] = uncoord_weighted_MMSE_rates
     return results
 end
