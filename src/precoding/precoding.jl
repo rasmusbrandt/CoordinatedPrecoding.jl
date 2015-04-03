@@ -14,7 +14,12 @@ Base.setindex!(p::PrecodingResults, v, k::ASCIIString) =
 # between files.
 
 ##########################################################################
-# Standard functions to calculate rates from optimal MSE weights
+# Standard functions to calculate rates from optimal MSE weights. Note
+# that any weighting, e.g. to get a weighted sum rate, should be performed
+# in the specialized `calculate_utilities` functions for each precoding
+# method.
+
+# logdet rates assume an ML decoder with perfect CSI-R
 function calculate_logdet_rates(state)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
@@ -37,6 +42,7 @@ function calculate_logdet_rates(state)
     return logdet_rates
 end
 
+# MMSE rates assume an MMSE decoder with perfect CSI-R
 function calculate_MMSE_rates(state)
     K = length(state.W)
     ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
@@ -111,7 +117,7 @@ function initial_receivers(channel::SinglecarrierChannel, Ps, sigma2s, ds,
         end
     end
 
-    # Default: dft precoders
+    # Default: decoders taken as columns of DFT matrix
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
         U[k] = fft(eye(channel.Ns[k], ds[k]), 1)
     end; end
@@ -169,7 +175,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps, sigma2s, ds,
         end
     end
 
-    # Default: dft precoders
+    # Default: precoders taken as columns of DFT matrix
     for i = 1:channel.I
         served = served_MS_ids(i, assignment)
         Kc = length(served)
