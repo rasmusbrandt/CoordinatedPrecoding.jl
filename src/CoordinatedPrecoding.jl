@@ -46,7 +46,7 @@ export
     get_receiver_noise_powers_dBm, set_receiver_noise_powers_dBm!,
 
     get_no_streams, set_no_streams!,
-    get_user_priorities, set_user_priorities,
+    get_user_priorities, set_user_priorities!,
 
     require_equal_no_MS_antennas,
     require_equal_no_BS_antennas,

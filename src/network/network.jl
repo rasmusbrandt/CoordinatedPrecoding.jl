@@ -188,8 +188,8 @@ set_receiver_noise_powers_dBm!(network, sigma2_dBm::Real) = (for MS in network.M
 set_receiver_noise_powers_dBm!(network, sigma2s_dBm::Vector) = (for k = 1:length(sigma2s_dBm); set_receiver_noise_power_dBm!(network.MSs[k], sigma2s_dBm[k], network); end)
 
 get_user_priorities (network) = [ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
-set_user_priorities!(network, α::Real) = (for MS in network.MSs; set_user_priority(MS, α); end)
-set_user_priorities!(network, α::Vector) = (for k = 1:length(α); set_user_priority(network.MSs[k], α[k]); end)
+set_user_priorities!(network, α::Real) = (for MS in network.MSs; set_user_priority!(MS, α); end)
+set_user_priorities!(network, α::Vector) = (for k = 1:length(α); set_user_priority!(network.MSs[k], α[k]); end)
 
 get_no_streams (network::Network) = [ get_no_streams(network.MSs[k]) for k = 1:get_no_MSs(network) ]
 set_no_streams!(network::Network, d::Int) = (for MS in network.MSs; set_no_streams(MS, d); end)
