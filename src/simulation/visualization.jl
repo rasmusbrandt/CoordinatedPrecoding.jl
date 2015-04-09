@@ -312,8 +312,8 @@ end
 # in simulation_params), and those we have plotting parameters for (and
 # thus specified in plot_params).
 function get_methods_to_plot(simulation_params, plot_params)
-    precoding_methods = (haskey(simulation_params, "precoding_methods") ? simulation_params["precoding_methods"] : [])
-    assignment_methods = (haskey(simulation_params, "assignment_methods") ? simulation_params["assignment_methods"] : [])
+    precoding_methods = (haskey(simulation_params, "precoding_methods") ? map(string, simulation_params["precoding_methods"]) : [])
+    assignment_methods = (haskey(simulation_params, "assignment_methods") ? map(string, simulation_params["assignment_methods"]) : [])
 
     return intersect(union(precoding_methods, assignment_methods), keys(plot_params["methods"]))
 end
