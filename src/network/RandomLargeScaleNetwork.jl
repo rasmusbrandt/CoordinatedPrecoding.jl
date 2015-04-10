@@ -1,8 +1,7 @@
 ##########################################################################
 # The RandomLargeScaleNetwork is a network whose geography changes in
-# each user drop. The BSs are uniformly distributed over a rectangle,
-# and the MSs are distributed on a circle with a certain distance from
-# the serving BS.
+# each user drop. Both BSs and MSs are uniformly distributed over
+# a rectangle.
 
 ##########################################################################
 # Network definition
@@ -11,90 +10,90 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     BSs::Vector{BS_t}
 
     system::System_t
-    no_MSs_per_cell::Int
     propagation_environment::PropagationEnvironment_t
-    geography_width::Float64
-    geography_height::Float64
-    MS_serving_BS_distance::Float64
+    geography_size::(Float64, Float64)
     aux_network_params::AuxNetworkParams
 
     assignment::Assignment
 end
 
 # Convenience constructor without network params and assignments
-RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance) =
-    RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance, AuxNetworkParams(), Assignment())
+RandomLargeScaleNetwork(MSs, BSs, system, propagation_environment, geography_size) =
+    RandomLargeScaleNetwork(MSs, BSs, system, propagation_environment, geography_size, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::RandomLargeScaleNetwork) =
-    print(io, "RandomLargeScaleNetwork(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), w = $(x.geography_width), h = $(x.geography_height), d = $(x.MS_serving_BS_distance))")
+    print(io, "RandomLargeScaleNetwork(I = $(length(x.BSs)), I = $(length(x.MSs)), geography = $(x.geography_size))")
 Base.showcompact(io::IO, x::RandomLargeScaleNetwork) =
-    print(io, "RandomLargeScaleNetwork($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.geography_width), $(x.geography_height), $(x.MS_serving_BS_distance))")
+    print(io, "RandomLargeScaleNetwork($(length(x.BSs)), $(length(x.MSs)), $(x.geography_size))")
 
 function setup_random_large_scale_network(
-    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
+    no_BSs, no_MSs, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 0, 8),
-    geography_width = 500.,
-    geography_height = 500.,
-    MS_serving_BS_distance = 50.,
+    geography_size = (500., 500.),
     transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
     BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for idx = 1:no_BSs ],
-    user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
-    no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
-    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
-    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_BSs*no_MSs_per_cell))
+    user_priority = 1., user_priorities = user_priority*ones(Float64, no_MSs),
+    no_streams = 1, no_streamss = no_streams*ones(Int, no_MSs),
+    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_MSs),
+    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_MSs))
 
-    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell))
+    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_MSs))
     isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, no_BSs))
 
     BSs = [ PhysicalBS(no_BS_antennas[i], Position(0, 0), transmit_powers[i], BS_antenna_gain_params[i]) for i = 1:no_BSs ]
-    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_BSs*no_MSs_per_cell ]
+    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_MSs ]
 
-    RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance)
+    RandomLargeScaleNetwork(MSs, BSs, system, propagation_environment, geography_size)
 end
 
-##########################################################################
-# Standard cell assignment functions
-function IDCellAssignment!(channel, network::RandomLargeScaleNetwork)
-    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
-    cell_assignment = Array(Int, I*Kc)
+# Greedy scheduler based on the large scale fading realizations
+function LargeScaleFadingCellAssignment!(channel, network::RandomLargeScaleNetwork)
+    I = get_no_BSs(network); K = get_no_MSs(network)
 
-    for i = 1:I
-        cell_assignment[(i-1)*Kc+1:i*Kc] = i
+    aux_params = get_aux_assignment_params(network)
+    @defaultize_param! aux_params "max_MSs_per_BS" 1
+
+    # Scheduling matrix
+    cell_assignment_matrix = zeros(Int, K, I)
+
+    # User selection metric
+    F = (channel.large_scale_fading_factor.^2)*Diagonal(get_transmit_powers(network))
+    Fsize = size(F)
+
+    # Do greedy scheduling
+    while !all(F .== 0.)
+        _, idx = findmax(F)
+        k, l = ind2sub(Fsize, idx)
+
+        if sum(cell_assignment_matrix[:,l]) < aux_params["max_MSs_per_BS"]
+            cell_assignment_matrix[k,l] = 1
+            F[k,:] = 0.
+        else
+            F[:,l] = 0.
+        end
     end
 
-    network.assignment = Assignment(cell_assignment, I)
+    network.assignment = Assignment(cell_assignment_matrix)
 
     return AssignmentResults()
 end
 
-# Due to construction, we should actually do cell assignment only based on ID.
-LargeScaleFadingCellAssignment!(channel, network::RandomLargeScaleNetwork) =
-    IDCellAssignment!(channel, network)
-
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::RandomLargeScaleNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
-    I = get_no_BSs(network); Kc = network.no_MSs_per_cell
+    I = get_no_BSs(network); K = get_no_MSs(network)
 
-    # Drop BSs uniformly at random. Also drop the correspondingly served MSs.
+    # Drop BSs uniformly at random
     for i = 1:I
-        BS_x = network.geography_width*rand(); BS_y = network.geography_height*rand()
+        BS_x = network.geography_size[1]*rand(); BS_y = network.geography_size[2]*rand()
         network.BSs[i].position = Position(BS_x, BS_y)
+    end
 
-        for k_idx = 1:Kc
-            k = (i-1)*Kc + k_idx
-
-            # Position
-            theta = 2*pi*rand()
-            dx = network.MS_serving_BS_distance*cos(theta)
-            dy = network.MS_serving_BS_distance*sin(theta)
-            network.MSs[k].position = Position(BS_x + dx, BS_y + dy)
-
-            # Shadow fading (uncorrelated between BSs)
-            network.MSs[k].propagation_environment_state =
-                SimpleLargescaleFadingEnvironmentState(network.propagation_environment.shadow_sigma_dB*randn(I), falses(I)) # LoS not used in this model
-        end
+    # Drop MSs uniformly at random
+    for k = 1:K
+        MS_x = network.geography_size[1]*rand(); MS_y = network.geography_size[2]*rand()
+        network.MSs[k].position = Position(MS_x, MS_y)
     end
 end
 
@@ -147,7 +146,7 @@ function plot_network_layout(network::RandomLargeScaleNetwork)
     ax = fig[:add_subplot](1, 1, 1)
 
     # Rectangle edges
-    Mx = network.geography_width; My = network.geography_height
+    Mx = network.geography_size[1]; My = network.geography_size[2]
     ax[:plot]([0, Mx], [0, 0], color="b", linestyle="-")
     ax[:plot]([0, Mx], [My, My], color="b", linestyle="-")
     ax[:plot]([0, 0], [0, My], color="b", linestyle="-")
