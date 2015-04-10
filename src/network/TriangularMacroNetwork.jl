@@ -1,5 +1,5 @@
 ##########################################################################
-# The Triangular3SiteNetwork is a macrocell network with three sites,
+# The TriangularMacroNetwork is a macrocell network with three sites,
 # placed on the vertices of an equilateral triangle. The simulation
 # parameters are based on 3GPP Case 1 (TR 25.814 and TR 36.814) macrocell
 # simulation environment. Distance-dependent pathloss and log-normal
@@ -26,7 +26,7 @@ get_angle{AntennaParams_t <: SixSector3gppAntennaParams}(MS, BS::PhysicalBS{Ante
 
 ##########################################################################
 # Network definition
-type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
+type TriangularMacroNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, PropagationEnvironment_t <: PropagationEnvironment} <: PhysicalNetwork
     MSs::Vector{MS_t}
     BSs::Vector{BS_t}
 
@@ -40,18 +40,18 @@ type Triangular3SiteNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
     assignment::Assignment
 end
 
-# Convenience constructor without assignments
-Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance) =
-    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, AuxNetworkParams(), Assignment())
+# Convenience constructor without network params and assignments
+TriangularMacroNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance) =
+    TriangularMacroNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, AuxNetworkParams(), Assignment())
 
-Base.show(io::IO, x::Triangular3SiteNetwork) =
-    print(io, "Triangular3Site(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
-Base.showcompact(io::IO, x::Triangular3SiteNetwork) =
-    print(io, "Triangular3Site($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
+Base.show(io::IO, x::TriangularMacroNetwork) =
+    print(io, "TriangularMacro(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
+Base.showcompact(io::IO, x::TriangularMacroNetwork) =
+    print(io, "TriangularMacro($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
 
 # The default parameter values are taken from 3GPP Case 1
 # (TR 25.814 and TR 36.814).
-function setup_triangular3site_network(
+function setup_triangularmacro_network(
     no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
@@ -83,13 +83,13 @@ function setup_triangular3site_network(
     ]
     MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, 3), falses(3))) for k = 1:3*no_MSs_per_cell ]
 
-    Triangular3SiteNetwork(MSs, BSs, system, no_MSs_per_cell, 
+    TriangularMacroNetwork(MSs, BSs, system, no_MSs_per_cell, 
         propagation_environment, inter_site_distance, guard_distance)
 end
 
 ##########################################################################
 # Cell assignment
-function IDCellAssignment!(channel, network::Triangular3SiteNetwork)
+function IDCellAssignment!(channel, network::TriangularMacroNetwork)
     Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
@@ -104,12 +104,12 @@ end
 
 # Do this for now, even though the shadowing might actually give a certain MS
 # better connection to a BS in another cell.
-LargeScaleFadingCellAssignment!(channel, network::Triangular3SiteNetwork) =
+LargeScaleFadingCellAssignment!(channel, network::TriangularMacroNetwork) =
     IDCellAssignment!(channel, network)
 
 ##########################################################################
 # Simulation functions
-function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::Triangular3SiteNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
+function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::TriangularMacroNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
     I = get_no_BSs(network); K = get_no_MSs(network)
 
     # Shadow fading covariance (correlation coefficient 0.5 between cells)
@@ -152,7 +152,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
     end
 end
 
-function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::Triangular3SiteNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
+function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::TriangularMacroNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
     K = get_no_MSs(network); I = get_no_BSs(network)
     Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
 
@@ -194,7 +194,7 @@ end
 
 ##########################################################################
 # Visualization functions
-function plot_network_layout(network::Triangular3SiteNetwork)
+function plot_network_layout(network::TriangularMacroNetwork)
     I = get_no_BSs(network); K = get_no_MSs(network)
 
     fig = PyPlot.figure()

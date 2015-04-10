@@ -21,7 +21,7 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     assignment::Assignment
 end
 
-# Convenience constructor without assignments
+# Convenience constructor without network params and assignments
 RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance) =
     RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_width, geography_height, MS_serving_BS_distance, AuxNetworkParams(), Assignment())
 

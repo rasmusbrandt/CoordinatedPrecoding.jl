@@ -28,7 +28,7 @@ type TriangularHetNetNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     assignment::Assignment
 end
 
-# Convenience constructor without assignments
+# Convenience constructor without network params and assignments
 TriangularHetNetNetwork(MSs, BSs, system, no_picos_per_cell, no_MSs_per_cell, propagation_environment, inter_site_distance, pico_centre_distance, guard_distance) =
     TriangularHetNetNetwork(MSs, BSs, system, no_picos_per_cell, no_MSs_per_cell, propagation_environment, inter_site_distance, pico_centre_distance, guard_distance, AuxNetworkParams(), Assignment())
 
@@ -86,7 +86,7 @@ end
 # Cell assignment
 
 # The ID cell assignment only assigns MSs to the macro BSs. This network
-# is then identical to the Triangular3SiteNetwork.
+# is then identical to the TriangularMacroNetwork.
 function IDCellAssignment!(channel, network::TriangularHetNetNetwork)
     Kc = network.no_MSs_per_cell
     cell_assignment = Array(Int, 3*Kc)
@@ -100,7 +100,7 @@ function IDCellAssignment!(channel, network::TriangularHetNetNetwork)
     return AssignmentResults()
 end
 
-# This is a greedy schedular based on the large scale fading realizations.
+# This is a greedy scheduler based on the large scale fading realizations.
 function LargeScaleFadingCellAssignment!(channel, network::TriangularHetNetNetwork)
     no_MSs_per_cell = network.no_MSs_per_cell; no_MSs = 3*no_MSs_per_cell
     no_picos_per_cell = network.no_picos_per_cell; no_BSs = 3 + 3*no_picos_per_cell

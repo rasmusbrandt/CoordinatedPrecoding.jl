@@ -19,7 +19,7 @@ srand(973472333)
 start_time = strftime("%Y%m%dT%H%M%S", time())
 
 ##########################################################################
-# Triangular3Site network
+# TriangularHetNet network
 simulation_params = [
     "simulation_name" => "SNR_$(start_time)-triangularhetnet",
     "Ic" => 1, "Kc" => 2, "N" => 2, "M" => 2,

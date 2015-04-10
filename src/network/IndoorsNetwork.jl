@@ -27,7 +27,7 @@ type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, 
     assignment::Assignment
 end
 
-# Convenience constructor without assignments
+# Convenience constructor without network params and assignments
 IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance) =
     IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, AuxNetworkParams(), Assignment())
 

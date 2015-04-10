@@ -12,7 +12,7 @@ type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
     assignment::Assignment
 end
 
-# Convenience constructor without assignments
+# Convenience constructor without network params and assignments
 InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha) =
     InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha, AuxNetworkParams(), Assignment())
 

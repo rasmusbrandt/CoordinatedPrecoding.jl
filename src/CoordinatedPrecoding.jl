@@ -24,7 +24,7 @@ export
     InterferingBroadcastChannel, setup_interfering_broadcast_channel,
     IndoorsNetwork, setup_indoors_network,
     RandomLargeScaleNetwork, setup_random_large_scale_network,
-    Triangular3SiteNetwork, setup_triangular3site_network,
+    TriangularMacroNetwork, setup_triangularmacro_network,
     TriangularHetNetNetwork, setup_triangularhetnet_network,
 
     draw_user_drop!, draw_channel, plot_network_layout,
@@ -139,7 +139,7 @@ include("utils.jl")
 include("network/InterferingBroadcastChannel.jl")
 include("network/IndoorsNetwork.jl")
 include("network/RandomLargeScaleNetwork.jl")
-include("network/Triangular3SiteNetwork.jl")
+include("network/TriangularMacroNetwork.jl")
 include("network/TriangularHetNetNetwork.jl")
 
 # Precoding methods
