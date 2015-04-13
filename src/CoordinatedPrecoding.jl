@@ -48,6 +48,9 @@ export
     get_no_streams, set_no_streams!,
     get_user_priorities, set_user_priorities!,
 
+    get_average_SNRs, set_average_SNRs!,
+    get_average_SNRs_dB, set_average_SNRs_dB!,
+
     require_equal_no_MS_antennas,
     require_equal_no_BS_antennas,
     require_single_antenna_MSs,

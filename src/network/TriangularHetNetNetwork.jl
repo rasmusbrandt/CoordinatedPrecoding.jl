@@ -106,7 +106,7 @@ function LargeScaleFadingCellAssignment!(channel, network::TriangularHetNetNetwo
     no_picos_per_cell = network.no_picos_per_cell; no_BSs = 3 + 3*no_picos_per_cell
 
     aux_params = get_aux_assignment_params(network)
-    @defaultize_param! aux_params "max_MSs_per_BS" 1
+    @defaultize_param! aux_params "max_no_MSs_per_BS" 1
 
     # Scheduling matrix
     cell_assignment_matrix = zeros(Int, no_MSs, no_BSs)
@@ -127,7 +127,7 @@ function LargeScaleFadingCellAssignment!(channel, network::TriangularHetNetNetwo
         _, idx = findmax(F)
         k, l = ind2sub(Fsize, idx)
 
-        if sum(cell_assignment_matrix[:,l]) < aux_params["max_MSs_per_BS"]
+        if sum(cell_assignment_matrix[:,l]) < aux_params["max_no_MSs_per_BS"]
             cell_assignment_matrix[k,l] = 1
             F[k,:] = 0.
         else
