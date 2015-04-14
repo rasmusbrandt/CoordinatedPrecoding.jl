@@ -21,8 +21,8 @@ calculate_logdet_rates(state) =
     calculate_weighted_logdet_rates(state, ones(length(state.W)))
 
 function calculate_weighted_logdet_rates(state, alphas)
-    K = length(state.V)
-    ds = Int[ size(state.V[k], 2) for k = 1:K ]; max_d = maximum(ds)
+    K = length(state.W)
+    ds = Int[ size(state.W[k], 2) for k = 1:K ]; max_d = maximum(ds)
 
     utilities = zeros(Float64, K, max_d)
     for k = 1:K; if ds[k] > 0
@@ -72,8 +72,8 @@ function calculate_weighted_MMSE_rates(state, alphas)
 end
 
 function calculate_allocated_power(state)
-    K = length(state.W)
-    ds = Int[ size(state.W[k], 1) for k = 1:K ]; max_d = maximum(ds)
+    K = length(state.V)
+    ds = Int[ size(state.V[k], 2) for k = 1:K ]; max_d = maximum(ds)
 
     allocated_power = zeros(Float64, K, max_d)
 
