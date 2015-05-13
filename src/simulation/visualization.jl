@@ -24,12 +24,14 @@ function postprocess(raw_results, simulation_params, plot_params)
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
+
+                result_dimensions = size(raw_results[1, 1, 1, 1][method_name][result_name])
             else
                 (calculator, calculate_from) = result_param
                 result_name = string(string(calculator), "_", calculate_from)
-            end
 
-            result_dimensions = size(raw_results[1, 1, 1, 1][method_name][result_name])
+                result_dimensions = size(raw_results[1, 1, 1, 1][method_name][calculate_from])
+            end
             result_ranges = [ 1:s for s in result_dimensions ]
             results[method_name][result_name] = Array(Float64, Ndrops, Nsim, idp_vals_length, aux_idp_vals_length, result_dimensions...)
             for Ndrops_idx = 1:Ndrops; for Nsim_idx = 1:Nsim; for idp_vals_idx = 1:idp_vals_length; for aux_idp_vals_idx = 1:aux_idp_vals_length
@@ -56,6 +58,7 @@ function postprocess(raw_results, simulation_params, plot_params)
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
+                (calculator, calculate_from) = result_param
                 result_name = string(string(calculator), "_", calculate_from)
             end
 
@@ -115,12 +118,15 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
                 result_name = result_param
+
+                result_dimensions = size(raw_results[1, 1, 1][method_name][result_name])
             else
                 (calculator, calculate_from) = result_param
                 result_name = string(string(calculator), "_", calculate_from)
+
+                result_dimensions = size(raw_results[1, 1, 1][method_name][calculate_from])
             end
 
-            result_dimensions = size(raw_results[1, 1, 1][method_name][result_name])
             result_ranges = [ 1:s for s in result_dimensions ]
             results[method_name][result_name] = Array(Float64, Ndrops, Nsim, aux_idp_vals_length, result_dimensions...)
             for Ndrops_idx = 1:Ndrops; for Nsim_idx = 1:Nsim; for aux_idp_vals_idx = 1:aux_idp_vals_length
@@ -146,6 +152,7 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
             if isa(result_param, ASCIIString)
                 result_name = result_param
             else
+                (calculator, calculate_from) = result_param
                 result_name = string(string(calculator), "_", calculate_from)
             end
 
