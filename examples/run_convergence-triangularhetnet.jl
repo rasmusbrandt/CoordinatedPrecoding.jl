@@ -23,8 +23,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # TriangularHetNet network
 simulation_params = [
     "simulation_name" => "convergence_$(start_time)-triangularhetnet",
-    "Ic" => 1, "Kc" => 2, "N" => 2, "M" => 4,
-    "d" => 1,
+    "Ic" => 1, "Kc" => 2, "N" => 2, "M" => 4, "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
         Shi2011_WMMSE,

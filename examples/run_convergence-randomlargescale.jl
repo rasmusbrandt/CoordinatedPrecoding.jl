@@ -23,8 +23,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # RandomLargeScale network
 simulation_params = [
     "simulation_name" => "convergence_$(start_time)-randomlargescale",
-    "I" => 10, "Kc" => 1, "N" => 2, "M" => 2,
-    "d" => 1,
+    "I" => 10, "Kc" => 1, "N" => 2, "M" => 2, "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
         Shi2011_WMMSE,

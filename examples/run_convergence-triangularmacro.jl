@@ -23,8 +23,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # TriangularMacro network
 simulation_params = [
     "simulation_name" => "convergence_$(start_time)-triangularmacro",
-    "Kc" => 2, "N" => 2, "M" => 4,
-    "d" => 1,
+    "Kc" => 2, "N" => 2, "M" => 4, "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
         Shi2011_WMMSE,

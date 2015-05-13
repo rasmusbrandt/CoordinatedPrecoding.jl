@@ -22,8 +22,7 @@ start_time = strftime("%Y%m%dT%H%M%S", time())
 # Indoors network
 simulation_params = [
     "simulation_name" => "SNR_$(start_time)-indoors",
-    "I" => 4, "Kc" => 8, "N" => 2, "M" => 2,
-    "d" => 2,
+    "I" => 4, "Kc" => 8, "N" => 2, "M" => 2, "d" => 2,
     "Ndrops" => 10, "Nsim" => 10,
     "precoding_methods" => [
         Shi2011_WMMSE,
