@@ -144,6 +144,80 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
     plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 4:5)))
     plot_params["objective"] == :avgrate && (objective = (r -> mean(sum(r, 5), 4)))
     plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 5), 4)))
+    plot_params["objective"] == :none && (objective = (r -> r))
+
+    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
+            if isa(result_param, ASCIIString)
+                result_name = result_param
+            else
+                (calculator, calculate_from) = result_param
+                result_name = string(string(calculator), "_", calculate_from)
+            end
+
+            # mean: average over drops and sims
+            results_mean[method_name][result_name] = transpose(squeeze(mean(objective(results[method_name][result_name]), 1:2), [1,2,4,5]))
+
+            # var: average over sims, estimate var over drops
+            results_var[method_name][result_name] = transpose(squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), [1,2,4,5]))
+        end
+    end
+
+    return results, results_mean, results_var
+end
+
+##########################################################################
+# Post-process results from the simulate_assignment_convergence function.
+function postprocess_assignment_convergence(raw_results, simulation_params, plot_params)
+    methods = get_methods_to_plot(simulation_params, plot_params)
+
+    # Auxiliary independent variables
+    if haskey(simulation_params, "aux_independent_variables")
+        Naux = length(simulation_params["aux_independent_variables"])
+        aux_idp_vals_length = length(simulation_params["aux_independent_variables"][1][2])
+        for n = 2:Naux
+            aux_idp_vals_length == length(simulation_params["aux_independent_variables"][n][2]) ? nothing : Lumberjack.error("Auxiliary independent variable vectors must have equal length.")
+        end
+    else
+        Naux = 0; aux_idp_vals_length = 1
+    end
+
+    # Compact raw results into result matrices
+    Ndrops = size(raw_results.simulation_results, 1)
+    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    for method_name in methods
+        for (result_param,) in plot_params["methods"][method_name]
+            if isa(result_param, ASCIIString)
+                result_name = result_param
+
+                result_dimensions = size(raw_results[1, 1, 1][method_name][result_name])
+            else
+                (calculator, calculate_from) = result_param
+                result_name = string(string(calculator), "_", calculate_from)
+
+                result_dimensions = size(raw_results[1, 1, 1][method_name][calculate_from])
+            end
+
+            result_ranges = [ 1:s for s in result_dimensions ]
+            results[method_name][result_name] = Array(Float64, Ndrops, 1, aux_idp_vals_length, result_dimensions...)
+            for Ndrops_idx = 1:Ndrops; for aux_idp_vals_idx = 1:aux_idp_vals_length
+                if isa(result_param, ASCIIString)
+                    result = raw_results[Ndrops_idx, 1, aux_idp_vals_idx][method_name][result_name]
+                else
+                    result = calculator(raw_results[Ndrops_idx, 1, aux_idp_vals_idx][method_name][calculate_from])
+                end
+                results[method_name][result_name][Ndrops_idx, 1, aux_idp_vals_idx, result_ranges...] = result
+            end; end
+        end
+    end
+
+    # Calculate statistics on result matrices
+    plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 4:5)))
+    plot_params["objective"] == :avgrate && (objective = (r -> mean(sum(r, 5), 4)))
+    plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 5), 4)))
+    plot_params["objective"] == :none && (objective = (r -> r))
 
     results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
@@ -285,6 +359,11 @@ function plot_precoding_convergence(processed_results, simulation_params, plot_p
     end
     PyPlot.close(fig)
 end
+
+##########################################################################
+# Plots results from the postprocess_assignment_convergence function.
+plot_assignment_convergence(processed_results, simulation_params, plot_params) =
+    plot_precoding_convergence(processed_results, simulation_params, plot_params)
 
 ##########################################################################
 # Helper methods

@@ -244,6 +244,54 @@ function simulate_precoding_convergence(network, simulation_params;
 end
 
 ##########################################################################
+# Simulate assignment methods and store their convergence behaviour.
+function simulate_assignment_convergence(network, simulation_params)
+    # Number of drops and small scale fading realizations
+    Ndrops = simulation_params["Ndrops"]
+
+    # Auxiliary independent variables
+    Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
+
+    println("-- simulate_assignment_convergence on $network.")
+    println("--- Ndrops: $Ndrops.")
+    Lumberjack.info("Starting convergence simulation.",
+        [ :network => network, :simulation_params => simulation_params ])
+
+    # Set initial aux params
+    set_initial_aux_params!(simulation_params, network)
+
+    # Storage container for results
+    raw_results = MultipleSimulationResults(Ndrops, 1, aux_idp_vals_length)
+
+    # Simulation loop
+    progress = ProgressMeter.Progress(Ndrops*aux_idp_vals_length*length(simulation_params["assignment_methods"]))
+    for Ndrops_idx = 1:Ndrops
+        draw_user_drop!(network)
+        channel = draw_channel(network)
+
+        # Loop over auxiliary variables
+        for aux_idp_vals_idx = 1:aux_idp_vals_length
+            # Set all auxiliary independent variables
+            for Naux_idx = 1:Naux
+                aux_idp_funcs[Naux_idx](network, aux_idp_vals[Naux_idx][aux_idp_vals_idx])
+            end
+
+            for assignment_method in simulation_params["assignment_methods"]
+                # Allocate memory if this is the first method to be run
+                if assignment_method == simulation_params["assignment_methods"][1]
+                    raw_results[Ndrops_idx, 1, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
+                end
+                raw_results[Ndrops_idx, 1, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channel, network)
+
+                ProgressMeter.next!(progress)
+            end
+        end
+    end
+
+    return raw_results
+end
+
+##########################################################################
 # Helper methods
 
 # Given the type of methods that we are looping over, provide the other

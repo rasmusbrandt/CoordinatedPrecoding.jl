@@ -104,6 +104,10 @@ export
     postprocess,
     plot,
 
+    simulate_assignment_convergence,
+    postprocess_assignment_convergence,
+    plot_assignment_convergence,
+
     simulate_precoding_convergence,
     postprocess_precoding_convergence,
     plot_precoding_convergence,
