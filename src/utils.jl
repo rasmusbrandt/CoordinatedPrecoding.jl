@@ -11,6 +11,13 @@ function clean_simulation_params_for_jld(simulation_params)
         end
         cleaned_simulation_params["precoding_methods"] = cleaned_precoding_methods
     end
+    if haskey(simulation_params, "dont_sweep_precoding_methods")
+        cleaned_dont_sweep_precoding_methods = Array(ASCIIString, 0)
+        for method in simulation_params["dont_sweep_precoding_methods"]
+            push!(cleaned_dont_sweep_precoding_methods, string(method))
+        end
+        cleaned_simulation_params["dont_sweep_precoding_methods"] = cleaned_dont_sweep_precoding_methods
+    end
 
     # Assignment method function pointers
     if haskey(simulation_params, "assignment_methods")

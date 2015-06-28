@@ -50,6 +50,9 @@ function simulate(network, simulation_params;
     # Auxiliary independent variables
     Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
 
+    # Methods that should not be swept as a function of independent and auxiliary variables
+    dont_sweep_precoding = haskey(simulation_params, "dont_sweep_precoding_methods") ? simulation_params["dont_sweep_precoding_methods"] : []
+
     # Get assignment/precoding functions depending on looping mode
     precoding_method, assignment_method = get_other_method(simulation_params, loop_over)
 
@@ -102,7 +105,12 @@ function simulate(network, simulation_params;
                             if precoding_method == simulation_params["precoding_methods"][1]
                                 raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                             end
-                            raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+                            if in(precoding_method, dont_sweep_precoding) && idp_vals_idx != 1 && aux_idp_vals_idx != 1
+                                # We should not sweep this precoding method, so re-store old result.
+                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = raw_precoding_results[Ndrops_idx, Nsim_idx, 1, 1][string(precoding_method)]
+                            else
+                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+                            end
 
                             ProgressMeter.next!(progress)
                         end
