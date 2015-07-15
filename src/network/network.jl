@@ -155,16 +155,19 @@ get_no_BSs(network) = length(network.BSs)
 get_assignment (network) = network.assignment
 set_assignment!(network, assignment) = (network.assignment = assignment)
 
+has_aux_network_param (network, k) = haskey(network.aux_network_params, k)
 get_aux_network_param (network, k) = (network.aux_network_params[k])
 set_aux_network_param!(network, v, k) = (network.aux_network_params[k] = v)
 get_aux_network_params (network) = network.aux_network_params
 set_aux_network_params!(network, additional) = merge!(network.aux_network_params, additional)
 
+has_aux_precoding_param (network, k) = haskey(network.aux_precoding_params, k)
 get_aux_precoding_param (network, k) = (network.system.aux_precoding_params[k])
 set_aux_precoding_param!(network, v, k) = (network.system.aux_precoding_params[k] = v)
 get_aux_precoding_params (network) = network.system.aux_precoding_params
 set_aux_precoding_params!(network, additional) = merge!(network.system.aux_precoding_params, additional)
 
+has_aux_assignment_param (network, k) = haskey(network.aux_assignment_params, k)
 get_aux_assignment_param (network, k) = (network.system.aux_assignment_params[k])
 set_aux_assignment_param!(network, v, k) = (network.system.aux_assignment_params[k] = v)
 get_aux_assignment_params (network) = network.system.aux_assignment_params
