@@ -6,7 +6,13 @@
 
 module CoordinatedPrecoding
 
-import Gurobi, PyPlot, Lumberjack, ProgressMeter
+# Necessary dependencies
+import PyPlot, Lumberjack, ProgressMeter
+
+# Optional dependencies
+if Pkg.installed("Gurobi") != nothing
+    import Gurobi
+end
 
 export
 
