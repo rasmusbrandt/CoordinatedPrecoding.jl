@@ -1,7 +1,9 @@
 julia 0.3
 
-HDF5
+JLD
+PyCall
 PyPlot
 
+ArgParse
 Lumberjack
 ProgressMeter
