@@ -165,7 +165,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
         end
 
         # Generate rotation angle
-        i = div(k - 1, K/3) + 1 # serving BS id
+        i = @compat Int(div(k - 1, K/3) + 1) # serving BS id
         if i == 1
             θ = deg2rad(240)
         elseif i == 2
