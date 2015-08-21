@@ -40,8 +40,8 @@ Base.showcompact(io::IO, x::IndoorsNetwork) =
 function setup_indoors_network(
     no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(3.4e9, 15e3),
-    propagation_environments = [:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
-                                :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4)],
+    propagation_environments = (@compat Dict(:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
+                                            :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4))),
     corridor_length = 120.,
     corridor_width = 50.,
     guard_distance = 3.,

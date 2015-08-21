@@ -58,12 +58,12 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
                 conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
                 if conv_crit < aux_params["stop_crit"]
                     Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE converged.",
-                        [ :no_iters => iters,
-                          :final_objective => objective[end],
-                          :conv_crit => conv_crit,
-                          :stop_crit => aux_params["stop_crit"],
-                          :max_iters => aux_params["max_iters"] ]
-                    )
+                        @compat Dict(
+                            :no_iters => iters,
+                            :final_objective => objective[end],
+                            :conv_crit => conv_crit,
+                            :stop_crit => aux_params["stop_crit"],
+                            :max_iters => aux_params["max_iters"]))
                     break
                 end
             end
@@ -75,12 +75,12 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
         end
         if iters == aux_params["max_iters"]
             Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE did NOT converge.",
-                [ :no_iters => iters,
-                  :final_objective => objective[end],
-                  :conv_crit => conv_crit,
-                  :stop_crit => aux_params["stop_crit"],
-                  :max_iters => aux_params["max_iters"] ]
-            )
+                @compat Dict(
+                    :no_iters => iters,
+                    :final_objective => objective[end],
+                    :conv_crit => conv_crit,
+                    :stop_crit => aux_params["stop_crit"],
+                    :max_iters => aux_params["max_iters"]))
         end
     end
 
@@ -109,7 +109,7 @@ function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     ds = [ size(state.V[k], 2) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-        Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+        Phi = complex(sigma2s[k]*eye(channel.Ns[k]))
         for j = 1:channel.I; for l in served_MS_ids(j, assignment)
             F = channel.H[k,j]*state.V[l]
             Phi += F*F'
@@ -118,7 +118,8 @@ function update_MSs!(state::Razaviyayn2013_MinMaxWMMSEState,
         # MMSE receiver and optimal MSE weight
         F = channel.H[k,i]*state.V[k]
         state.U[k] = Hermitian(Phi)\F
-        state.W[k] = inv(Hermitian(eye(ds[k]) - state.U[k]'*F))
+        Emmse = UniformScaling(1.) - state.U[k]'*F
+        state.W[k] = inv(Hermitian((Emmse + Emmse')/2))
     end; end
 end
 
@@ -131,7 +132,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
 
     # The following is OK, since we have checked this at the top of
     # the outer function.
-    K = channel.K; I = channel.I; Kc = int(channel.K/channel.I)
+    K = channel.K; I = channel.I; Kc = @compat Int(channel.K/channel.I)
     N = channel.Ns[1]; M = channel.Ms[1]; d = size(state.W[1], 2)
 
     # Bookkeeping for the Gurobi model
@@ -143,7 +144,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
 
     # Index functions for optimization variables
     t_ind = 1
-    v_ind(k, m, n, imag::Bool) = (no_t_vars + (k-1)*M*d*2 + (m-1)*d*2 + (n-1)*2 + 1 + int(imag))
+    v_ind(k, m, n, imag::Bool) = (no_t_vars + (k-1)*M*d*2 + (m-1)*d*2 + (n-1)*2 + 1 + @compat Int(imag))
 
     # Gurobi environment
     env = Gurobi.Env()
@@ -241,7 +242,7 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
         end
 
         # Constant part
-        rhs = abs(logdet(state.W[k])) - abs(trace(state.W[k]*(eye(d) + sigma2s[k]*state.U[k]'*state.U[k]))) + d
+        rhs = logabsdet(state.W[k]) - abs(trace(state.W[k]*(UniformScaling(1.) + sigma2s[k]*state.U[k]'*state.U[k]))) + d
 
         Gurobi.add_qconstr!(model,
             rate_constraint_lind,
@@ -309,6 +310,6 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
             end
         end
     else
-        Lumberjack.warn("Numerical problems with Gurobi in Razaviyayn2013_MinMaxWMMSE", [ :gurobi_output => string(Gurobi.get_status(model)) ])
+        Lumberjack.warn("Numerical problems with Gurobi in Razaviyayn2013_MinMaxWMMSE", @compat Dict(:gurobi_output => string(Gurobi.get_status(model))))
     end
 end

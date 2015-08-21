@@ -118,25 +118,25 @@ end
 
 get_no_antennas(node) = node.no_antennas
 
-get_user_priority (MS) = MS.user_priority
+get_user_priority(MS) = MS.user_priority
 set_user_priority!(MS, α) = (MS.user_priority = α)
 
-get_no_streams (MS::MS) = MS.no_streams
+get_no_streams(MS::MS) = MS.no_streams
 set_no_streams!(MS::MS, d) = (MS.no_streams = d)
 
-get_receiver_noise_power (MS::CanonicalMS, network) = MS.receiver_noise_power
+get_receiver_noise_power(MS::CanonicalMS, network) = MS.receiver_noise_power
 set_receiver_noise_power!(MS::CanonicalMS, sigma2, network) = (MS.receiver_noise_power = sigma2)
-get_receiver_noise_power_dBm (MS::CanonicalMS, network) = 10*log10(get_receiver_noise_power(MS, network))
+get_receiver_noise_power_dBm(MS::CanonicalMS, network) = 10*log10(get_receiver_noise_power(MS, network))
 set_receiver_noise_power_dBm!(MS::CanonicalMS, sigma2_dBm, network) = set_receiver_noise_power(MS, 10^(sigma2_dBm/10), network)
 
-get_receiver_noise_power (MS::PhysicalMS, network) = 10^(get_receiver_noise_power_dBm(MS, network)/10)
+get_receiver_noise_power(MS::PhysicalMS, network) = 10^(get_receiver_noise_power_dBm(MS, network)/10)
 set_receiver_noise_power!(MS::PhysicalMS, sigma2, network) = (MS.noise_figure = 174. + 10*log10(sigma2) - 10*log10(network.system.bandwidth))
-get_receiver_noise_power_dBm (MS::PhysicalMS, network) = (-174. + 10*log10(network.system.bandwidth) + MS.noise_figure)
+get_receiver_noise_power_dBm(MS::PhysicalMS, network) = (-174. + 10*log10(network.system.bandwidth) + MS.noise_figure)
 set_receiver_noise_power_dBm!(MS::PhysicalMS, sigma2_dBm, network) = (MS.noise_figure = 174. + sigma2_dBm - 10*log10(network.system.bandwidth))
 
-get_transmit_power (BS) = BS.transmit_power
+get_transmit_power(BS) = BS.transmit_power
 set_transmit_power!(BS, P) = (BS.transmit_power = P)
-get_transmit_power_dBm (BS) = 10*log10(get_transmit_power(BS))
+get_transmit_power_dBm(BS) = 10*log10(get_transmit_power(BS))
 set_transmit_power_dBm!(BS, P_dBm) = set_transmit_power!(BS, 10^(P_dBm/10))
 
 get_distance(MS, BS) = get_distance(MS.position, BS.position)
@@ -152,49 +152,49 @@ typealias AuxNetworkParams Dict{ASCIIString, Any}
 get_no_MSs(network) = length(network.MSs)
 get_no_BSs(network) = length(network.BSs)
 
-get_assignment (network) = network.assignment
+get_assignment(network) = network.assignment
 set_assignment!(network, assignment) = (network.assignment = assignment)
 
-has_aux_network_param (network, k) = haskey(network.aux_network_params, k)
-get_aux_network_param (network, k) = (network.aux_network_params[k])
+has_aux_network_param(network, k) = haskey(network.aux_network_params, k)
+get_aux_network_param(network, k) = (network.aux_network_params[k])
 set_aux_network_param!(network, v, k) = (network.aux_network_params[k] = v)
-get_aux_network_params (network) = network.aux_network_params
+get_aux_network_params(network) = network.aux_network_params
 set_aux_network_params!(network, additional) = merge!(network.aux_network_params, additional)
 
-has_aux_precoding_param (network, k) = haskey(network.aux_precoding_params, k)
-get_aux_precoding_param (network, k) = (network.system.aux_precoding_params[k])
+has_aux_precoding_param(network, k) = haskey(network.aux_precoding_params, k)
+get_aux_precoding_param(network, k) = (network.system.aux_precoding_params[k])
 set_aux_precoding_param!(network, v, k) = (network.system.aux_precoding_params[k] = v)
-get_aux_precoding_params (network) = network.system.aux_precoding_params
+get_aux_precoding_params(network) = network.system.aux_precoding_params
 set_aux_precoding_params!(network, additional) = merge!(network.system.aux_precoding_params, additional)
 
-has_aux_assignment_param (network, k) = haskey(network.aux_assignment_params, k)
-get_aux_assignment_param (network, k) = (network.system.aux_assignment_params[k])
+has_aux_assignment_param(network, k) = haskey(network.aux_assignment_params, k)
+get_aux_assignment_param(network, k) = (network.system.aux_assignment_params[k])
 set_aux_assignment_param!(network, v, k) = (network.system.aux_assignment_params[k] = v)
-get_aux_assignment_params (network) = network.system.aux_assignment_params
+get_aux_assignment_params(network) = network.system.aux_assignment_params
 set_aux_assignment_params!(network, additional) = merge!(network.system.aux_assignment_params, additional)
 
 get_no_MS_antennas(network) = [ get_no_antennas(network.MSs[k]) for k = 1:get_no_MSs(network) ]
 get_no_BS_antennas(network) = [ get_no_antennas(network.BSs[i]) for i = 1:get_no_BSs(network) ]
 
-get_transmit_powers (network) = [ get_transmit_power(network.BSs[i]) for i = 1:get_no_BSs(network) ]
+get_transmit_powers(network) = [ get_transmit_power(network.BSs[i]) for i = 1:get_no_BSs(network) ]
 set_transmit_powers!(network, P::Real) = (for BS in network.BSs; set_transmit_power!(BS, P); end)
 set_transmit_powers!(network, Ps::Vector) = (for i = 1:length(Ps); set_transmit_power!(network.BSs[i], Ps[i]); end)
-get_transmit_powers_dBm (network) = [ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_no_BSs(network) ]
+get_transmit_powers_dBm(network) = [ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_no_BSs(network) ]
 set_transmit_powers_dBm!(network, P_dBm::Real) = (for BS in network.BSs; set_transmit_power_dBm!(BS, P_dBm); end)
 set_transmit_powers_dBm!(network, Ps_dBm::Vector) = (for i = 1:length(Ps_dBm); set_transmit_power_dBm!(network.BSs[i], Ps_dBm[i]); end)
 
-get_receiver_noise_powers (network) = [ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+get_receiver_noise_powers(network) = [ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
 set_receiver_noise_powers!(network, sigma2::Real) = (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
 set_receiver_noise_powers!(network, sigma2s::Vector) = (for k = 1:length(sigma2s); set_receiver_noise_power!(network.MSs[k], sigma2s[k], network); end)
-get_receiver_noise_powers_dBm (network) = [ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+get_receiver_noise_powers_dBm(network) = [ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
 set_receiver_noise_powers_dBm!(network, sigma2_dBm::Real) = (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2_dBm, network); end)
 set_receiver_noise_powers_dBm!(network, sigma2s_dBm::Vector) = (for k = 1:length(sigma2s_dBm); set_receiver_noise_power_dBm!(network.MSs[k], sigma2s_dBm[k], network); end)
 
-get_user_priorities (network) = [ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
+get_user_priorities(network) = [ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
 set_user_priorities!(network, α::Real) = (for MS in network.MSs; set_user_priority!(MS, α); end)
 set_user_priorities!(network, α::Vector) = (for k = 1:length(α); set_user_priority!(network.MSs[k], α[k]); end)
 
-get_no_streams (network::Network) = [ get_no_streams(network.MSs[k]) for k = 1:get_no_MSs(network) ]
+get_no_streams(network::Network) = [ get_no_streams(network.MSs[k]) for k = 1:get_no_MSs(network) ]
 set_no_streams!(network::Network, d::Int) = (for MS in network.MSs; set_no_streams(MS, d); end)
 set_no_streams!(network::Network, ds::Vector) = (for k = 1:length(ds); set_no_streams(network.MSs[k], ds[k]); end)
 

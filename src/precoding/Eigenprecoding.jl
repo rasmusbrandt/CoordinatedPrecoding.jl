@@ -26,9 +26,9 @@ function Eigenprecoding(channel::SinglecarrierChannel, network)
             noise_over_channel_power = sigma2s[k]./sing_vals
 
             # Activate all channels
-            active_channels = [1:max_d]
+            active_channels = collect(1:max_d)
 
-            Palloc = zeros(active_channels)
+            Palloc = zeros(Float64, max_d)
             while true
                 # Current water level and power allocation
                 mu = (1/length(active_channels))*(Ps[i]/Kc + sum(noise_over_channel_power[active_channels]))
@@ -39,7 +39,7 @@ function Eigenprecoding(channel::SinglecarrierChannel, network)
             end
 
             # Final precoder for this user
-            state.V[k] = r_sing_vecs*diagm([sqrt(Palloc), zeros(Float64, max_d - length(Palloc))])
+            state.V[k] = r_sing_vecs*diagm(vcat(sqrt(Palloc), zeros(Float64, max_d - length(Palloc))))
         end
     end
 
@@ -106,9 +106,9 @@ function calculate_logdet_rates(state::EigenprecodingState,
             end
 
             d = size(state.V[k], 2)
-            W_intercell = Hermitian(eye(d) + (channel.K/Kc)*state.V[k]'*channel.H[k,i]'*(1/sigma2s[k])*channel.H[k,i]*state.V[k])
-            W_intracell = Hermitian(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k])
-            W_uncoord = Hermitian(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k])
+            W_intercell = UniformScaling(1.) + (channel.K/Kc)*state.V[k]'*channel.H[k,i]'*(1/sigma2s[k])*channel.H[k,i]*state.V[k]
+            W_intracell = UniformScaling(1.) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k]
+            W_uncoord = UniformScaling(1.) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k]
 
             r_intercell_logdet = (1/channel.K)*log2(max(1, abs(eigvals(W_intercell))))
             r_intracell_logdet = (1/Kc)*log2(max(1, abs(eigvals(W_intracell))))

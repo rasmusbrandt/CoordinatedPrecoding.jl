@@ -7,12 +7,16 @@
 module CoordinatedPrecoding
 
 # Necessary dependencies
+using Compat
 import PyPlot, Lumberjack, ProgressMeter
 
 # Optional dependencies
 if Pkg.installed("Gurobi") != nothing
     import Gurobi
 end
+
+# Operator extension
+import Base: +, -
 
 export
 

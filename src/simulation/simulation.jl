@@ -58,8 +58,7 @@ function simulate(network, simulation_params;
 
     println("-- simulate on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
-    Lumberjack.info("Starting simulation.",
-        [ :network => network, :simulation_params => simulation_params ])
+    Lumberjack.info("Starting simulation.", @compat Dict(:network => network, :simulation_params => simulation_params))
 
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)
@@ -174,7 +173,7 @@ function simulate_precoding_convergence(network, simulation_params;
     println("-- simulate_precoding_convergence on $network.")
     println("--- Ndrops: $Ndrops, Nsim: $Nsim.")
     Lumberjack.info("Starting convergence simulation.",
-        [ :network => network, :simulation_params => simulation_params ])
+        @compat Dict(:network => network, :simulation_params => simulation_params))
 
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)
@@ -263,7 +262,7 @@ function simulate_assignment_convergence(network, simulation_params)
     println("-- simulate_assignment_convergence on $network.")
     println("--- Ndrops: $Ndrops.")
     Lumberjack.info("Starting convergence simulation.",
-        [ :network => network, :simulation_params => simulation_params ])
+        @compat Dict(:network => network, :simulation_params => simulation_params))
 
     # Set initial aux params
     set_initial_aux_params!(simulation_params, network)

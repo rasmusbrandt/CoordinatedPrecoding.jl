@@ -7,6 +7,7 @@
 ##########################################################################
 
 using CoordinatedPrecoding
+using Compat
 
 ##########################################################################
 # Set up logging
@@ -19,7 +20,7 @@ srand(8071232234)
 
 ##########################################################################
 # Performance test
-simulation_params = [
+simulation_params = @compat Dict(
     "I" => 3, "Kc" => 1, "N" => 2, "M" => 2,
     "P_dBm" => 20.,
     "d" => 1,
@@ -28,15 +29,15 @@ simulation_params = [
         Shi2011_WMMSE,
         Gomadam2008_MaxSINR,
         Komulainen2013_WMMSE,
-        Razaviyayn2013_MinMaxWMMSE,
+        # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
-    "aux_precoding_params" => [
+    "aux_precoding_params" => @compat Dict(
         "initial_precoders" => "dft",
         "stop_crit" => 0.,
         "max_iters" => 100,
-    ]
-]
+    )
+)
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],

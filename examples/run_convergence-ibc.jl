@@ -7,7 +7,7 @@
 ##########################################################################
 
 using CoordinatedPrecoding
-using HDF5, JLD
+using Compat, JLD
 
 ##########################################################################
 # Set up logging
@@ -17,11 +17,11 @@ Lumberjack.add_truck(Lumberjack.LumberjackTruck("debug.log", "debug"), "debug")
 ##########################################################################
 # General settings
 srand(83196723)
-start_time = strftime("%Y%m%dT%H%M%S", time())
+start_time = Libc.strftime("%Y%m%dT%H%M%S", time())
 
 ##########################################################################
 # IBC network
-simulation_params = [
+simulation_params = @compat Dict(
     "simulation_name" => "convergence_$(start_time)-ibc",
     "I" => 3, "Kc" => 1, "N" => 3, "M" => 3, "d" => 2,
     "Ndrops" => 10, "Nsim" => 10,
@@ -32,15 +32,15 @@ simulation_params = [
         # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
-    "aux_precoding_params" => [
+    "aux_precoding_params" => (@compat Dict(
         "initial_precoders" => "eigendirection",
         "stop_crit" => 0.,
         "max_iters" => 100,
-    ],
+    )),
     "aux_independent_variables" => [
         (set_transmit_powers_dBm!, [10, 30]),
-    ]
-]
+    ],
+)
 network =
     setup_interfering_broadcast_channel(simulation_params["I"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],

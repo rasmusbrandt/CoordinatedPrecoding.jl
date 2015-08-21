@@ -12,8 +12,8 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     system::System_t
     no_MSs_per_cell::Int
     propagation_environment::PropagationEnvironment_t
-    geography_size::(Float64, Float64)
-    MS_serving_BS_distance::Union(Float64, Nothing) # nothing signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
+    geography_size::@compat Tuple{Float64, Float64}
+    MS_serving_BS_distance::@compat Union{Float64, Nothing} # nothing signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
     aux_network_params::AuxNetworkParams
 
     assignment::Assignment

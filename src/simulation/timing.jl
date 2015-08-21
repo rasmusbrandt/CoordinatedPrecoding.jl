@@ -2,8 +2,7 @@
 # Timing for list of methods. loop_over works like in simulate.
 function timing(network, simulation_params; loop_over::Symbol=:precoding_methods)
     println("-- timing on $network.")
-    Lumberjack.info("Starting timing.",
-        [ :network => network, :simulation_params => simulation_params ])
+    Lumberjack.info("Starting timing.", @compat Dict(:network => network, :simulation_params => simulation_params))
 
     # Get assignment method if needed
     assignment_method() = nothing
@@ -27,9 +26,6 @@ function timing(network, simulation_params; loop_over::Symbol=:precoding_methods
     # Get channel realization to work on
     draw_user_drop!(network)
     channel = draw_channel(network)
-
-    println("--- JITing @time macro")
-    @time 1
 
     if loop_over == :precoding_methods
         # Perform assignment

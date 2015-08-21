@@ -7,7 +7,7 @@
 ##########################################################################
 
 using CoordinatedPrecoding
-using HDF5, JLD, ArgParse
+using Compat, JLD, ArgParse
 
 ##########################################################################
 # Load data
@@ -22,60 +22,60 @@ parsed_args = parse_args(s)
 
 ##########################################################################
 # Plot parameters
-plot_params = [
+plot_params = @compat Dict(
     "plot_name" => "",
 
     "objective" => :sumrate,
 
-    "figure" => [
+    "figure" => (@compat Dict(
         :figsize => (8,5),
         :dpi => 125,
         :facecolor => "w",
         :edgecolor => "k",
-    ],
+    )),
 
-    "axes" => [
+    "axes" => (@compat Dict(
         :xlabel => "Iterations",
         :ylabel => "Sum rate [bits/s/Hz]",
         :xscale => "linear",
         :yscale => "linear",
-    ],
+    )),
 
-    "legend" => [
+    "legend" => (@compat Dict(
         :loc => "best",
         :fontsize => 8,
-    ],
+    )),
 
     # "confidence_interval_zalpha2" => 1.96,
 
-    "methods" => [
+    "methods" => (@compat Dict(
         "Shi2011_WMMSE" => [
-            ("logdet_rates", [ :color => "b", :linestyle => "-", :label => "WMMSE (logdet)" ]),
-            ("MMSE_rates", [ :color => "b", :linestyle => "--",  :label => "WMMSE (MMSE)" ]),
+            ("logdet_rates", @compat Dict(:color => "b", :linestyle => "-", :label => "WMMSE (logdet)")),
+            ("MMSE_rates", @compat Dict(:color => "b", :linestyle => "--",  :label => "WMMSE (MMSE)")),
         ],
 
         "Gomadam2008_MaxSINR" => [
-            ("logdet_rates", [ :color => "r", :linestyle => "-", :label => "MaxSINR (logdet)" ]),
-            ("MMSE_rates", [ :color => "r", :linestyle => "--",  :label => "MaxSINR (MMSE)" ]),
+            ("logdet_rates", @compat Dict(:color => "r", :linestyle => "-", :label => "MaxSINR (logdet)")),
+            ("MMSE_rates", @compat Dict(:color => "r", :linestyle => "--",  :label => "MaxSINR (MMSE)")),
         ],
 
         "Komulainen2013_WMMSE" => [
-            ("logdet_rates", [ :color => "y", :linestyle => "-", :label => "DiagWMMSE (logdet)" ]),
-            ("MMSE_rates", [ :color => "y", :linestyle => "--",  :label => "DiagWMMSE (MMSE)" ]),
+            ("logdet_rates", @compat Dict(:color => "y", :linestyle => "-", :label => "DiagWMMSE (logdet)")),
+            ("MMSE_rates", @compat Dict(:color => "y", :linestyle => "--",  :label => "DiagWMMSE (MMSE)")),
         ],
 
         "Razaviyayn2013_MinMaxWMMSE" => [
-            ("logdet_rates", [ :color => "m", :linestyle => "-", :label => "MinMaxWMMSE (logdet)" ]),
-            ("MMSE_rates", [ :color => "m", :linestyle => "--",  :label => "MinMaxWMMSE (MMSE)" ]),
+            ("logdet_rates", @compat Dict(:color => "m", :linestyle => "-", :label => "MinMaxWMMSE (logdet)")),
+            ("MMSE_rates", @compat Dict(:color => "m", :linestyle => "--",  :label => "MinMaxWMMSE (MMSE)")),
         ],
 
         "Eigenprecoding" => [
-            ("intercell_tdma_logdet_rates", [ :color => "c", :linestyle => "-", :label => "TDMA" ]),
-            ("intracell_tdma_logdet_rates", [ :color => "c", :linestyle => "-.",  :label => "Intracell TDMA" ]),
-            ("uncoord_logdet_rates", [ :color => "k", :linestyle => "-", :label => "Uncoord. transm." ]),
+            ("intercell_tdma_logdet_rates", @compat Dict(:color => "c", :linestyle => "-", :label => "TDMA")),
+            ("intracell_tdma_logdet_rates", @compat Dict(:color => "c", :linestyle => "-.",  :label => "Intracell TDMA")),
+            ("uncoord_logdet_rates", @compat Dict(:color => "k", :linestyle => "-", :label => "Uncoord. transm.")),
         ],
-    ],
-]
+    ),
+)
 
 ##########################################################################
 # Plot it

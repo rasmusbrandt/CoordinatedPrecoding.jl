@@ -48,12 +48,12 @@ function Shi2011_WMMSE(channel, network)
             conv_crit = abs(objective[end] - objective[end-1])/abs(objective[end-1])
             if conv_crit < aux_params["stop_crit"]
                 Lumberjack.debug("Shi2011_WMMSE converged.",
-                    [ :no_iters => iters,
-                      :final_objective => objective[end],
-                      :conv_crit => conv_crit,
-                      :stop_crit => aux_params["stop_crit"],
-                      :max_iters => aux_params["max_iters"] ]
-                )
+                    @compat Dict(
+                        :no_iters => iters,
+                        :final_objective => objective[end],
+                        :conv_crit => conv_crit,
+                        :stop_crit => aux_params["stop_crit"],
+                        :max_iters => aux_params["max_iters"] ))
                 break
             end
         end
@@ -65,12 +65,12 @@ function Shi2011_WMMSE(channel, network)
     end
     if iters == aux_params["max_iters"]
         Lumberjack.debug("Shi2011_WMMSE did NOT converge.",
-            [ :no_iters => iters,
-              :final_objective => objective[end],
-              :conv_crit => conv_crit,
-              :stop_crit => aux_params["stop_crit"],
-              :max_iters => aux_params["max_iters"] ]
-        )
+            @compat Dict(
+                :no_iters => iters,
+                :final_objective => objective[end],
+                :conv_crit => conv_crit,
+                :stop_crit => aux_params["stop_crit"],
+                :max_iters => aux_params["max_iters"] ))
     end
 
     results = PrecodingResults()
@@ -107,7 +107,8 @@ function update_MSs!(state::Shi2011_WMMSEState, channel::SinglecarrierChannel,
         # MMSE receiver and optimal MSE weight
         F = channel.H[k,i]*state.V[k]
         state.U[k] = Hermitian(Phi)\F
-        state.W[k] = inv(Hermitian(eye(ds[k]) - state.U[k]'*F))
+        E = UniformScaling(1.) - state.U[k]'*F
+        state.W[k] = inv(Hermitian((E + E')/2))
     end; end
 end
 
@@ -140,7 +141,7 @@ function optimal_mu(i, Gamma, state::Shi2011_WMMSEState,
     for k in served_MS_ids(i, assignment)
         bis_M += channel.H[k,i]'*(state.U[k]*(state.W[k]*state.W[k])*state.U[k]')*channel.H[k,i]
     end
-    Gamma_eigen = eigfact(Hermitian(Gamma)); Gamma_eigen_values = abs(Gamma_eigen.values)
+    Gamma_eigen = eigfact(Hermitian((Gamma + Gamma')/2)); Gamma_eigen_values = abs(Gamma_eigen.values)
     bis_JMJ_diag = abs(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen_values .+ mu).*(Gamma_eigen_values .+ mu)))
 
