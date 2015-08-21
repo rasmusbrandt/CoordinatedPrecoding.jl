@@ -33,7 +33,7 @@ function setup_random_large_scale_network(
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 10, 8),
     geography_size = (1500.,1500.),
-    MS_serving_BS_distance = nothing, # typically around 1000
+    MS_serving_BS_distance = 150.,
     transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
     BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for idx = 1:no_BSs ],
     user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
