@@ -1,13 +1,12 @@
 # CoordinatedPrecoding.jl
-CoordinatedPrecoding.jl is [Julia][julia] package for the simulation of
+CoordinatedPrecoding.jl is a [Julia][julia] package for the simulation of
 wireless networks, in particular multicell multiple-input multiple-output (MIMO)
 networks operating using [coordinated precoding][PracticalTDD].
 
 The main purpose of the package is to provide an infrastructure for researchers
-to write their own simulation scripts, for example to try out new ideas for
-coordinated precoding. In addition to this, the package contains some basic
-network/channel models (inspired by 3GPP and ITU-T) and some reference
-implementations of popular precoding methods.
+to write their own simulation scripts. In addition to this, the package contains
+some basic network/channel models (inspired by 3GPP and ITU-T) and some
+reference implementations of popular precoding methods.
 
 ## Overview
 
@@ -69,8 +68,17 @@ The package is under continuous development. Several aspects of the code could
 be improved, e.g. test coverage and harmonization of concepts. This is not
 likely to happen in the short term.
 
-## License
-This source code is licensed under the X license.
+## License and citation
+This source code is licensed under the X license. If you use this software
+for research that results in publications, please acknowledge this by citing us:
+```
+@Misc{CoordinatedPrecodingJL,
+  Title                    = {CoordinatedPrecoding.jl},
+  Author                   = {R. Brandt},
+  Howpublished             = {\url{https://www.github.com/rasmusbrandt/CoordinatedPrecoding.jl}},
+  Year                     = {2015}
+}
+```
 
 [julia]: http://www.julialang.org
 [PracticalTDD]: http://kth.diva-portal.org/smash/get/diva2:811008/FULLTEXT01.pdf
