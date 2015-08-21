@@ -13,7 +13,7 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     no_MSs_per_cell::Int
     propagation_environment::PropagationEnvironment_t
     geography_size::@compat Tuple{Float64, Float64}
-    MS_serving_BS_distance::@compat Union{Float64, Nothing} # nothing signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
+    MS_serving_BS_distance::@compat Nullable{Float64} # null signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
     aux_network_params::AuxNetworkParams
 
     assignment::Assignment
@@ -51,10 +51,10 @@ function setup_random_large_scale_network(
 end
 
 ##########################################################################
-# SNR functions (only work if MS_serving_BS_distance != nothing)
+# SNR functions (only work if MS_serving_BS_distance is not null)
 
 function get_average_SNRs_dB{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::RandomLargeScaleNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
-    network.MS_serving_BS_distance == nothing && error("Can only call get_average_SNRs_dB if BS-MS distance for served MSs is specified.")
+    isnull(network.MS_serving_BS_distance) && error("Can only call get_average_SNRs_dB if BS-MS distance for served MSs is specified.")
 
     I = get_no_BSs(network); Kc = network.no_MSs_per_cell
     pathloss_alpha = network.propagation_environment.pathloss_alpha
@@ -65,7 +65,7 @@ function get_average_SNRs_dB{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
         Pt_dBm = get_transmit_power_dBm(network.BSs[i])
         for k = (i-1)*Kc+1:i*Kc
             sigma2_dBm = get_receiver_noise_power_dBm(network.MSs[k], network)
-            SNRs_dB[k] = Pt_dBm - sigma2_dBm - pathloss_beta - pathloss_alpha*log10(network.MS_serving_BS_distance)
+            SNRs_dB[k] = Pt_dBm - sigma2_dBm - pathloss_beta - pathloss_alpha*log10(get(network.MS_serving_BS_distance))
         end
     end
 
@@ -76,7 +76,7 @@ get_average_SNRs{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(net
     10.^(get_average_SNRs_dB(network)/10)
 
 function set_average_SNRs_dB!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::RandomLargeScaleNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment}, SNR_dB)
-    network.MS_serving_BS_distance == nothing && error("Can only call set_average_SNRs_dB! if BS-MS distance for served MSs is specified.")
+    isnull(network.MS_serving_BS_distance) && error("Can only call set_average_SNRs_dB! if BS-MS distance for served MSs is specified.")
 
     I = get_no_BSs(network); Kc = network.no_MSs_per_cell
     pathloss_alpha = network.propagation_environment.pathloss_alpha
@@ -86,7 +86,7 @@ function set_average_SNRs_dB!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <
     for i = 1:I
         k1 = (i-1)*Kc+1
         sigma2_dBm = get_receiver_noise_power_dBm(network.MSs[k1], network)
-        Pt_dBm = SNR_dB + sigma2_dBm + pathloss_beta + pathloss_alpha*log10(network.MS_serving_BS_distance)
+        Pt_dBm = SNR_dB + sigma2_dBm + pathloss_beta + pathloss_alpha*log10(get(network.MS_serving_BS_distance))
         set_transmit_power_dBm!(network.BSs[i], Pt_dBm)
     end
 end
@@ -97,9 +97,9 @@ set_average_SNRs!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(ne
 ##########################################################################
 # Cell assignment functions
 
-# Standard cell assignment functions, only applicable of MS_serving_BS_distance != nothing
+# Standard cell assignment functions, only applicable if MS_serving_BS_distance is not null
 function IDCellAssignment!(channel, network::RandomLargeScaleNetwork)
-    network.MS_serving_BS_distance == nothing && error("Can only call IDCellAssignment! if BS-MS distance for served MSs is specified.")
+    isnull(network.MS_serving_BS_distance) && error("Can only call IDCellAssignment! if BS-MS distance for served MSs is specified.")
 
     I = get_no_BSs(network); Kc = network.no_MSs_per_cell
     cell_assignment = Array(Int, I*Kc)
@@ -114,7 +114,7 @@ function IDCellAssignment!(channel, network::RandomLargeScaleNetwork)
 end
 
 function LargeScaleFadingCellAssignment!(channel, network::RandomLargeScaleNetwork)
-    if network.MS_serving_BS_distance == nothing
+    if isnull(network.MS_serving_BS_distance)
         # Greedy scheduler based on the large scale fading realizations
         I = get_no_BSs(network); K = get_no_MSs(network)
 
@@ -156,7 +156,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
     I = get_no_BSs(network); K = get_no_MSs(network)
     Kc = network.no_MSs_per_cell
 
-    if network.MS_serving_BS_distance == nothing
+    if isnull(network.MS_serving_BS_distance)
         # Drop BSs uniformly at random
         for i = 1:I
             BS_x = network.geography_size[1]*rand(); BS_y = network.geography_size[2]*rand()
@@ -178,8 +178,8 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
 
                 # Position
                 theta = 2*pi*rand()
-                dx = network.MS_serving_BS_distance*cos(theta)
-                dy = network.MS_serving_BS_distance*sin(theta)
+                dx = get(network.MS_serving_BS_distance)*cos(theta)
+                dy = get(network.MS_serving_BS_distance)*sin(theta)
                 network.MSs[k].position = Position(BS_x + dx, BS_y + dy)
 
                 # Shadow fading (uncorrelated between BSs)
