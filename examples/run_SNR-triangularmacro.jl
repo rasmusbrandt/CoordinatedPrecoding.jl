@@ -20,7 +20,7 @@ start_time = Libc.strftime("%Y%m%dT%H%M%S", time())
 
 ##########################################################################
 # TriangularMacro network
-simulation_params = @compat Dict(
+simulation_params = @Compat.Dict(
     "simulation_name" => "SNR_$(start_time)-triangularmacro",
     "Kc" => 2, "N" => 2, "M" => 4, "d" => 1,
     "Ndrops" => 10, "Nsim" => 10,
@@ -31,11 +31,11 @@ simulation_params = @compat Dict(
         # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
-    "aux_precoding_params" => (@compat Dict(
+    "aux_precoding_params" => @Compat.Dict(
         "initial_precoders" => "eigendirection",
         "stop_crit" => 1e-3,
         "max_iters" => 1000,
-    )),
+    ),
     "independent_variable" => (set_transmit_powers_dBm!, -20:5:30),
     # "aux_independent_variables" => [
     #     ((n, v) -> set_aux_precoding_param!(n, v, "max_iters"), [10, 50]),

@@ -27,28 +27,28 @@ plot_params = @compat Dict(
 
     "objective" => :sumrate,
 
-    "figure" => (@compat Dict(
+    "figure" => @Compat.Dict(
         :figsize => (8,5),
         :dpi => 125,
         :facecolor => "w",
         :edgecolor => "k",
-    )),
+    ),
 
-    "axes" => (@compat Dict(
+    "axes" => @Compat.Dict(
         :xlabel => "Iterations",
         :ylabel => "Sum rate [bits/s/Hz]",
         :xscale => "linear",
         :yscale => "linear",
-    )),
+    ),
 
-    "legend" => (@compat Dict(
+    "legend" => @Compat.Dict(
         :loc => "best",
         :fontsize => 8,
-    )),
+    ),
 
     # "confidence_interval_zalpha2" => 1.96,
 
-    "methods" => (@compat Dict(
+    "methods" => @Compat.Dict(
         "Shi2011_WMMSE" => [
             ("logdet_rates", @compat Dict(:color => "b", :linestyle => "-", :label => "WMMSE (logdet)")),
             ("MMSE_rates", @compat Dict(:color => "b", :linestyle => "--",  :label => "WMMSE (MMSE)")),

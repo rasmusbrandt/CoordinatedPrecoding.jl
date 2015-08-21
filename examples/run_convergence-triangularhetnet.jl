@@ -32,11 +32,11 @@ simulation_params = @compat Dict(
         # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
-    "aux_precoding_params" => (@compat Dict(
+    "aux_precoding_params" => @Compat.Dict(
         "initial_precoders" => "eigendirection",
         "stop_crit" => 0.,
         "max_iters" => 20,
-    )),
+    ),
     "aux_independent_variables" => [
         (set_transmit_powers_dBm!, [ p*ones(6) - [0,0,0,20,20,20] for p = [0, 20] ]),
     ]
