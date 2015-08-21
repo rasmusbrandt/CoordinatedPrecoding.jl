@@ -7,10 +7,10 @@ end
 function Shi2011_WMMSE(channel, network)
     assignment = get_assignment(network)
 
-    K = get_no_MSs(network)
+    K = get_num_MSs(network)
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
-    ds = get_no_streams(network); max_d = maximum(ds)
+    ds = get_num_streams(network); max_d = maximum(ds)
     alphas = get_user_priorities(network)
 
     aux_params = get_aux_precoding_params(network)
@@ -49,7 +49,7 @@ function Shi2011_WMMSE(channel, network)
             if conv_crit < aux_params["stop_crit"]
                 Lumberjack.debug("Shi2011_WMMSE converged.",
                     @compat Dict(
-                        :no_iters => iters,
+                        :num_iters => iters,
                         :final_objective => objective[end],
                         :conv_crit => conv_crit,
                         :stop_crit => aux_params["stop_crit"],
@@ -66,7 +66,7 @@ function Shi2011_WMMSE(channel, network)
     if iters == aux_params["max_iters"]
         Lumberjack.debug("Shi2011_WMMSE did NOT converge.",
             @compat Dict(
-                :no_iters => iters,
+                :num_iters => iters,
                 :final_objective => objective[end],
                 :conv_crit => conv_crit,
                 :stop_crit => aux_params["stop_crit"],
@@ -163,8 +163,8 @@ function optimal_mu(i, Gamma, state::Shi2011_WMMSEState,
             Lumberjack.error("Power bisection: infeasible mu upper bound.")
         end
 
-        no_iters = 0
-        while no_iters < aux_params["Shi2011_WMMSE:bisection_max_iters"]
+        num_iters = 0
+        while num_iters < aux_params["Shi2011_WMMSE:bisection_max_iters"]
             conv_crit = (Ps[i] - f(mu_upper))/Ps[i]
 
             if conv_crit < aux_params["Shi2011_WMMSE:bisection_tolerance"]
@@ -181,10 +181,10 @@ function optimal_mu(i, Gamma, state::Shi2011_WMMSEState,
                 end
             end
 
-            no_iters += 1
+            num_iters += 1
         end
 
-        if no_iters == aux_params["Shi2011_WMMSE:bisection_max_iters"]
+        if num_iters == aux_params["Shi2011_WMMSE:bisection_max_iters"]
             Lumberjack.warn("Power bisection: reached max iterations.")
         end
 

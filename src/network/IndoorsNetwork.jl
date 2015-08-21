@@ -17,7 +17,7 @@ type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, 
     BSs::Vector{BS_t}
 
     system::System_t
-    no_MSs_per_cell::Int
+    num_MSs_per_cell::Int
     propagation_environments::Dict{Symbol,PropagationEnvironment_t} # two keys only, :LoS and :NLoS
     corridor_length::Float64
     corridor_width::Float64
@@ -28,52 +28,52 @@ type IndoorsNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System, 
 end
 
 # Convenience constructor without network params and assignments
-IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance) =
-    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, AuxNetworkParams(), Assignment())
+IndoorsNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance) =
+    IndoorsNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environments, corridor_length, corridor_width, guard_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::IndoorsNetwork) =
-    print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), corridor_length = $(x.corridor_length), corridor_width = $(x.corridor_width), GD = $(x.guard_distance))")
+    print(io, "Indoors(I = $(length(x.BSs)), Kc = $(x.num_MSs_per_cell), corridor_length = $(x.corridor_length), corridor_width = $(x.corridor_width), GD = $(x.guard_distance))")
 Base.showcompact(io::IO, x::IndoorsNetwork) =
-    print(io, "Indoors($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.corridor_length), $(x.corridor_width), $(x.guard_distance))")
+    print(io, "Indoors($(length(x.BSs)), $(x.num_MSs_per_cell), $(x.corridor_length), $(x.corridor_width), $(x.guard_distance))")
 
 # The default parameter values are taken from ITU-R M.2135-1.
 function setup_indoors_network(
-    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
+    num_BSs, num_MSs_per_cell, num_MS_antennas, num_BS_antennas;
     system = SinglecarrierSystem(3.4e9, 15e3),
     propagation_environments = (@compat Dict(:LoS => SimpleLargescaleFadingEnvironment(16.9, 32.8 + 20*log10(3.4), 0, 3),
                                             :NLoS => SimpleLargescaleFadingEnvironment(43.3, 11.5 + 20*log10(3.4), 0, 4))),
     corridor_length = 120.,
     corridor_width = 50.,
     guard_distance = 3.,
-    transmit_power = 10^(-9.8/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
-    BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for i = 1:no_BSs ],
-    user_priority = 1., user_priorities = ones(Float64, no_BSs*no_MSs_per_cell),
-    no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
-    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
-    receiver_noise_figure = 7., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_BSs*no_MSs_per_cell))
+    transmit_power = 10^(-9.8/10), transmit_powers = transmit_power*ones(Float64, num_BSs),
+    BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for i = 1:num_BSs ],
+    user_priority = 1., user_priorities = ones(Float64, num_BSs*num_MSs_per_cell),
+    num_streams = 1, num_streamss = num_streams*ones(Int, num_BSs*num_MSs_per_cell),
+    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, num_BSs*num_MSs_per_cell),
+    receiver_noise_figure = 7., receiver_noise_figures = receiver_noise_figure*ones(Float64, num_BSs*num_MSs_per_cell))
 
-    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell))
-    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, no_BSs))
+    isa(num_MS_antennas, Vector) || (num_MS_antennas = num_MS_antennas*ones(Int, num_BSs*num_MSs_per_cell))
+    isa(num_BS_antennas, Vector) || (num_BS_antennas = num_BS_antennas*ones(Int, num_BSs))
 
     # Place BSs
     y = corridor_width/2
-    Δ = corridor_length/no_BSs
+    Δ = corridor_length/num_BSs
     BSs = Array(PhysicalBS, 0)
-    for i = 1:no_BSs
+    for i = 1:num_BSs
         # BSs uniformly placed along corridor
-        push!(BSs, PhysicalBS(no_BS_antennas[i], Position((i-1)*Δ + Δ/2, y), transmit_powers[i], BS_antenna_gain_params[i]))
+        push!(BSs, PhysicalBS(num_BS_antennas[i], Position((i-1)*Δ + Δ/2, y), transmit_powers[i], BS_antenna_gain_params[i]))
     end
 
-    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_BSs*no_MSs_per_cell ]
+    MSs = [ PhysicalMS(num_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], num_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, num_BSs), falses(num_BSs))) for k = 1:num_BSs*num_MSs_per_cell ]
 
-    IndoorsNetwork(MSs, BSs, system, no_MSs_per_cell, 
+    IndoorsNetwork(MSs, BSs, system, num_MSs_per_cell, 
         propagation_environments, corridor_length, corridor_width, guard_distance)
 end
 
 ##########################################################################
 # Standard cell assignment functions
 function IDCellAssignment!(channel, network::IndoorsNetwork)
-    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
+    Kc = network.num_MSs_per_cell; I = get_num_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -93,7 +93,7 @@ LargeScaleFadingCellAssignment!(channel, network::IndoorsNetwork) =
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::IndoorsNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
-    I = get_no_BSs(network); K = get_no_MSs(network)
+    I = get_num_BSs(network); K = get_num_MSs(network)
     Δ = network.corridor_length/I
 
     # ITU-R M.2135-1, p. 33
@@ -108,7 +108,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
     end
 
     for k = 1:K
-        i = div(k - 1, network.no_MSs_per_cell) + 1 # serving BS id
+        i = div(k - 1, network.num_MSs_per_cell) + 1 # serving BS id
 
         # MS position
         while true
@@ -140,8 +140,8 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
 end
 
 function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::IndoorsNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
-    K = get_no_MSs(network); I = get_no_BSs(network)
-    Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
+    K = get_num_MSs(network); I = get_num_BSs(network)
+    Ns = get_num_MS_antennas(network); Ms = get_num_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, K, I)
     large_scale_fading_factor = Array(Float64, K, I)
@@ -184,7 +184,7 @@ end
 ##########################################################################
 # Visualization functions
 function plot_network_layout(network::IndoorsNetwork)
-    I = get_no_BSs(network); K = get_no_MSs(network)
+    I = get_num_BSs(network); K = get_num_MSs(network)
     Δ = network.corridor_length/I
     δ = network.corridor_width
 

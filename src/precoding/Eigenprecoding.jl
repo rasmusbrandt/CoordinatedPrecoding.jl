@@ -5,7 +5,7 @@ end
 function Eigenprecoding(channel::SinglecarrierChannel, network)
     assignment = get_assignment(network)
 
-    I = get_no_BSs(network)
+    I = get_num_BSs(network)
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
     alphas = get_user_priorities(network)

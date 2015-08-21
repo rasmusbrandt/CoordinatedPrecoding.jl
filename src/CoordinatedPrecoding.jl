@@ -41,7 +41,7 @@ export
 
     draw_user_drop!, draw_channel, plot_network_layout,
 
-    get_no_MSs, get_no_BSs,
+    get_num_MSs, get_num_BSs,
 
     get_assignment, set_assignment!,
     has_aux_network_param,
@@ -54,23 +54,23 @@ export
     get_aux_assignment_param, set_aux_assignment_param!,
     get_aux_assignment_params, set_aux_assignment_params!,
 
-    get_no_MS_antennas, get_no_BS_antennas,
+    get_num_MS_antennas, get_num_BS_antennas,
     get_transmit_powers, set_transmit_powers!,
     get_transmit_powers_dBm, set_transmit_powers_dBm!,
     get_receiver_noise_powers, set_receiver_noise_powers!,
     get_receiver_noise_powers_dBm, set_receiver_noise_powers_dBm!,
 
-    get_no_streams, set_no_streams!,
+    get_num_streams, set_num_streams!,
     get_user_priorities, set_user_priorities!,
 
     get_average_SNRs, set_average_SNRs!,
     get_average_SNRs_dB, set_average_SNRs_dB!,
 
-    require_equal_no_MS_antennas,
-    require_equal_no_BS_antennas,
+    require_equal_num_MS_antennas,
+    require_equal_num_BS_antennas,
     require_single_antenna_MSs,
     require_single_antenna_BSs,
-    require_equal_no_streams,
+    require_equal_num_streams,
     require_single_stream,
 
 # Assignment
@@ -83,7 +83,7 @@ export
     AuxAssignmentParams,
 
     active_BSs,
-    no_served_MSs,
+    num_served_MSs,
     serving_BS_id,
     served_MS_ids,
     served_MS_ids_except_me,
@@ -91,7 +91,7 @@ export
     coordinated_BS_ids,
     coordinated_MS_ids,
 
-    require_equal_no_MSs_per_cell,
+    require_equal_num_MSs_per_cell,
 
 # Precoding
     Eigenprecoding,

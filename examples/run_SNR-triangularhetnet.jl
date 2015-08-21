@@ -44,7 +44,7 @@ simulation_params = @compat Dict(
 network =
     setup_triangularhetnet_network(simulation_params["Ic"],
         simulation_params["Kc"], simulation_params["N"], simulation_params["M"],
-        no_streams=simulation_params["d"])
+        num_streams=simulation_params["d"])
 raw_results, _ = simulate(network, simulation_params)
 
 println("-- Saving $(simulation_params["simulation_name"]) results")

@@ -5,7 +5,7 @@ type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
     BSs::Vector{CanonicalBS}
 
     system::System_t
-    no_MSs_per_cell::Int
+    num_MSs_per_cell::Int
     alpha::Float64
     aux_network_params::AuxNetworkParams
 
@@ -13,36 +13,36 @@ type InterferingBroadcastChannel{System_t <: System} <: CanonicalNetwork
 end
 
 # Convenience constructor without network params and assignments
-InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha) =
-    InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha, AuxNetworkParams(), Assignment())
+InterferingBroadcastChannel(MSs, BSs, system, num_MSs_per_cell, alpha) =
+    InterferingBroadcastChannel(MSs, BSs, system, num_MSs_per_cell, alpha, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::InterferingBroadcastChannel) =
-    print(io, "IBC(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), α = $(x.alpha))")
+    print(io, "IBC(I = $(length(x.BSs)), Kc = $(x.num_MSs_per_cell), α = $(x.alpha))")
 Base.showcompact(io::IO, x::InterferingBroadcastChannel) =
-    print(io, "IBC($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.alpha))")
+    print(io, "IBC($(length(x.BSs)), $(x.num_MSs_per_cell), $(x.alpha))")
 
 function setup_interfering_broadcast_channel(
-    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
+    num_BSs, num_MSs_per_cell, num_MS_antennas, num_BS_antennas;
     system = SinglecarrierSystem(),
     alpha = 1.,
-    transmit_power = 1., transmit_powers = transmit_power*ones(Float64, no_BSs),
-    user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
-    no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
-    receiver_noise_power = 1., receiver_noise_powers = receiver_noise_power*ones(Float64, no_BSs*no_MSs_per_cell))
+    transmit_power = 1., transmit_powers = transmit_power*ones(Float64, num_BSs),
+    user_priority = 1., user_priorities = user_priority*ones(Float64, num_BSs*num_MSs_per_cell),
+    num_streams = 1, num_streamss = num_streams*ones(Int, num_BSs*num_MSs_per_cell),
+    receiver_noise_power = 1., receiver_noise_powers = receiver_noise_power*ones(Float64, num_BSs*num_MSs_per_cell))
 
-    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell))
-    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, no_BSs))
+    isa(num_MS_antennas, Vector) || (num_MS_antennas = num_MS_antennas*ones(Int, num_BSs*num_MSs_per_cell))
+    isa(num_BS_antennas, Vector) || (num_BS_antennas = num_BS_antennas*ones(Int, num_BSs))
 
-    BSs = [ CanonicalBS(no_BS_antennas[i], transmit_powers[i]) for i = 1:no_BSs ]
-    MSs = [ CanonicalMS(no_MS_antennas[k], user_priorities[k], no_streamss[k], receiver_noise_powers[k]) for k = 1:no_BSs*no_MSs_per_cell ]
+    BSs = [ CanonicalBS(num_BS_antennas[i], transmit_powers[i]) for i = 1:num_BSs ]
+    MSs = [ CanonicalMS(num_MS_antennas[k], user_priorities[k], num_streamss[k], receiver_noise_powers[k]) for k = 1:num_BSs*num_MSs_per_cell ]
 
-    InterferingBroadcastChannel(MSs, BSs, system, no_MSs_per_cell, alpha)
+    InterferingBroadcastChannel(MSs, BSs, system, num_MSs_per_cell, alpha)
 end
 
 ##########################################################################
 # Standard cell assignment functions
 function IDCellAssignment!(channel, network::InterferingBroadcastChannel)
-    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
+    Kc = network.num_MSs_per_cell; I = get_num_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -63,8 +63,8 @@ LargeScaleFadingCellAssignment!(channel, network::InterferingBroadcastChannel) =
 draw_user_drop!(network::InterferingBroadcastChannel) = nothing
 
 function draw_channel{System_t <: SinglecarrierSystem}(network::InterferingBroadcastChannel{System_t})
-    I = get_no_BSs(network); Kc = network.no_MSs_per_cell
-    Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
+    I = get_num_BSs(network); Kc = network.num_MSs_per_cell
+    Ns = get_num_MS_antennas(network); Ms = get_num_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, I*Kc, I)
     large_scale_fading_factor = Array(Float64, I*Kc, I)
@@ -88,8 +88,8 @@ function draw_channel{System_t <: SinglecarrierSystem}(network::InterferingBroad
 end
 
 function draw_channel{System_t <: MulticarrierSystem}(network::InterferingBroadcastChannel{System_t})
-    I = get_no_BSs(network); Kc = network.no_MSs_per_cell; Lc = system.no_subcarriers
-    Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
+    I = get_num_BSs(network); Kc = network.num_MSs_per_cell; Lc = system.num_subcarriers
+    Ns = get_num_MS_antennas(network); Ms = get_num_BS_antennas(network)
 
     coefs = Array(Array{Complex128, 3}, I*Kc, I)
     for k = 1:I*Kc

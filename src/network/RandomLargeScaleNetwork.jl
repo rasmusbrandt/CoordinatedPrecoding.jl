@@ -10,7 +10,7 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     BSs::Vector{BS_t}
 
     system::System_t
-    no_MSs_per_cell::Int
+    num_MSs_per_cell::Int
     propagation_environment::PropagationEnvironment_t
     geography_size::@compat Tuple{Float64, Float64}
     MS_serving_BS_distance::Nullable{Float64} # null signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
@@ -20,34 +20,34 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
 end
 
 # Convenience constructor without network params and assignments
-RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_size, MS_serving_BS_distance) =
-    RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_size, MS_serving_BS_distance, AuxNetworkParams(), Assignment())
+RandomLargeScaleNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environment, geography_size, MS_serving_BS_distance) =
+    RandomLargeScaleNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environment, geography_size, MS_serving_BS_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::RandomLargeScaleNetwork) =
-    print(io, "RandomLargeScaleNetwork(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), geography_size = $(x.geography_size), MS_serving_BS_distance = $(x.MS_serving_BS_distance))")
+    print(io, "RandomLargeScaleNetwork(I = $(length(x.BSs)), Kc = $(x.num_MSs_per_cell), geography_size = $(x.geography_size), MS_serving_BS_distance = $(x.MS_serving_BS_distance))")
 Base.showcompact(io::IO, x::RandomLargeScaleNetwork) =
-    print(io, "RandomLargeScaleNetwork($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.geography_size), $(x.MS_serving_BS_distance))")
+    print(io, "RandomLargeScaleNetwork($(length(x.BSs)), $(x.num_MSs_per_cell), $(x.geography_size), $(x.MS_serving_BS_distance))")
 
 function setup_random_large_scale_network(
-    no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
+    num_BSs, num_MSs_per_cell, num_MS_antennas, num_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 10, 8),
     geography_size = (1500., 1500.),
     MS_serving_BS_distance = Nullable(150.), # Nullable{Float64}() for random MS placement
-    transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
-    BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for idx = 1:no_BSs ],
-    user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
-    no_streams = 1, no_streamss = no_streams*ones(Int, no_BSs*no_MSs_per_cell),
-    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, no_BSs*no_MSs_per_cell),
-    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, no_BSs*no_MSs_per_cell))
+    transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, num_BSs),
+    BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for idx = 1:num_BSs ],
+    user_priority = 1., user_priorities = user_priority*ones(Float64, num_BSs*num_MSs_per_cell),
+    num_streams = 1, num_streamss = num_streams*ones(Int, num_BSs*num_MSs_per_cell),
+    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, num_BSs*num_MSs_per_cell),
+    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, num_BSs*num_MSs_per_cell))
 
-    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, no_BSs*no_MSs_per_cell))
-    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, no_BSs))
+    isa(num_MS_antennas, Vector) || (num_MS_antennas = num_MS_antennas*ones(Int, num_BSs*num_MSs_per_cell))
+    isa(num_BS_antennas, Vector) || (num_BS_antennas = num_BS_antennas*ones(Int, num_BSs))
 
-    BSs = [ PhysicalBS(no_BS_antennas[i], Position(0, 0), transmit_powers[i], BS_antenna_gain_params[i]) for i = 1:no_BSs ]
-    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, no_BSs), falses(no_BSs))) for k = 1:no_BSs*no_MSs_per_cell ]
+    BSs = [ PhysicalBS(num_BS_antennas[i], Position(0, 0), transmit_powers[i], BS_antenna_gain_params[i]) for i = 1:num_BSs ]
+    MSs = [ PhysicalMS(num_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], num_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, num_BSs), falses(num_BSs))) for k = 1:num_BSs*num_MSs_per_cell ]
 
-    RandomLargeScaleNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, geography_size, MS_serving_BS_distance)
+    RandomLargeScaleNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environment, geography_size, MS_serving_BS_distance)
 end
 
 ##########################################################################
@@ -56,7 +56,7 @@ end
 function get_average_SNRs_dB{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::RandomLargeScaleNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
     isnull(network.MS_serving_BS_distance) && error("Can only call get_average_SNRs_dB if BS-MS distance for served MSs is specified.")
 
-    I = get_no_BSs(network); Kc = network.no_MSs_per_cell
+    I = get_num_BSs(network); Kc = network.num_MSs_per_cell
     pathloss_alpha = network.propagation_environment.pathloss_alpha
     pathloss_beta = network.propagation_environment.pathloss_beta
 
@@ -78,7 +78,7 @@ get_average_SNRs{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(net
 function set_average_SNRs_dB!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::RandomLargeScaleNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment}, SNR_dB)
     isnull(network.MS_serving_BS_distance) && error("Can only call set_average_SNRs_dB! if BS-MS distance for served MSs is specified.")
 
-    I = get_no_BSs(network); Kc = network.no_MSs_per_cell
+    I = get_num_BSs(network); Kc = network.num_MSs_per_cell
     pathloss_alpha = network.propagation_environment.pathloss_alpha
     pathloss_beta = network.propagation_environment.pathloss_beta
 
@@ -101,7 +101,7 @@ set_average_SNRs!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(ne
 function IDCellAssignment!(channel, network::RandomLargeScaleNetwork)
     isnull(network.MS_serving_BS_distance) && error("Can only call IDCellAssignment! if BS-MS distance for served MSs is specified.")
 
-    I = get_no_BSs(network); Kc = network.no_MSs_per_cell
+    I = get_num_BSs(network); Kc = network.num_MSs_per_cell
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -116,10 +116,10 @@ end
 function LargeScaleFadingCellAssignment!(channel, network::RandomLargeScaleNetwork)
     if isnull(network.MS_serving_BS_distance)
         # Greedy scheduler based on the large scale fading realizations
-        I = get_no_BSs(network); K = get_no_MSs(network)
+        I = get_num_BSs(network); K = get_num_MSs(network)
 
         aux_params = get_aux_assignment_params(network)
-        @defaultize_param! aux_params "max_no_MSs_per_BS" 1
+        @defaultize_param! aux_params "max_num_MSs_per_BS" 1
 
         # Scheduling matrix
         cell_assignment_matrix = zeros(Int, K, I)
@@ -133,7 +133,7 @@ function LargeScaleFadingCellAssignment!(channel, network::RandomLargeScaleNetwo
             _, idx = findmax(F)
             k, l = ind2sub(Fsize, idx)
 
-            if sum(cell_assignment_matrix[:,l]) < aux_params["max_no_MSs_per_BS"]
+            if sum(cell_assignment_matrix[:,l]) < aux_params["max_num_MSs_per_BS"]
                 cell_assignment_matrix[k,l] = 1
                 F[k,:] = 0.
             else
@@ -153,8 +153,8 @@ end
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::RandomLargeScaleNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
-    I = get_no_BSs(network); K = get_no_MSs(network)
-    Kc = network.no_MSs_per_cell
+    I = get_num_BSs(network); K = get_num_MSs(network)
+    Kc = network.num_MSs_per_cell
 
     if isnull(network.MS_serving_BS_distance)
         # Drop BSs uniformly at random
@@ -191,8 +191,8 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
 end
 
 function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::RandomLargeScaleNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
-    K = get_no_MSs(network); I = get_no_BSs(network)
-    Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
+    K = get_num_MSs(network); I = get_num_BSs(network)
+    Ns = get_num_MS_antennas(network); Ms = get_num_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, K, I)
     large_scale_fading_factor = Array(Float64, K, I)
@@ -233,7 +233,7 @@ end
 ##########################################################################
 # Visualization functions
 function plot_network_layout(network::RandomLargeScaleNetwork)
-    I = get_no_BSs(network); K = get_no_MSs(network)
+    I = get_num_BSs(network); K = get_num_MSs(network)
 
     fig = PyPlot.figure()
     ax = fig[:add_subplot](1, 1, 1)

@@ -31,7 +31,7 @@ type TriangularMacroNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
     BSs::Vector{BS_t}
 
     system::System_t
-    no_MSs_per_cell::Int
+    num_MSs_per_cell::Int
     propagation_environment::PropagationEnvironment_t
     inter_site_distance::Float64
     guard_distance::Float64
@@ -41,18 +41,18 @@ type TriangularMacroNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: 
 end
 
 # Convenience constructor without network params and assignments
-TriangularMacroNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance) =
-    TriangularMacroNetwork(MSs, BSs, system, no_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, AuxNetworkParams(), Assignment())
+TriangularMacroNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance) =
+    TriangularMacroNetwork(MSs, BSs, system, num_MSs_per_cell, propagation_environment, inter_site_distance, guard_distance, AuxNetworkParams(), Assignment())
 
 Base.show(io::IO, x::TriangularMacroNetwork) =
-    print(io, "TriangularMacro(I = $(length(x.BSs)), Kc = $(x.no_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
+    print(io, "TriangularMacro(I = $(length(x.BSs)), Kc = $(x.num_MSs_per_cell), ISD = $(x.inter_site_distance), GD = $(x.guard_distance))")
 Base.showcompact(io::IO, x::TriangularMacroNetwork) =
-    print(io, "TriangularMacro($(length(x.BSs)), $(x.no_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
+    print(io, "TriangularMacro($(length(x.BSs)), $(x.num_MSs_per_cell), $(x.inter_site_distance), $(x.guard_distance))")
 
 # The default parameter values are taken from 3GPP Case 1
 # (TR 25.814 and TR 36.814).
 function setup_triangularmacro_network(
-    no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
+    num_MSs_per_cell, num_MS_antennas, num_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 20, 8),
     inter_site_distance = 500.,
@@ -62,35 +62,35 @@ function setup_triangularmacro_network(
         [SixSector3gppAntennaParams(-90/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams( 30/180*pi, 35/180*pi, 23),
          SixSector3gppAntennaParams(150/180*pi, 35/180*pi, 23)],
-    user_priority = 1., user_priorities = user_priority*ones(Float64, 3*no_MSs_per_cell),
-    no_streams = 1, no_streamss = no_streams*ones(Int, 3*no_MSs_per_cell),
-    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, 3*no_MSs_per_cell),
-    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, 3*no_MSs_per_cell))
+    user_priority = 1., user_priorities = user_priority*ones(Float64, 3*num_MSs_per_cell),
+    num_streams = 1, num_streamss = num_streams*ones(Int, 3*num_MSs_per_cell),
+    MS_antenna_gain_dB = 0., MS_antenna_gains_dB = MS_antenna_gain_dB*ones(Float64, 3*num_MSs_per_cell),
+    receiver_noise_figure = 9., receiver_noise_figures = receiver_noise_figure*ones(Float64, 3*num_MSs_per_cell))
 
-    isa(no_MS_antennas, Vector) || (no_MS_antennas = no_MS_antennas*ones(Int, 3*no_MSs_per_cell))
-    isa(no_BS_antennas, Vector) || (no_BS_antennas = no_BS_antennas*ones(Int, 3))
+    isa(num_MS_antennas, Vector) || (num_MS_antennas = num_MS_antennas*ones(Int, 3*num_MSs_per_cell))
+    isa(num_BS_antennas, Vector) || (num_BS_antennas = num_BS_antennas*ones(Int, 3))
 
     BSs = [
-        PhysicalBS(no_BS_antennas[1],
+        PhysicalBS(num_BS_antennas[1],
             Position(0, sqrt((inter_site_distance/2)^2 + (inter_site_distance/(2*sqrt(3)))^2)),
             transmit_powers[1], BS_antenna_gain_params[1]),
-        PhysicalBS(no_BS_antennas[2],
+        PhysicalBS(num_BS_antennas[2],
             Position(-inter_site_distance/2, -inter_site_distance/(2*sqrt(3))),
             transmit_powers[2], BS_antenna_gain_params[2]),
-        PhysicalBS(no_BS_antennas[3],
+        PhysicalBS(num_BS_antennas[3],
             Position(+inter_site_distance/2, -inter_site_distance/(2*sqrt(3))),
             transmit_powers[3], BS_antenna_gain_params[3])
     ]
-    MSs = [ PhysicalMS(no_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], no_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, 3), falses(3))) for k = 1:3*no_MSs_per_cell ]
+    MSs = [ PhysicalMS(num_MS_antennas[k], Position(0, 0), Velocity(0, 0), user_priorities[k], num_streamss[k], MS_antenna_gains_dB[k], receiver_noise_figures[k], SimpleLargescaleFadingEnvironmentState(zeros(Float64, 3), falses(3))) for k = 1:3*num_MSs_per_cell ]
 
-    TriangularMacroNetwork(MSs, BSs, system, no_MSs_per_cell, 
+    TriangularMacroNetwork(MSs, BSs, system, num_MSs_per_cell, 
         propagation_environment, inter_site_distance, guard_distance)
 end
 
 ##########################################################################
 # Cell assignment
 function IDCellAssignment!(channel, network::TriangularMacroNetwork)
-    Kc = network.no_MSs_per_cell; I = get_no_BSs(network)
+    Kc = network.num_MSs_per_cell; I = get_num_BSs(network)
     cell_assignment = Array(Int, I*Kc)
 
     for i = 1:I
@@ -110,7 +110,7 @@ LargeScaleFadingCellAssignment!(channel, network::TriangularMacroNetwork) =
 ##########################################################################
 # Simulation functions
 function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: System}(network::TriangularMacroNetwork{MS_t, BS_t, System_t, SimpleLargescaleFadingEnvironment})
-    I = get_no_BSs(network); K = get_no_MSs(network)
+    I = get_num_BSs(network); K = get_num_MSs(network)
 
     # Shadow fading covariance (correlation coefficient 0.5 between cells)
     Cov_shadow_sqrtm = chol(network.propagation_environment.shadow_sigma_dB^2*(ones(3,3) + eye(3))/2)
@@ -132,7 +132,7 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
         end
 
         # Generate rotation angle
-        i = div(k - 1, network.no_MSs_per_cell) + 1 # serving BS id
+        i = div(k - 1, network.num_MSs_per_cell) + 1 # serving BS id
         if i == 1
             theta = 240*pi/180
         elseif i == 2
@@ -153,8 +153,8 @@ function draw_user_drop!{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <: Sys
 end
 
 function draw_channel{MS_t <: PhysicalMS, BS_t <: PhysicalBS}(network::TriangularMacroNetwork{MS_t, BS_t, SinglecarrierSystem, SimpleLargescaleFadingEnvironment})
-    K = get_no_MSs(network); I = get_no_BSs(network)
-    Ns = get_no_MS_antennas(network); Ms = get_no_BS_antennas(network)
+    K = get_num_MSs(network); I = get_num_BSs(network)
+    Ns = get_num_MS_antennas(network); Ms = get_num_BS_antennas(network)
 
     coefs = Array(Matrix{Complex128}, K, I)
     large_scale_fading_factor = Array(Float64, K, I)
@@ -195,7 +195,7 @@ end
 ##########################################################################
 # Visualization functions
 function plot_network_layout(network::TriangularMacroNetwork)
-    I = get_no_BSs(network); K = get_no_MSs(network)
+    I = get_num_BSs(network); K = get_num_MSs(network)
 
     fig = PyPlot.figure()
     ax = fig[:add_subplot](1, 1, 1)

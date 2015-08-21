@@ -40,15 +40,15 @@ type MulticarrierSystem <: System
     carrier_frequency::Float64
     bandwidth::Float64
 
-    no_subcarriers::Int
+    num_subcarriers::Int
 
     aux_precoding_params::AuxPrecodingParams
     aux_assignment_params::AuxAssignmentParams
 end
 MulticarrierSystem() =
     MulticarrierSystem(0, 0, 1, AuxPrecodingParams(), AuxAssignmentParams())
-MulticarrierSystem(carrier_frequency, bandwidth, no_subcarriers) =
-    MulticarrierSystem(carrier_frequency, bandwidth, no_subcarriers, AuxPrecodingParams(), AuxAssignmentParams())
+MulticarrierSystem(carrier_frequency, bandwidth, num_subcarriers) =
+    MulticarrierSystem(carrier_frequency, bandwidth, num_subcarriers, AuxPrecodingParams(), AuxAssignmentParams())
 
 ##########################################################################
 # Antenna params
@@ -78,13 +78,13 @@ abstract Node
 abstract BS <: Node
 
 type CanonicalBS <: BS
-    no_antennas::Int
+    num_antennas::Int
 
     transmit_power::Float64
 end
 
 type PhysicalBS{AntennaParams_t <: AntennaParams} <: BS
-    no_antennas::Int
+    num_antennas::Int
     position::Position
 
     transmit_power::Float64
@@ -95,34 +95,34 @@ end
 abstract MS <: Node
 
 type CanonicalMS <: MS
-    no_antennas::Int
+    num_antennas::Int
 
     user_priority::Float64
-    no_streams::Int
+    num_streams::Int
 
     receiver_noise_power::Float64
 end
 
 type PhysicalMS{PropagationEnvironmentState_t <: PropagationEnvironmentState} <: MS
-    no_antennas::Int
+    num_antennas::Int
     position::Position
     velocity::Velocity
 
     user_priority::Float64
-    no_streams::Int
+    num_streams::Int
 
     antenna_gain_dB::Float64
     noise_figure::Float64
     propagation_environment_state::PropagationEnvironmentState_t
 end
 
-get_no_antennas(node) = node.no_antennas
+get_num_antennas(node) = node.num_antennas
 
 get_user_priority(MS) = MS.user_priority
 set_user_priority!(MS, α) = (MS.user_priority = α)
 
-get_no_streams(MS::MS) = MS.no_streams
-set_no_streams!(MS::MS, d) = (MS.no_streams = d)
+get_num_streams(MS::MS) = MS.num_streams
+set_num_streams!(MS::MS, d) = (MS.num_streams = d)
 
 get_receiver_noise_power(MS::CanonicalMS, network) = MS.receiver_noise_power
 set_receiver_noise_power!(MS::CanonicalMS, sigma2, network) = (MS.receiver_noise_power = sigma2)
@@ -149,8 +149,8 @@ abstract PhysicalNetwork <: Network
 
 typealias AuxNetworkParams Dict{ASCIIString, Any}
 
-get_no_MSs(network) = length(network.MSs)
-get_no_BSs(network) = length(network.BSs)
+get_num_MSs(network) = length(network.MSs)
+get_num_BSs(network) = length(network.BSs)
 
 get_assignment(network) = network.assignment
 set_assignment!(network, assignment) = (network.assignment = assignment)
@@ -173,40 +173,40 @@ set_aux_assignment_param!(network, v, k) = (network.system.aux_assignment_params
 get_aux_assignment_params(network) = network.system.aux_assignment_params
 set_aux_assignment_params!(network, additional) = merge!(network.system.aux_assignment_params, additional)
 
-get_no_MS_antennas(network) = [ get_no_antennas(network.MSs[k]) for k = 1:get_no_MSs(network) ]
-get_no_BS_antennas(network) = [ get_no_antennas(network.BSs[i]) for i = 1:get_no_BSs(network) ]
+get_num_MS_antennas(network) = [ get_num_antennas(network.MSs[k]) for k = 1:get_num_MSs(network) ]
+get_num_BS_antennas(network) = [ get_num_antennas(network.BSs[i]) for i = 1:get_num_BSs(network) ]
 
-get_transmit_powers(network) = [ get_transmit_power(network.BSs[i]) for i = 1:get_no_BSs(network) ]
+get_transmit_powers(network) = [ get_transmit_power(network.BSs[i]) for i = 1:get_num_BSs(network) ]
 set_transmit_powers!(network, P::Real) = (for BS in network.BSs; set_transmit_power!(BS, P); end)
 set_transmit_powers!(network, Ps::Vector) = (for i = 1:length(Ps); set_transmit_power!(network.BSs[i], Ps[i]); end)
-get_transmit_powers_dBm(network) = [ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_no_BSs(network) ]
+get_transmit_powers_dBm(network) = [ get_transmit_power_dBm(network.BSs[i]) for i = 1:get_num_BSs(network) ]
 set_transmit_powers_dBm!(network, P_dBm::Real) = (for BS in network.BSs; set_transmit_power_dBm!(BS, P_dBm); end)
 set_transmit_powers_dBm!(network, Ps_dBm::Vector) = (for i = 1:length(Ps_dBm); set_transmit_power_dBm!(network.BSs[i], Ps_dBm[i]); end)
 
-get_receiver_noise_powers(network) = [ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+get_receiver_noise_powers(network) = [ get_receiver_noise_power(network.MSs[k], network) for k = 1:get_num_MSs(network) ]
 set_receiver_noise_powers!(network, sigma2::Real) = (for MS in network.MSs; set_receiver_noise_power!(MS, sigma2, network); end)
 set_receiver_noise_powers!(network, sigma2s::Vector) = (for k = 1:length(sigma2s); set_receiver_noise_power!(network.MSs[k], sigma2s[k], network); end)
-get_receiver_noise_powers_dBm(network) = [ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_no_MSs(network) ]
+get_receiver_noise_powers_dBm(network) = [ get_receiver_noise_power_dBm(network.MSs[k], network) for k = 1:get_num_MSs(network) ]
 set_receiver_noise_powers_dBm!(network, sigma2_dBm::Real) = (for MS in network.MSs; set_receiver_noise_power_dBm!(MS, sigma2_dBm, network); end)
 set_receiver_noise_powers_dBm!(network, sigma2s_dBm::Vector) = (for k = 1:length(sigma2s_dBm); set_receiver_noise_power_dBm!(network.MSs[k], sigma2s_dBm[k], network); end)
 
-get_user_priorities(network) = [ get_user_priority(network.MSs[k]) for k = 1:get_no_MSs(network) ]
+get_user_priorities(network) = [ get_user_priority(network.MSs[k]) for k = 1:get_num_MSs(network) ]
 set_user_priorities!(network, α::Real) = (for MS in network.MSs; set_user_priority!(MS, α); end)
 set_user_priorities!(network, α::Vector) = (for k = 1:length(α); set_user_priority!(network.MSs[k], α[k]); end)
 
-get_no_streams(network::Network) = [ get_no_streams(network.MSs[k]) for k = 1:get_no_MSs(network) ]
-set_no_streams!(network::Network, d::Int) = (for MS in network.MSs; set_no_streams(MS, d); end)
-set_no_streams!(network::Network, ds::Vector) = (for k = 1:length(ds); set_no_streams(network.MSs[k], ds[k]); end)
+get_num_streams(network::Network) = [ get_num_streams(network.MSs[k]) for k = 1:get_num_MSs(network) ]
+set_num_streams!(network::Network, d::Int) = (for MS in network.MSs; set_num_streams(MS, d); end)
+set_num_streams!(network::Network, ds::Vector) = (for k = 1:length(ds); set_num_streams(network.MSs[k], ds[k]); end)
 
-require_equal_no_MS_antennas(network) = (Ns = get_no_MS_antennas(network); all(Ns .== Ns[1]) || Lumberjack.error("MSs must all have the same number of antennas."))
-require_equal_no_BS_antennas(network) = (Ms = get_no_BS_antennas(network); all(Ms .== Ms[1]) || Lumberjack.error("BSs must all have the same number of antennas."))
-require_single_antenna_MSs(network) = (Ns = get_no_MS_antennas(network); all(Ns .== 1) || Lumberjack.error("MSs must not have multiple antennas."))
-require_single_antenna_BSs(network) = (Ms = get_no_BS_antennas(network); all(Ms .== 1) || Lumberjack.error("BSs must not have multiple antennas."))
-require_equal_no_streams(network) = (ds = get_no_streams(network); all(ds .== ds[1]) || Lumberjack.error("MSs must all have the same number of streams."))
-require_single_stream(network) = (ds = get_no_streams(network); all(ds .== 1) || Lumberjack.error("MSs must not have multiple streams."))
+require_equal_num_MS_antennas(network) = (Ns = get_num_MS_antennas(network); all(Ns .== Ns[1]) || Lumberjack.error("MSs must all have the same number of antennas."))
+require_equal_num_BS_antennas(network) = (Ms = get_num_BS_antennas(network); all(Ms .== Ms[1]) || Lumberjack.error("BSs must all have the same number of antennas."))
+require_single_antenna_MSs(network) = (Ns = get_num_MS_antennas(network); all(Ns .== 1) || Lumberjack.error("MSs must not have multiple antennas."))
+require_single_antenna_BSs(network) = (Ms = get_num_BS_antennas(network); all(Ms .== 1) || Lumberjack.error("BSs must not have multiple antennas."))
+require_equal_num_streams(network) = (ds = get_num_streams(network); all(ds .== ds[1]) || Lumberjack.error("MSs must all have the same number of streams."))
+require_single_stream(network) = (ds = get_num_streams(network); all(ds .== 1) || Lumberjack.error("MSs must not have multiple streams."))
 
-get_distances(network::PhysicalNetwork) = [ get_distance(network.MSs[k], network.BSs[i]) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
-get_angles(network::PhysicalNetwork) = [ get_angle(network.MSs[k], network.BSs[i]) for k = 1:get_no_MSs(network), i = 1:get_no_BSs(network) ]
+get_distances(network::PhysicalNetwork) = [ get_distance(network.MSs[k], network.BSs[i]) for k = 1:get_num_MSs(network), i = 1:get_num_BSs(network) ]
+get_angles(network::PhysicalNetwork) = [ get_angle(network.MSs[k], network.BSs[i]) for k = 1:get_num_MSs(network), i = 1:get_num_BSs(network) ]
 
 ##########################################################################
 # OmnidirectionalAntennaParams (not angle dependent)

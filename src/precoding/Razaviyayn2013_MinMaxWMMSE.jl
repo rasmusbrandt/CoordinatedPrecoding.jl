@@ -11,14 +11,14 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
     # order to simplify the Gurobi optimization variable indexing. With equal
     # number of antennas and streams, it is very easy to calculate the variable
     # offsets required. (See functions v_ind and mu_ind.)
-    require_equal_no_BS_antennas(network)
-    require_equal_no_streams(network)
-    require_equal_no_MSs_per_cell(assignment)
+    require_equal_num_BS_antennas(network)
+    require_equal_num_streams(network)
+    require_equal_num_MSs_per_cell(assignment)
 
-    K = get_no_MSs(network)
+    K = get_num_MSs(network)
     Ps = get_transmit_powers(network)
     sigma2s = get_receiver_noise_powers(network)
-    ds = get_no_streams(network); max_d = maximum(ds)
+    ds = get_num_streams(network); max_d = maximum(ds)
     alphas = get_user_priorities(network)
 
     aux_params = get_aux_precoding_params(network)
@@ -59,7 +59,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
                 if conv_crit < aux_params["stop_crit"]
                     Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE converged.",
                         @compat Dict(
-                            :no_iters => iters,
+                            :num_iters => iters,
                             :final_objective => objective[end],
                             :conv_crit => conv_crit,
                             :stop_crit => aux_params["stop_crit"],
@@ -76,7 +76,7 @@ function Razaviyayn2013_MinMaxWMMSE(channel, network)
         if iters == aux_params["max_iters"]
             Lumberjack.debug("Razaviyayn2013_MinMaxWMMSE did NOT converge.",
                 @compat Dict(
-                    :no_iters => iters,
+                    :num_iters => iters,
                     :final_objective => objective[end],
                     :conv_crit => conv_crit,
                     :stop_crit => aux_params["stop_crit"],
@@ -136,15 +136,15 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     N = channel.Ns[1]; M = channel.Ms[1]; d = size(state.W[1], 2)
 
     # Bookkeeping for the Gurobi model
-    no_t_vars = 1
-    no_v_vars = 2*K*M*d
-    no_lin_vars_per_rate_constraint = 2*M*d + 1 # including t variable
-    no_quad_vars_per_rate_constraint = K*d*(2*M)^2
-    no_vars_per_power_constraint = 2*Kc*M*d
+    num_t_vars = 1
+    num_v_vars = 2*K*M*d
+    num_lin_vars_per_rate_constraint = 2*M*d + 1 # including t variable
+    num_quad_vars_per_rate_constraint = K*d*(2*M)^2
+    num_vars_per_power_constraint = 2*Kc*M*d
 
     # Index functions for optimization variables
     t_ind = 1
-    v_ind(k, m, n, imag::Bool) = (no_t_vars + (k-1)*M*d*2 + (m-1)*d*2 + (n-1)*2 + 1 + @compat Int(imag))
+    v_ind(k, m, n, imag::Bool) = (num_t_vars + (k-1)*M*d*2 + (m-1)*d*2 + (n-1)*2 + 1 + @compat Int(imag))
 
     # Gurobi environment
     env = Gurobi.Env()
@@ -159,17 +159,17 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     Gurobi.add_cvar!(model, 1., 0, Inf) # t
 
     # Other variables not in objective
-    Gurobi.add_cvars!(model, zeros(Float64, no_v_vars))
+    Gurobi.add_cvars!(model, zeros(Float64, num_v_vars))
 
     # Need to update model before adding constraints
     Gurobi.update_model!(model)
 
     # Rate constraints
-    rate_constraint_lind = Array(Int, no_lin_vars_per_rate_constraint)
-    rate_constraint_lval = Array(Float64, no_lin_vars_per_rate_constraint)
-    rate_constraint_qr = Array(Int, no_quad_vars_per_rate_constraint)
-    rate_constraint_qc = Array(Int, no_quad_vars_per_rate_constraint)
-    rate_constraint_qv = Array(Float64, no_quad_vars_per_rate_constraint)
+    rate_constraint_lind = Array(Int, num_lin_vars_per_rate_constraint)
+    rate_constraint_lval = Array(Float64, num_lin_vars_per_rate_constraint)
+    rate_constraint_qr = Array(Int, num_quad_vars_per_rate_constraint)
+    rate_constraint_qc = Array(Int, num_quad_vars_per_rate_constraint)
+    rate_constraint_qv = Array(Float64, num_quad_vars_per_rate_constraint)
     for i = 1:I; for k = served_MS_ids(i, assignment)
         # Linear part
         g = (channel.H[k,i]'*state.U[k])*state.W[k]
@@ -255,9 +255,9 @@ function update_BSs!(state::Razaviyayn2013_MinMaxWMMSEState,
     end; end
 
     # Power constraints
-    power_constraint_qr = Array(Int, no_vars_per_power_constraint)
-    power_constraint_qc = Array(Int, no_vars_per_power_constraint)
-    power_constraint_qv = Array(Float64, no_vars_per_power_constraint)
+    power_constraint_qr = Array(Int, num_vars_per_power_constraint)
+    power_constraint_qc = Array(Int, num_vars_per_power_constraint)
+    power_constraint_qv = Array(Float64, num_vars_per_power_constraint)
     for i = 1:I
         q_ind = 1
         for k = served_MS_ids(i, assignment)

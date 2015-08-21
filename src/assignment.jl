@@ -20,8 +20,8 @@ end
 
 Assignment() = Assignment(Array(Int, 0), [IntSet()], [IntSet()], [IntSet()])
 
-Assignment(cell_assignment::Vector{Int}, no_BSs::Int) =
-    Assignment(cell_assignment, ones(length(cell_assignment), no_BSs))
+Assignment(cell_assignment::Vector{Int}, num_BSs::Int) =
+    Assignment(cell_assignment, ones(length(cell_assignment), num_BSs))
 
 Assignment(cell_assignment::Matrix) =
     Assignment([ (findin(cell_assignment[k,:], [true]))[1] for k = 1:size(cell_assignment, 1) ],
@@ -41,7 +41,7 @@ Assignment(cell_assignment::Matrix, cluster_assignment::Matrix) =
 
 # Helper functions to get lists of BSs or MSs
 active_BSs(assignment) = unique(assignment.cell_assignment)
-no_served_MSs(BS_id, assignment) = length(assignment.cell_assignment_inverse[BS_id])
+num_served_MSs(BS_id, assignment) = length(assignment.cell_assignment_inverse[BS_id])
 
 serving_BS_id(MS_id, assignment) =
     assignment.cell_assignment[MS_id]
@@ -55,7 +55,7 @@ coordinated_BS_ids(MS_id, assignment) =
 coordinated_MS_ids(BS_id, assignment) =
     assignment.cluster_assignment_inverse[BS_id]
 
-function require_equal_no_MSs_per_cell(assignment)
+function require_equal_num_MSs_per_cell(assignment)
     BS_ind_max = maximum(assignment.cell_assignment)
 
     Kc_test = length(served_MS_ids(1, assignment))
