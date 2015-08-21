@@ -1,4 +1,4 @@
-## Simulation in Wireless Communications: CoordinatedPrecoding.jl
+# CoordinatedPrecoding.jl
 CoordinatedPrecoding.jl is [Julia][julia] package for the simulation of
 wireless networks, in particular multicell multiple-input multiple-output (MIMO)
 networks operating using [coordinated precoding][PracticalTDD].
@@ -9,9 +9,9 @@ coordinated precoding. In addition to this, the package contains some basic
 network/channel models (inspired by 3GPP and ITU-T) and some reference
 implementations of popular precoding methods.
 
-### Overview
+## Overview
 
-#### Networks
+### Networks
 A network to be studied is given by `network::Network`. In order to generate
 the network, several models are available:
 
@@ -29,7 +29,7 @@ the network, several models are available:
 For each network, a convenience function is available for quick generation, e.g.:
 `setup_interfering_broadcast_channel(num_BSs, num_MSs_per_cell, num_MS_antennas, num_BS_antennas; kwargs)`
 
-#### Simulation functions
+### Simulation functions
 The simulation is a simple Monte Carlo loop. Given a network, the
 `simulate(network, simulation_params)` function determines large-scale
 parameters by dropping the users by calling `draw_user_drop!(network)`. The
@@ -50,7 +50,7 @@ We provide implementations for the following precoding methods:
 * `Gomadam2008_MaxSINR`: heuristic per-stream SINR maximization of [Gomadam et al.][Gomadam2008]
 * `Eigenprecoding`: single-user optimal beamforming with/without TDMA
 
-### Usage
+## Usage
 See the [examples](examples) folder for ideas on how to write the simulation
 scripts. For implementing network models and precoding methods, see the
 corresponding folders in the `src` directory.
@@ -59,12 +59,12 @@ The package uses PyPlot.jl for visualization, Lumberjack for logging, and
 ProgressMeter for showing progress during lengthy simulation runs. The Min-Max
 WMMSE algorithm is implemented using Gurobi.
 
-### Improvements
+## Improvements
 The package is under continuous development. Several aspects of the code could
 be improved, e.g. test coverage and harmonization of concepts. This is not
 likely to happen in the short term however.
 
-### License
+## License
 This source code is licensed under the X license.
 
 [julia]: http://www.julialang.org
