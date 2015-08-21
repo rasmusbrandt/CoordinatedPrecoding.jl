@@ -93,25 +93,23 @@ function update_MSs!(state::Gomadam2008_MaxSINRState,
     ds = [ size(state.V[k], 2) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-        Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+        Phi = complex(sigma2s[k]*eye(channel.Ns[k]))
         for j = 1:channel.I; for l in served_MS_ids(j, assignment)
-            #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-            Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
+            F = channel.H[k,j]*state.V[l]
+            Phi += F*F'
         end; end
 
         # Per-stream receivers
         for n = 1:ds[k]
-            Psi_plus_n = Hermitian(
-                Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(-1.), channel.H[k,i]*state.V[k][:,n], complex(1.), copy(Phi.S)),
-                Phi.uplo)
-            u = Psi_plus_n\channel.H[k,i]*state.V[k][:,n]
+            f = channel.H[k,i]*state.V[k][:,n]
+            u = Hermitian(Phi - f*f')\f
             state.U[k][:,n] = u/norm(u,2)
         end
 
         # Optimal MSE weights (for rate calculation only)
         F = channel.H[k,i]*state.V[k]
-        Ummse = Phi\F
-        state.W[k] = Hermitian((eye(ds[k]) - Ummse'*F)\eye(ds[k]))
+        Ummse = Hermitian(Phi)\F
+        state.W[k] = inv(Hermitian(eye(ds[k]) - Ummse'*F))
     end; end
 end
 
@@ -121,10 +119,10 @@ function update_BSs!(state::Gomadam2008_MaxSINRState,
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i in active_BSs(assignment)
-        Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
+        Gamma = zeros(Complex128, channel.Ms[i], channel.Ms[i])
         for j = 1:channel.I; for l = served_MS_ids(j, assignment)
-            #Gamma += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
-            Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(1.), channel.H[l,i]'*state.U[l], complex(1.), Gamma.S)
+            G = channel.H[l,i]'*state.U[l]
+            Gamma += G*G'
         end; end
 
         # Per-stream precoders
@@ -132,10 +130,8 @@ function update_BSs!(state::Gomadam2008_MaxSINRState,
         Nserved = length(served)
         for k in served
             for n = 1:ds[k]
-                Gamma_i_plus_n = Hermitian(
-                    Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(-1.), channel.H[k,i]'*state.U[k][:,n], complex(1.), copy(Gamma.S)) + (sigma2s[k]/Ps[i])*eye(channel.Ms[i]),
-                    Gamma.uplo)
-                v = Gamma_i_plus_n\channel.H[k,i]'*state.U[k][:,n]
+                g = channel.H[k,i]'*state.U[k][:,n]
+                v = Hermitian(Gamma - g*g' + (sigma2s[k]/Ps[i])*eye(channel.Ms[i]))\g
                 state.V[k][:,n] = sqrt(Ps[i]/(Nserved*ds[k]))*v/norm(v,2)
             end
         end

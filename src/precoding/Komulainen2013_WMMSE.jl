@@ -100,17 +100,17 @@ function update_MSs!(state::Komulainen2013_WMMSEState,
     ds = [ size(state.V[k], 2) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-        Phi = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+        Phi = complex(sigma2s[k]*eye(channel.Ns[k]))
         for j = 1:channel.I; for l in served_MS_ids(j, assignment)
-            #Phi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-            Base.LinAlg.BLAS.herk!(Phi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi.S)
+            F = channel.H[k,j]*state.V[l]
+            Phi += F*F'
         end; end
 
         # MMSE receiver, optimal MSE weight, and actually used (diagonal) MSE weight
         F = channel.H[k,i]*state.V[k]
-        state.U[k] = Phi\F
+        state.U[k] = Hermitian(Phi)\F
         Emmse = eye(ds[k]) - state.U[k]'*F
-        state.W[k] = Hermitian(Emmse\eye(ds[k]))
+        state.W[k] = inv(Hermitian(Emmse))
         state.W_diag[k] = Diagonal(max(1, abs(1./diag(Emmse))))
     end; end
 end
@@ -119,9 +119,10 @@ function update_BSs!(state::Komulainen2013_WMMSEState,
     channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     for i in active_BSs(assignment)
-        Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
+        Gamma = zeros(Complex128, channel.Ms[i], channel.Ms[i])
         for j = 1:channel.I; for l in served_MS_ids(j, assignment)
-            Gamma += Hermitian(channel.H[l,i]'*(state.U[l]*state.W_diag[l]*state.U[l]')*channel.H[l,i])
+            Gp = channel.H[l,i]'*state.U[l]
+            Gamma += Gp*state.W_diag[l]*Gp'
         end; end
 
         # Find optimal Lagrange multiplier
@@ -139,12 +140,11 @@ function optimal_mu(i, Gamma, state::Komulainen2013_WMMSEState,
     channel::SinglecarrierChannel, Ps, assignment, aux_params)
 
     # Build bisector function
-    bis_M = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
+    bis_M = zeros(Complex128, channel.Ms[i], channel.Ms[i])
     for k in served_MS_ids(i, assignment)
-        #bis_M += Hermitian(channel.H[k,i]'*(state.U[k]*(state.W_diag[k]*state.W_diag[k])*state.U[k]')*channel.H[k,i])
-        Base.LinAlg.BLAS.herk!(bis_M.uplo, 'N', complex(1.), channel.H[k,i]'*state.U[k]*state.W_diag[k], complex(1.), bis_M.S)
+        bis_M += channel.H[k,i]'*(state.U[k]*(state.W_diag[k]*state.W_diag[k])*state.U[k]')*channel.H[k,i]
     end
-    Gamma_eigen = eigfact(Gamma); Gamma_eigen_values = abs(Gamma_eigen.values)
+    Gamma_eigen = eigfact(Hermitian(Gamma)); Gamma_eigen_values = abs(Gamma_eigen.values)
     bis_JMJ_diag = abs(diag(Gamma_eigen.vectors'*bis_M*Gamma_eigen.vectors))
     f(mu) = sum(bis_JMJ_diag./((Gamma_eigen_values .+ mu).*(Gamma_eigen_values .+ mu)))
 

@@ -90,23 +90,25 @@ function calculate_logdet_rates(state::EigenprecodingState,
         Kc = length(served)
 
         for k in served
-            Phi_intracell = Hermitian(complex(sigma2s[k]*eye(channel.Ns[k])))
+            Phi_intracell = complex(sigma2s[k]*eye(channel.Ns[k]))
+            Phi_uncoord = complex(sigma2s[k]*eye(channel.Ns[k]))
             for j in delete!(IntSet(1:channel.I), i)
                 for l in served_MS_ids(j, assignment)
-                    #Phi_intracell += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                    Base.LinAlg.BLAS.herk!(Phi_intracell.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Phi_intracell.S)
+                    F = channel.H[k,j]*state.V[l]
+                    FFh = F*F'
+                    Phi_intracell += FFh
+                    Phi_uncoord += FFh
                 end
             end
-            Phi_uncoord = copy(Phi_intracell)
             for l in served_MS_ids_except_me(k, i, assignment)
-                #Phi_uncoord += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-                Base.LinAlg.BLAS.herk!(Phi_uncoord.uplo, 'N', complex(1.), channel.H[k,i]*state.V[l], complex(1.), Phi_uncoord.S)
+                F = channel.H[k,i]*state.V[l]
+                Phi_uncoord += F*F'
             end
 
             d = size(state.V[k], 2)
-            W_intercell = eye(d) + (channel.K/Kc)*state.V[k]'*channel.H[k,i]'*(1/sigma2s[k])*channel.H[k,i]*state.V[k]
-            W_intracell = eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k]
-            W_uncoord = eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k]
+            W_intercell = Hermitian(eye(d) + (channel.K/Kc)*state.V[k]'*channel.H[k,i]'*(1/sigma2s[k])*channel.H[k,i]*state.V[k])
+            W_intracell = Hermitian(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_intracell\channel.H[k,i])*state.V[k])
+            W_uncoord = Hermitian(eye(d) + state.V[k]'*channel.H[k,i]'*(Phi_uncoord\channel.H[k,i])*state.V[k])
 
             r_intercell_logdet = (1/channel.K)*log2(max(1, abs(eigvals(W_intercell))))
             r_intracell_logdet = (1/Kc)*log2(max(1, abs(eigvals(W_intracell))))

@@ -93,21 +93,19 @@ function update_MSs!(state::Gomadam2008_MinWLIState,
     ds = [ size(state.V[k], 2) for k = 1:channel.K ]
 
     for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-        Psi = Hermitian(zeros(Complex128, channel.Ns[k], channel.Ns[k]))
+        Psi = zeros(Complex128, channel.Ns[k], channel.Ns[k])
         for j = 1:channel.I; for l in served_MS_ids_except_me(k, j, assignment)
-            #Psi += Hermitian(channel.H[k,j]*(state.V[l]*state.V[l]')*channel.H[k,j]')
-            Base.LinAlg.BLAS.herk!(Psi.uplo, 'N', complex(1.), channel.H[k,j]*state.V[l], complex(1.), Psi.S)
+            F = channel.H[k,j]*state.V[l]
+            Psi += F*F'
         end; end
 
         # Zero-forcing receiver
-        Psi_eigen = eigfact(Psi, 1:ds[k])
-        state.U[k] = Psi_eigen.vectors
+        state.U[k] = eigfact(Hermitian(Psi), 1:ds[k]).vectors
 
         # Optimal MSE weights
         F = channel.H[k,i]*state.V[k]
-        Phi = Hermitian(Psi + F*F' + sigma2s[k]*eye(Psi))
-        Ummse = Phi\F
-        state.W[k] = Hermitian((eye(ds[k]) - Ummse'*F)\eye(ds[k]))
+        Ummse = Hermitian(Psi + F*F' + sigma2s[k]*eye(Psi))\F
+        state.W[k] = inv(Hermitian(eye(ds[k]) - Ummse'*F))
     end; end
 end
 
@@ -117,23 +115,20 @@ function update_BSs!(state::Gomadam2008_MinWLIState,
     ds = [ size(state.W[k], 1) for k = 1:channel.K ]
 
     for i in active_BSs(assignment)
-        Gamma = Hermitian(zeros(Complex128, channel.Ms[i], channel.Ms[i]))
+        Gamma = zeros(Complex128, channel.Ms[i], channel.Ms[i])
         for j = 1:channel.I; for l = served_MS_ids(j, assignment)
-            #Gamma += Hermitian(channel.H[k,i]'*(state.U[k]*state.U[k]')*channel.H[k,i])
-            Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(1.), channel.H[l,i]'*state.U[l], complex(1.), Gamma.S)
+            G = channel.H[l,i]'*state.U[l]
+            Gamma += G*G'
         end; end
 
         # Precoders for all served users
         served = served_MS_ids(i, assignment)
         Nserved = length(served)
         for k in served
-            Delta = Hermitian(
-                Base.LinAlg.BLAS.herk!(Gamma.uplo, 'N', complex(-1.), channel.H[k,i]'*state.U[k], complex(1.), copy(Gamma.S)),
-                Gamma.uplo)
+            G = channel.H[k,i]'*state.U[k]
 
             # Precoder
-            Delta_eigen = eigfact(Delta, 1:ds[k])
-            state.V[k] = sqrt(Ps[i]/(Nserved*ds[k]))*Delta_eigen.vectors
+            state.V[k] = sqrt(Ps[i]/(Nserved*ds[k]))*eigfact(Hermitian(Gamma - G*G'), 1:ds[k]).vectors
         end
     end
 end
