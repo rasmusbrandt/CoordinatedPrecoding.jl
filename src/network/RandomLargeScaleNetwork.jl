@@ -13,7 +13,7 @@ type RandomLargeScaleNetwork{MS_t <: PhysicalMS, BS_t <: PhysicalBS, System_t <:
     no_MSs_per_cell::Int
     propagation_environment::PropagationEnvironment_t
     geography_size::@compat Tuple{Float64, Float64}
-    MS_serving_BS_distance::@compat Nullable{Float64} # null signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
+    MS_serving_BS_distance::Nullable{Float64} # null signifies random placement of MSs. Otherwise they are placed on a circle from the BS.
     aux_network_params::AuxNetworkParams
 
     assignment::Assignment
@@ -32,8 +32,8 @@ function setup_random_large_scale_network(
     no_BSs, no_MSs_per_cell, no_MS_antennas, no_BS_antennas;
     system = SinglecarrierSystem(2e9, 15e3),
     propagation_environment = SimpleLargescaleFadingEnvironment(37.6, 15.3, 10, 8),
-    geography_size = (1500.,1500.),
-    MS_serving_BS_distance = 150.,
+    geography_size = (1500., 1500.),
+    MS_serving_BS_distance = Nullable(150.), # Nullable{Float64}() for random MS placement
     transmit_power = 10^(18.2/10), transmit_powers = transmit_power*ones(Float64, no_BSs),
     BS_antenna_gain_params = [ OmnidirectionalAntennaParams(0) for idx = 1:no_BSs ],
     user_priority = 1., user_priorities = user_priority*ones(Float64, no_BSs*no_MSs_per_cell),
