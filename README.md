@@ -44,10 +44,13 @@ also exists for sweeping auxiliary independent variables.
 We provide implementations for the following precoding methods:
 
 * `Shi2011_WMMSE`: the famous WMMSE algorithm of [Shi et al.][Shi2011]
-* `Razaviyayn2013_MinMaxWMMSE`: min-max version of the WMMSE algorithm by [Razaviyayn et al.][Razaviyayn2013]
-* `Komulainen2013_WMMSE`: diagonalized WMMSE algorithm of [Komulainen et al.][Komulainen2013]
+* `Razaviyayn2013_MinMaxWMMSE`: min-max version of the WMMSE algorithm by
+  [Razaviyayn et al.][Razaviyayn2013]
+* `Komulainen2013_WMMSE`: diagonalized WMMSE algorithm of
+  [Komulainen et al.][Komulainen2013]
 * `Gomadam2008_MinWLI`: leakage minimization of [Gomadam et al.][Gomadam2008]
-* `Gomadam2008_MaxSINR`: heuristic per-stream SINR maximization of [Gomadam et al.][Gomadam2008]
+* `Gomadam2008_MaxSINR`: heuristic per-stream SINR maximization of
+  [Gomadam et al.][Gomadam2008]
 * `Eigenprecoding`: single-user optimal beamforming with/without TDMA
 
 ## Usage
@@ -55,14 +58,16 @@ See the [examples](examples) folder for ideas on how to write the simulation
 scripts. For implementing network models and precoding methods, see the
 corresponding folders in the `src` directory.
 
-The package uses PyPlot.jl for visualization, Lumberjack for logging, and
-ProgressMeter for showing progress during lengthy simulation runs. The Min-Max
-WMMSE algorithm is implemented using Gurobi.
+The package uses [PyPlot.jl][PyPlotJL] for visualization,
+[Lumberjack.jl][LumberjackJL] for logging, and
+[ProgressMeter.jl][ProgressMeterJL] for showing progress during lengthy
+simulation runs. The Min-Max WMMSE algorithm is implemented using
+[Gurobi.jl][GurobiJL].
 
 ## Improvements
 The package is under continuous development. Several aspects of the code could
 be improved, e.g. test coverage and harmonization of concepts. This is not
-likely to happen in the short term however.
+likely to happen in the short term.
 
 ## License
 This source code is licensed under the X license.
@@ -73,3 +78,7 @@ This source code is licensed under the X license.
 [Razaviyayn2013]: http://www.sciencedirect.com/science/article/pii/S0165168413000716
 [Komulainen2013]: http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6463462
 [Gomadam2008]: http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5773023
+[PyPlotJL]: https://github.com/stevengj/PyPlot.jl
+[LumberjackJL]: https://github.com/forio/Lumberjack.jl
+[ProgressMeterJL]: https://github.com/timholy/ProgressMeter.jl
+[GurobiJL]: https://github.com/JuliaOpt/gurobi.jl
