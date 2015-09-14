@@ -17,15 +17,15 @@ in the future.
 The networks are subtypes of the `Network` abstract type. In order to generate
 the network, several concrete models are available:
 
-* `InterferingBroadcastChannel`: a network without large-scale fading which
+* `InterferingBroadcastChannel`, a network without large-scale fading which
   can be used to simulate interfering broadcast channels
   (including interference channels).
-* `TriangularMacroNetwork`: a triangular macro network with three sites.
+* `TriangularMacroNetwork`, a triangular macro network with three sites.
   Large-scale parameters are inspired by 3GPP Case 1.
-* `TriangularHetNet`: similar to the network above, but including a variable
+* `TriangularHetNet`, similar to the network above, but including a variable
   number of pico base stations per cell.
-* `IndoorsNetwork`: an office corridor inspired by ITU-T InH
-* `RandomLargeScaleNetwork`: a macro network with random base station placement
+* `IndoorsNetwork`, an office corridor inspired by ITU-T InH
+* `RandomLargeScaleNetwork`, a macro network with random base station placement
   and 3GPP inspired pathloss.
 
 For each network, a convenience function is available for quick generation, e.g.:
@@ -45,20 +45,20 @@ also exists for sweeping auxiliary independent variables.
 ### Reference implementations of precoding schemes
 We provide implementations for the following precoding methods:
 
-* `Shi2011_WMMSE`: the famous WMMSE algorithm by [Shi et al.][Shi2011]
-* `Razaviyayn2013_MinMaxWMMSE`: min-max version of the WMMSE algorithm by
+* `Shi2011_WMMSE`, the famous WMMSE algorithm by [Shi et al.][Shi2011]
+* `Razaviyayn2013_MinMaxWMMSE`, min-max version of the WMMSE algorithm by
   [Razaviyayn et al.][Razaviyayn2013]
-* `Komulainen2013_WMMSE`: diagonalized WMMSE algorithm by
+* `Komulainen2013_WMMSE`, diagonalized WMMSE algorithm by
   [Komulainen et al.][Komulainen2013]
-* `Gomadam2008_MinWLI`: leakage minimization by [Gomadam et al.][Gomadam2008]
-* `Gomadam2008_MaxSINR`: heuristic per-stream SINR maximization by
+* `Gomadam2008_MinWLI`, leakage minimization by [Gomadam et al.][Gomadam2008]
+* `Gomadam2008_MaxSINR`, heuristic per-stream SINR maximization by
   [Gomadam et al.][Gomadam2008]
-* `Eigenprecoding`: single-user optimal beamforming with/without TDMA
+* `Eigenprecoding`, single-user optimal beamforming with/without TDMA
 
 ## Usage
 See the [examples](examples) folder for ideas on how to write the simulation
 scripts. For implementing network models and precoding methods, see the
-corresponding folders in the `src` directory.
+corresponding folders in the [src](src) directory.
 
 The package uses [PyPlot.jl][PyPlotJL] for visualization,
 [Lumberjack.jl][LumberjackJL] for logging, and
