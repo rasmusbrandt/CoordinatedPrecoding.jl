@@ -36,7 +36,7 @@ function clean_simulation_params_for_jld(simulation_params)
 
     # Auxiliary independent variable function pointers
     if haskey(simulation_params, "aux_independent_variables")
-        cleaned_aux_independent_variables = Array((ASCIIString, Any), 0)
+        cleaned_aux_independent_variables = Array(@compat Tuple{ASCIIString, Any}, 0)
         for aux_idp in simulation_params["aux_independent_variables"]
             push!(cleaned_aux_independent_variables, (string(aux_idp[1]), aux_idp[2]))
         end

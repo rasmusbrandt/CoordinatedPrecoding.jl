@@ -1,3 +1,7 @@
+if Pkg.installed("Gurobi") != nothing
+    import Gurobi
+end
+
 immutable Razaviyayn2013_MinMaxWMMSEState
     U::Array{Matrix{Complex128},1}
     W::Array{Hermitian{Complex128},1}
