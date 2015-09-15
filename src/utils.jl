@@ -1,5 +1,7 @@
 ##########################################################################
 # General utilities
+stringify_method(f) = string(f.env.name)
+
 function clean_simulation_params_for_jld(simulation_params)
     cleaned_simulation_params = copy(simulation_params)
 
@@ -7,23 +9,23 @@ function clean_simulation_params_for_jld(simulation_params)
     if haskey(simulation_params, "precoding_methods")
         cleaned_precoding_methods = Array(ASCIIString, 0)
         for method in simulation_params["precoding_methods"]
-            push!(cleaned_precoding_methods, string(method))
+            push!(cleaned_precoding_methods, stringify_method(method))
         end
         cleaned_simulation_params["precoding_methods"] = cleaned_precoding_methods
     end
-    if haskey(simulation_params, "dont_sweep_precoding_methods")
-        cleaned_dont_sweep_precoding_methods = Array(ASCIIString, 0)
-        for method in simulation_params["dont_sweep_precoding_methods"]
-            push!(cleaned_dont_sweep_precoding_methods, string(method))
+    if haskey(simulation_params, "precoding_methods_nosweep")
+        cleaned_precoding_methods_nosweep = Array(ASCIIString, 0)
+        for method in simulation_params["precoding_methods_nosweep"]
+            push!(cleaned_precoding_methods_nosweep, stringify_method(method))
         end
-        cleaned_simulation_params["dont_sweep_precoding_methods"] = cleaned_dont_sweep_precoding_methods
+        cleaned_simulation_params["precoding_methods_nosweep"] = cleaned_precoding_methods_nosweep
     end
 
     # Assignment method function pointers
     if haskey(simulation_params, "assignment_methods")
         cleaned_assignment_methods = Array(ASCIIString, 0)
         for method in simulation_params["assignment_methods"]
-            push!(cleaned_assignment_methods, string(method))
+            push!(cleaned_assignment_methods, stringify_method(method))
         end
         cleaned_simulation_params["assignment_methods"] = cleaned_assignment_methods
     end
@@ -36,7 +38,7 @@ function clean_simulation_params_for_jld(simulation_params)
 
     # Auxiliary independent variable function pointers
     if haskey(simulation_params, "aux_independent_variables")
-        cleaned_aux_independent_variables = Array(@compat Tuple{ASCIIString, Any}, 0)
+        cleaned_aux_independent_variables = Array((@compat Tuple{ASCIIString, Any}), 0)
         for aux_idp in simulation_params["aux_independent_variables"]
             push!(cleaned_aux_independent_variables, (string(aux_idp[1]), aux_idp[2]))
         end

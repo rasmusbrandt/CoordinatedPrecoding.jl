@@ -19,7 +19,7 @@ function postprocess(raw_results, simulation_params, plot_params)
 
     # Compact raw results into result matrices
     Ndrops = size(raw_results.simulation_results, 1); Nsim = size(raw_results.simulation_results, 2)
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
@@ -46,13 +46,13 @@ function postprocess(raw_results, simulation_params, plot_params)
     end
 
     # Calculate statistics on result matrices
-    plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 5:6)))
-    plot_params["objective"] == :avgrate && (objective = (r -> mean(sum(r, 6), 5)))
-    plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 6), 5)))
+    plot_params["objective"] == :sum && (objective = (r -> sum(r, 5:6)))
+    plot_params["objective"] == :mean && (objective = (r -> mean(sum(r, 6), 5)))
+    plot_params["objective"] == :min && (objective = (r -> minimum(sum(r, 6), 5)))
     plot_params["objective"] == :none && (objective = (r -> r))
 
-    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
-    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_mean = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
@@ -63,10 +63,10 @@ function postprocess(raw_results, simulation_params, plot_params)
             end
 
             # mean: average over drops and sims
-            results_mean[method_name][result_name] = squeeze(mean(objective(results[method_name][result_name]), 1:2), [1,2,5,6])
+            results_mean[method_name][result_name] = squeeze(mean(objective(results[method_name][result_name]), 1:2), (1,2,5,6))
 
             # var: average over sims, estimate var over drops
-            results_var[method_name][result_name] = squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), [1,2,5,6])
+            results_var[method_name][result_name] = squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), (1,2,5,6))
         end
     end
 
@@ -113,7 +113,7 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
 
     # Compact raw results into result matrices
     Ndrops = size(raw_results.simulation_results, 1); Nsim = size(raw_results.simulation_results, 2)
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
@@ -141,13 +141,13 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
     end
 
     # Calculate statistics on result matrices
-    plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 4:5)))
-    plot_params["objective"] == :avgrate && (objective = (r -> mean(sum(r, 5), 4)))
-    plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 5), 4)))
+    plot_params["objective"] == :sum && (objective = (r -> sum(r, 4:5)))
+    plot_params["objective"] == :mean && (objective = (r -> mean(sum(r, 5), 4)))
+    plot_params["objective"] == :min && (objective = (r -> minimum(sum(r, 5), 4)))
     plot_params["objective"] == :none && (objective = (r -> r))
 
-    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
-    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_mean = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
@@ -158,10 +158,10 @@ function postprocess_precoding_convergence(raw_results, simulation_params, plot_
             end
 
             # mean: average over drops and sims
-            results_mean[method_name][result_name] = transpose(squeeze(mean(objective(results[method_name][result_name]), 1:2), [1,2,4,5]))
+            results_mean[method_name][result_name] = transpose(squeeze(mean(objective(results[method_name][result_name]), 1:2), (1,2,4,5)))
 
             # var: average over sims, estimate var over drops
-            results_var[method_name][result_name] = transpose(squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), [1,2,4,5]))
+            results_var[method_name][result_name] = transpose(squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), (1,2,4,5)))
         end
     end
 
@@ -186,7 +186,7 @@ function postprocess_assignment_convergence(raw_results, simulation_params, plot
 
     # Compact raw results into result matrices
     Ndrops = size(raw_results.simulation_results, 1)
-    results = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
@@ -214,13 +214,13 @@ function postprocess_assignment_convergence(raw_results, simulation_params, plot
     end
 
     # Calculate statistics on result matrices
-    plot_params["objective"] == :sumrate && (objective = (r -> sum(r, 4:5)))
-    plot_params["objective"] == :avgrate && (objective = (r -> mean(sum(r, 5), 4)))
-    plot_params["objective"] == :minrate && (objective = (r -> minimum(sum(r, 5), 4)))
+    plot_params["objective"] == :sum && (objective = (r -> sum(r, 4:5)))
+    plot_params["objective"] == :mean && (objective = (r -> mean(sum(r, 5), 4)))
+    plot_params["objective"] == :min && (objective = (r -> minimum(sum(r, 5), 4)))
     plot_params["objective"] == :none && (objective = (r -> r))
 
-    results_mean = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
-    results_var = [ string(method) => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_mean = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
+    results_var = [ method => Dict{ASCIIString, Array{Float64}}() for method in methods ]
     for method_name in methods
         for (result_param,) in plot_params["methods"][method_name]
             if isa(result_param, ASCIIString)
@@ -231,10 +231,10 @@ function postprocess_assignment_convergence(raw_results, simulation_params, plot
             end
 
             # mean: average over drops and sims
-            results_mean[method_name][result_name] = transpose(squeeze(mean(objective(results[method_name][result_name]), 1:2), [1,2,4,5]))
+            results_mean[method_name][result_name] = transpose(squeeze(mean(objective(results[method_name][result_name]), 1:2), (1,2,4,5)))
 
             # var: average over sims, estimate var over drops
-            results_var[method_name][result_name] = transpose(squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), [1,2,4,5]))
+            results_var[method_name][result_name] = transpose(squeeze(var(mean(objective(results[method_name][result_name]), 2), 1), (1,2,4,5)))
         end
     end
 
@@ -292,7 +292,7 @@ function plot_precoding_convergence(processed_results, simulation_params, plot_p
                 end
 
                 ax[:plot](1:size(result, 6),
-                          transpose(squeeze(mean(sum(result[:,:,:,k,:,:], 5), 1:2), [1,2,4,5]));
+                          transpose(squeeze(mean(sum(result[:,:,:,k,:,:], 5), 1:2), (1,2,4,5)));
                           line_params...)
             end
 
@@ -334,7 +334,7 @@ function plot_precoding_convergence(processed_results, simulation_params, plot_p
                 end
 
                 ax[:plot](1:size(result, 6),
-                          transpose(squeeze(mean(result[:,:,:,k,n,:], 1:2), [1,2,4,5]));
+                          transpose(squeeze(mean(result[:,:,:,k,n,:], 1:2), (1,2,4,5)));
                           line_params...)
             end
         end
@@ -400,8 +400,8 @@ end
 # in simulation_params), and those we have plotting parameters for (and
 # thus specified in plot_params).
 function get_methods_to_plot(simulation_params, plot_params)
-    precoding_methods = (haskey(simulation_params, "precoding_methods") ? map(string, simulation_params["precoding_methods"]) : [])
-    assignment_methods = (haskey(simulation_params, "assignment_methods") ? map(string, simulation_params["assignment_methods"]) : [])
+    precoding_methods = get(simulation_params, "precoding_methods", ASCIIString[])
+    assignment_methods = get(simulation_params, "assignment_methods", ASCIIString[])
 
     return intersect(union(precoding_methods, assignment_methods), keys(plot_params["methods"]))
 end

@@ -39,11 +39,11 @@ function simulate(network, simulation_params;
     loop_over::Symbol=:precoding_methods)
 
     # Number of drops and small scale fading realizations
-    Ndrops = haskey(simulation_params, "Ndrops") ? simulation_params["Ndrops"] : 1
-    Nsim = haskey(simulation_params, "Nsim") ? simulation_params["Nsim"] : 1
+    Ndrops = get(simulation_params, "Ndrops", 1)::Int
+    Nsim = get(simulation_params, "Nsim", 1)::Int
 
     # Main independent variable
-    idp_func = simulation_params["independent_variable"][1]
+    idp_func = simulation_params["independent_variable"][1]::Function
     idp_vals = simulation_params["independent_variable"][2]
     idp_vals_length = length(idp_vals)
 
@@ -51,7 +51,7 @@ function simulate(network, simulation_params;
     Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
 
     # Methods that should not be swept as a function of independent and auxiliary variables
-    dont_sweep_precoding = haskey(simulation_params, "dont_sweep_precoding_methods") ? simulation_params["dont_sweep_precoding_methods"] : []
+    precoding_methods_nosweep = get(simulation_params, "precoding_methods_nosweep", Function[])::Vector{Function}
 
     # Get assignment/precoding functions depending on looping mode
     precoding_method, assignment_method = get_other_method(simulation_params, loop_over)
@@ -96,7 +96,7 @@ function simulate(network, simulation_params;
 
                     # Allocate memory for assignment method, and run it
                     raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
-                    raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channels[1], network)
+                    raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][stringify_method(assignment_method)] = assignment_method(channels[1], network)
 
                     for precoding_method in simulation_params["precoding_methods"]
                         for Nsim_idx = 1:Nsim
@@ -104,11 +104,11 @@ function simulate(network, simulation_params;
                             if precoding_method == simulation_params["precoding_methods"][1]
                                 raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                             end
-                            if in(precoding_method, dont_sweep_precoding) && idp_vals_idx != 1 && aux_idp_vals_idx != 1
+                            if in(precoding_method, precoding_methods_nosweep) && idp_vals_idx != 1 && aux_idp_vals_idx != 1
                                 # We should not sweep this precoding method, so re-store old result.
-                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = raw_precoding_results[Ndrops_idx, Nsim_idx, 1, 1][string(precoding_method)]
+                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][stringify_method(precoding_method)] = raw_precoding_results[Ndrops_idx, Nsim_idx, 1, 1][stringify_method(precoding_method)]
                             else
-                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+                                raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][stringify_method(precoding_method)] = precoding_method(channels[Nsim_idx], network)
                             end
 
                             ProgressMeter.next!(progress)
@@ -134,14 +134,14 @@ function simulate(network, simulation_params;
                         if assignment_method == simulation_params["assignment_methods"][1]
                             raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
                         end
-                        raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channels[1], network)
+                        raw_assignment_results[Ndrops_idx, 1, idp_vals_idx, aux_idp_vals_idx][stringify_method(assignment_method)] = assignment_method(channels[1], network)
 
                         for Nsim_idx = 1:Nsim
                             # Allocate memory if this is the first method to be run
                             if assignment_method == simulation_params["assignment_methods"][1]
                                 raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                             end
-                            raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
+                            raw_precoding_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][stringify_method(assignment_method)] = precoding_method(channels[Nsim_idx], network)
 
                             ProgressMeter.next!(progress)
                         end
@@ -161,8 +161,8 @@ function simulate_precoding_convergence(network, simulation_params;
     loop_over::Symbol=:precoding_methods)
 
     # Number of drops and small scale fading realizations
-    Ndrops = simulation_params["Ndrops"]
-    Nsim = simulation_params["Nsim"]
+    Ndrops = get(simulation_params, "Ndrops", 1)::Int
+    Nsim = get(simulation_params, "Nsim", 1)::Int
 
     # Auxiliary independent variables
     Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
@@ -216,7 +216,7 @@ function simulate_precoding_convergence(network, simulation_params;
                         if precoding_method == simulation_params["precoding_methods"][1]
                             raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                         end
-                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(precoding_method)] = precoding_method(channels[Nsim_idx], network)
+                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][stringify_method(precoding_method)] = precoding_method(channels[Nsim_idx], network)
 
                         ProgressMeter.next!(progress)
                     end
@@ -238,7 +238,7 @@ function simulate_precoding_convergence(network, simulation_params;
                         if assignment_method == simulation_params["assignment_methods"][1]
                             raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx] = SingleSimulationResults(PrecodingResults)
                         end
-                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][string(assignment_method)] = precoding_method(channels[Nsim_idx], network)
+                        raw_results[Ndrops_idx, Nsim_idx, aux_idp_vals_idx][stringify_method(assignment_method)] = precoding_method(channels[Nsim_idx], network)
 
                         ProgressMeter.next!(progress)
                     end
@@ -254,7 +254,7 @@ end
 # Simulate assignment methods and store their convergence behaviour.
 function simulate_assignment_convergence(network, simulation_params)
     # Number of drops and small scale fading realizations
-    Ndrops = simulation_params["Ndrops"]
+    Ndrops = simulation_params["Ndrops"]::Int
 
     # Auxiliary independent variables
     Naux, aux_idp_funcs, aux_idp_vals, aux_idp_vals_length = get_aux_idp(simulation_params)
@@ -288,7 +288,7 @@ function simulate_assignment_convergence(network, simulation_params)
                 if assignment_method == simulation_params["assignment_methods"][1]
                     raw_results[Ndrops_idx, 1, aux_idp_vals_idx] = SingleSimulationResults(AssignmentResults)
                 end
-                raw_results[Ndrops_idx, 1, aux_idp_vals_idx][string(assignment_method)] = assignment_method(channel, network)
+                raw_results[Ndrops_idx, 1, aux_idp_vals_idx][stringify_method(assignment_method)] = assignment_method(channel, network)
 
                 ProgressMeter.next!(progress)
             end
@@ -336,7 +336,7 @@ end
 function get_aux_idp(simulation_params)
     if haskey(simulation_params, "aux_independent_variables")
         Naux = length(simulation_params["aux_independent_variables"])
-        aux_idp_funcs = [ simulation_params["aux_independent_variables"][n][1] for n = 1:Naux ]
+        aux_idp_funcs = [ simulation_params["aux_independent_variables"][n][1]::Function for n = 1:Naux ]
         aux_idp_vals = [ simulation_params["aux_independent_variables"][n][2] for n = 1:Naux ]
 
         # Check that all independent variable vectors are the same length
@@ -346,8 +346,8 @@ function get_aux_idp(simulation_params)
         end
     else
         Naux = 0
-        aux_idp_funcs = []
-        aux_idp_vals = []
+        aux_idp_funcs = Function[]
+        aux_idp_vals = Vector{Int}[]
         aux_idp_vals_length = 1
     end
 

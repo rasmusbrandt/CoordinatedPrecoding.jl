@@ -38,7 +38,7 @@ function timing(network, simulation_params; loop_over::Symbol=:precoding_methods
 
         # Run performance test
         for method in simulation_params["precoding_methods"]
-            println("--- Testing performance of ", string(method))
+            println("--- Testing performance of ", stringify_method(method))
             @time for i = 1:simulation_params["Ntest"]; method(channel, network); end
         end
     elseif loop_over == :assignment_methods
@@ -49,7 +49,7 @@ function timing(network, simulation_params; loop_over::Symbol=:precoding_methods
 
         # Run performance test
         for method in simulation_params["assignment_methods"]
-            println("--- Testing performance of ", string(method))
+            println("--- Testing performance of ", stringify_method(method))
             @time for i = 1:simulation_params["Ntest"]; method(channel, network); end
         end
     end
