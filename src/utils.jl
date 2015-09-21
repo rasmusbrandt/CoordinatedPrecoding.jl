@@ -1,6 +1,7 @@
 ##########################################################################
 # General utilities
-stringify_method(f) = string(f.env.name)
+stringify_method(f::Function) = string(f.env.name)
+@compat stringify_method(f::AbstractString) = ASCIIString(f)
 
 function clean_simulation_params_for_jld(simulation_params)
     cleaned_simulation_params = copy(simulation_params)
