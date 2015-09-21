@@ -400,8 +400,8 @@ end
 # in simulation_params), and those we have plotting parameters for (and
 # thus specified in plot_params).
 function get_methods_to_plot(simulation_params, plot_params)
-    precoding_methods = get(simulation_params, "precoding_methods", ASCIIString[])
-    assignment_methods = get(simulation_params, "assignment_methods", ASCIIString[])
+    precoding_methods = get(simulation_params, "precoding_methods", Function[])
+    assignment_methods = get(simulation_params, "assignment_methods", Function[])
 
-    return intersect(union(precoding_methods, assignment_methods), keys(plot_params["methods"]))
+    return intersect(map(stringify_method, union(precoding_methods, assignment_methods)), keys(plot_params["methods"]))
 end
