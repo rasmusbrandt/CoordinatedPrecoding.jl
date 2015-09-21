@@ -32,7 +32,7 @@ simulation_params = @compat Dict(
         # Razaviyayn2013_MinMaxWMMSE,
         Eigenprecoding
     ],
-    "aux_precoding_params" => @compat Dict(
+    "aux_precoding_params" => Dict(
         "initial_precoders" => "dft",
         "stop_crit" => 0.,
         "max_iters" => 100,
