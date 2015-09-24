@@ -125,7 +125,8 @@ export
 
 # Utilities
     @defaultize_param!,
-    clean_simulation_params_for_jld
+    clean_simulation_params_for_jld,
+    Partition, Block, restricted_growth_string
 
 ##########################################################################
 # General includes
@@ -146,7 +147,8 @@ include("assignment.jl")
 include("precoding/precoding.jl")
 
 # Miscellaneous utilities
-include("utils.jl")
+include("misc/partitions.jl")
+include("misc/utils.jl")
 
 ##########################################################################
 # Specific includes
