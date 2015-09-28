@@ -55,7 +55,9 @@ We provide implementations for the following precoding methods:
   [Gomadam et al.][Gomadam2008]
 * `Eigenprecoding`, single-user optimal beamforming with/without TDMA
 
-## Usage
+## Installation and Usage
+The package is installed by calling `Pkg.clone("https://github.com/rasmusbrandt/CoordinatedPrecoding.jl")` from the Julia REPL. 
+
 See the [examples](examples) folder for ideas on how to write the simulation
 scripts. For implementing network models and precoding methods, see the
 corresponding folders in the [src](src) directory.
@@ -64,7 +66,7 @@ The package uses [PyPlot.jl][PyPlotJL] for visualization,
 [Lumberjack.jl][LumberjackJL] for logging, and
 [ProgressMeter.jl][ProgressMeterJL] for showing progress during lengthy
 simulation runs. The Min-Max WMMSE algorithm is implemented using
-[Gurobi.jl][GurobiJL].
+[Gurobi.jl][GurobiJL]. The package uses [Compat.jl][CompatJL] for compatibility between julia 0.3 and 0.4.
 
 [julia]: http://www.julialang.org
 [PracticalTDD]: http://kth.diva-portal.org/smash/get/diva2:811008/FULLTEXT01.pdf
@@ -72,6 +74,7 @@ simulation runs. The Min-Max WMMSE algorithm is implemented using
 [Razaviyayn2013]: http://www.sciencedirect.com/science/article/pii/S0165168413000716
 [Komulainen2013]: http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6463462
 [Gomadam2008]: http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5773023
+[CompatJL]: https://github.com/JuliaLang/Compat.jl
 [PyPlotJL]: https://github.com/stevengj/PyPlot.jl
 [LumberjackJL]: https://github.com/forio/Lumberjack.jl
 [ProgressMeterJL]: https://github.com/timholy/ProgressMeter.jl
