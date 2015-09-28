@@ -85,7 +85,7 @@ function plot(processed_results, simulation_params, plot_params)
         xvals=(haskey(plot_params, "xvals") ? plot_params["xvals"] : simulation_params["independent_variable"][2]))
     haskey(plot_params, "legend") && ax[:legend](;plot_params["legend"]...)
 
-    if displayable("application/pdf")
+    if displayable("application/pdf") || displayable("image/png")
         display(fig)
     else
         open("$(simulation_params["simulation_name"])_$(plot_params["plot_name"]).pdf", "w") do file
@@ -243,7 +243,7 @@ end
 
 ##########################################################################
 # Plots results from the postprocess_precoding_convergence function.
-function plot_precoding_convergence(processed_results, simulation_params, plot_params)
+function plot_precoding_convergence(processed_results, simulation_params, plot_params; user_plots::Bool=true)
     methods = get_methods_to_plot(simulation_params, plot_params)
 
     results = processed_results[1]
@@ -262,7 +262,7 @@ function plot_precoding_convergence(processed_results, simulation_params, plot_p
     end
     haskey(plot_params, "legend") && ax[:legend](;plot_params["legend"]...)
 
-    if displayable("application/pdf")
+    if displayable("application/pdf") || displayable("image/png")
         display(fig)
     else
         open("$(simulation_params["simulation_name"])_$(plot_params["plot_name"]).pdf", "w") do file
@@ -271,99 +271,101 @@ function plot_precoding_convergence(processed_results, simulation_params, plot_p
     end
     PyPlot.close(fig)
 
-    ### USER UTILITIES ###
-    K_method_name = collect(keys(results))[1]
-    K_result_name = collect(keys(results[K_method_name]))[1]
-    K = size(results[K_method_name][K_result_name], 4) # ugly shit. This is really not stable.
+    if user_plots
+        ### USER UTILITIES ###
+        K_method_name = collect(keys(results))[1]
+        K_result_name = collect(keys(results[K_method_name]))[1]
+        K = size(results[K_method_name][K_result_name], 4) # ugly shit. This is really not stable.
 
-    fig = PyPlot.figure(figsize=(6*K,3*length(methods)))
-    subplot_ind = 1
-
-    for method_name in methods
-        for k = 1:K
-            ax = fig[:add_subplot](length(methods), K, subplot_ind); subplot_ind += 1
-
-            for (result_param, line_params) in plot_params["methods"][method_name]
-                if isa(result_param, ASCIIString)
-                    result = results[method_name][result_param]
-                else
-                    (calculator, calculate_from) = result_param
-                    result = calculator(results[method_name][calculate_from])
-                end
-
-                ax[:plot](1:size(result, 6),
-                          transpose(squeeze(mean(sum(result[:,:,:,k,:,:], 5), 1:2), (1,2,4,5)));
-                          line_params...)
-            end
-
-            if k == 1
-                ax[:set_ylabel](method_name)
-            end
-            if subplot_ind-1 <= K
-                ax[:set_title]("User $k")
-            end
-            if subplot_ind-1 > (K-1)*length(methods)
-                ax[:set_xlabel]("Iteration")
-            end
-        end
-    end
-
-    if displayable("application/pdf")
-        display(fig)
-    else
-        open("$(simulation_params["simulation_name"])_$(plot_params["plot_name"])_peruser.pdf", "w") do file
-            writemime(file, "application/pdf", fig)
-        end
-    end
-    PyPlot.close(fig)
-
-    ### STREAM UTILITIES ###
-    fig = PyPlot.figure(figsize=(6*simulation_params["d"],3*K))
-    subplot_ind = 1
-
-    for k = 1:K; for n = 1:simulation_params["d"]
-        ax = fig[:add_subplot](K, simulation_params["d"], subplot_ind); subplot_ind += 1
+        fig = PyPlot.figure(figsize=(6*K,3*length(methods)))
+        subplot_ind = 1
 
         for method_name in methods
-            for (result_param, line_params) in plot_params["methods"][method_name]
-                if isa(result_param, ASCIIString)
-                    result = results[method_name][result_param]
-                else
-                    (calculator, calculate_from) = result_param
-                    result = calculator(results[method_name][calculate_from])
+            for k = 1:K
+                ax = fig[:add_subplot](length(methods), K, subplot_ind); subplot_ind += 1
+
+                for (result_param, line_params) in plot_params["methods"][method_name]
+                    if isa(result_param, ASCIIString)
+                        result = results[method_name][result_param]
+                    else
+                        (calculator, calculate_from) = result_param
+                        result = calculator(results[method_name][calculate_from])
+                    end
+
+                    ax[:plot](1:size(result, 6),
+                              transpose(squeeze(mean(sum(result[:,:,:,k,:,:], 5), 1:2), (1,2,4,5)));
+                              line_params...)
                 end
 
-                ax[:plot](1:size(result, 6),
-                          transpose(squeeze(mean(result[:,:,:,k,n,:], 1:2), (1,2,4,5)));
-                          line_params...)
+                if k == 1
+                    ax[:set_ylabel](method_name)
+                end
+                if subplot_ind-1 <= K
+                    ax[:set_title]("User $k")
+                end
+                if subplot_ind-1 > (K-1)*length(methods)
+                    ax[:set_xlabel]("Iteration")
+                end
             end
         end
 
-        if n == 1
-            ax[:set_ylabel]("User $k")
+        if displayable("application/pdf") || displayable("image/png")
+            display(fig)
+        else
+            open("$(simulation_params["simulation_name"])_$(plot_params["plot_name"])_peruser.pdf", "w") do file
+                writemime(file, "application/pdf", fig)
+            end
         end
-        if k == 1
-            ax[:set_title]("Stream $n")
-        end
-        if k == K
-            ax[:set_xlabel]("Iteration")
-        end
-    end; end
+        PyPlot.close(fig)
 
-    if displayable("application/pdf")
-        display(fig)
-    else
-        open("$(simulation_params["simulation_name"])_$(plot_params["plot_name"])_perstream.pdf", "w") do file
-            writemime(file, "application/pdf", fig)
+        ### STREAM UTILITIES ###
+        fig = PyPlot.figure(figsize=(6*simulation_params["d"],3*K))
+        subplot_ind = 1
+
+        for k = 1:K; for n = 1:simulation_params["d"]
+            ax = fig[:add_subplot](K, simulation_params["d"], subplot_ind); subplot_ind += 1
+
+            for method_name in methods
+                for (result_param, line_params) in plot_params["methods"][method_name]
+                    if isa(result_param, ASCIIString)
+                        result = results[method_name][result_param]
+                    else
+                        (calculator, calculate_from) = result_param
+                        result = calculator(results[method_name][calculate_from])
+                    end
+
+                    ax[:plot](1:size(result, 6),
+                              transpose(squeeze(mean(result[:,:,:,k,n,:], 1:2), (1,2,4,5)));
+                              line_params...)
+                end
+            end
+
+            if n == 1
+                ax[:set_ylabel]("User $k")
+            end
+            if k == 1
+                ax[:set_title]("Stream $n")
+            end
+            if k == K
+                ax[:set_xlabel]("Iteration")
+            end
+        end; end
+
+        if displayable("application/pdf") || displayable("image/png")
+            display(fig)
+        else
+            open("$(simulation_params["simulation_name"])_$(plot_params["plot_name"])_perstream.pdf", "w") do file
+                writemime(file, "application/pdf", fig)
+            end
         end
+        PyPlot.close(fig)
     end
-    PyPlot.close(fig)
 end
 
 ##########################################################################
 # Plots results from the postprocess_assignment_convergence function.
-plot_assignment_convergence(processed_results, simulation_params, plot_params) =
-    plot_precoding_convergence(processed_results, simulation_params, plot_params)
+plot_assignment_convergence(processed_results, simulation_params, plot_params; user_plots::Bool=true) =
+    plot_precoding_convergence(processed_results, simulation_params, plot_params, user_plots=user_plots)
 
 ##########################################################################
 # Helper methods
