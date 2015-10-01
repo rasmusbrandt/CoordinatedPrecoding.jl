@@ -126,7 +126,7 @@ export
 # Utilities
     @defaultize_param!,
     clean_simulation_params_for_jld,
-    Partition, Block, restricted_growth_string
+    Partition, Block, PartitionIterator, restricted_growth_string
 
 ##########################################################################
 # General includes
