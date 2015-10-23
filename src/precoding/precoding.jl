@@ -107,13 +107,13 @@ function initial_receivers(channel::SinglecarrierChannel, Ps, sigma2s, ds,
             return U
         elseif aux_params["initial_receivers"] == "white"
             for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-                U[k] = eye(channel.Ns[k], ds[k])
+                U[k] = eye(Complex128, channel.Ns[k], ds[k])
             end; end
 
             return U
         elseif aux_params["initial_receivers"] == "zeros"
             for i = 1:channel.I; for k in served_MS_ids(i, assignment)
-                U[k] = zeros(channel.Ns[k], ds[k])
+                U[k] = zeros(Complex128, channel.Ns[k], ds[k])
             end; end
 
             return U
@@ -132,7 +132,7 @@ function initial_MSE_weights(channel::SinglecarrierChannel, Ps, sigma2s, ds,
     assignment, aux_params)
 
     # So far only the trivial initial point available
-    return [ Hermitian(eye(ds[k])) for k = 1:channel.K ]
+    return [ Hermitian(eye(Complex128, ds[k])) for k = 1:channel.K ]
 end
 
 function initial_precoders(channel::SinglecarrierChannel, Ps, sigma2s, ds,
@@ -159,7 +159,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps, sigma2s, ds,
                 Kc = length(served)
 
                 for k in served
-                    V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(channel.Ms[i], ds[k])
+                    V[k] = sqrt(Ps[i]/(ds[k]*Kc))*eye(Complex128, channel.Ms[i], ds[k])
                 end
             end
 
@@ -170,7 +170,7 @@ function initial_precoders(channel::SinglecarrierChannel, Ps, sigma2s, ds,
                 Kc = length(served)
 
                 for k in served
-                    V[k] = zeros(channel.Ms[i], ds[k])
+                    V[k] = zeros(Complex128, channel.Ms[i], ds[k])
                 end
             end
 
