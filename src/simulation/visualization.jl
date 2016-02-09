@@ -38,7 +38,7 @@ function postprocess(raw_results, simulation_params, plot_params)
                 if isa(result_param, ASCIIString)
                     result = raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][method_name][result_name]
                 else
-                    result = calculator(raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][method_name][calculate_from])
+                    result = calculator(raw_results[Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx][method_name][calculate_from], idp_vals_idx)
                 end
                 results[method_name][result_name][Ndrops_idx, Nsim_idx, idp_vals_idx, aux_idp_vals_idx, result_ranges...] = result
             end; end; end; end
